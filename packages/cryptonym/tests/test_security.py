@@ -14,7 +14,7 @@ def test_public_endpoint_must_use_https() -> None:
 
 def test_credentials_in_url_are_rejected() -> None:
     with pytest.raises(SecurityValidationError, match="credentials"):
-        validate_service_url("https://user:pass@example.com")
+        validate_service_url("https://user:pass@example.com")  # dsh-secrets:allow - muestra a proposito
 
 
 def test_loopback_allowed_only_when_requested() -> None:

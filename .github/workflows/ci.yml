@@ -62,7 +62,9 @@ jobs:
       - name: Sin credenciales en el arbol
         run: |
           patron='(-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|://[^/:@ ]+:[^/ @]+@)'
-          if git ls-files -z | xargs -0 grep -nEI "$patron"; then
+          # La marca `dsh-secrets:allow` exime una linea, igual que en el hook del harness: el
+          # banco de pruebas guarda muestras con forma de credencial a proposito.
+          if git ls-files -z | xargs -0 grep -nEI "$patron" | grep -v 'dsh-secrets:allow'; then
             echo "::error::credencial en el arbol versionado"
             exit 1
           fi

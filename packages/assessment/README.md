@@ -20,12 +20,12 @@ and a persistent ledger of the judgements.
 ## Install
 
 ```bash
-# the shared core first (editable, or from the private repo with a read-only token)
-pip install -e /root/cryptonym
-# pip install "cryptonym @ git+https://x-access-token:<TOKEN>@github.com/ME0094/cryptonym.git@v0.6.0"
-
-pip install -e '.[mcp]'
+# inside the suite, the shared core is a workspace dependency: nothing else to install
+uv sync --all-packages --all-extras
 ```
+
+On its own, outside this repository, `pip install cryptonym` (or the path to
+`packages/cryptonym`) before this package: `assessment` imports the graded core from it.
 
 ## Use
 
