@@ -2,17 +2,16 @@
 
 **Turn a question into a falsifiable threat-hunting plan.**
 
-[![CI](https://github.com/ME0094/huntplan/actions/workflows/ci.yml/badge.svg)](https://github.com/ME0094/huntplan/actions/workflows/ci.yml)
-
 > A hunt starts from a hypothesis, not from a tool.
 
 HuntPlan forces the discipline that separates hunting from browsing:
 
 - a **falsifiable hypothesis** (*If … then …*), not a vague intent;
-- the **ATT&CK data sources** that would satisfy it (a curated subset; the ATT&CK MCP has
-  the full mapping);
+- the **ATT&CK detection strategies** that would satisfy it, with their analytics and data
+  components (a curated subset; ATT&CK v18 deprecated Data Sources);
 - a **closure criterion** — when the hunt is done, and what "not found" means;
-- a **maturity** assessment against the Hunting Maturity Model (HMM 0→4).
+- a **maturity** assessment against the Hunting Maturity Model (HMM 0→4);
+- the **assessment it answers**, verified against the upstream file.
 
 ## Example
 
@@ -25,37 +24,36 @@ $ huntplan validate h.txt
   "falsifiable": false,
   "findings": [
     {"code": "not-falsifiable", "severity": "high", "message": "State it as 'If <condition> then <observable>'"},
-    {"code": "no-data-source", "severity": "medium", "message": "Name the telemetry that would satisfy the hypothesis"}
+    {"code": "no-observable", "severity": "high", "message": "Name the telemetry that would show the condition (a log, an event, a record)"}
   ]
 }
 
-$ echo "If the actor uses scheduled tasks, then process creation logs will show schtasks.exe with a /create argument" > h.txt
+$ echo "If the actor uses scheduled tasks to stage the loader, then process creation logs will show schtasks.exe with a /create argument" > h.txt
 $ huntplan validate h.txt
 {"falsifiable": true, "findings": []}
 ```
 
-A ready plan names the technique, its telemetry and the closure criterion:
+A **sentence that merely contains both words** is not a hypothesis: they have to be the
+structure (`^If|When … then …`), and the observable has to be named.
+
+A ready plan names the technique, its detection strategies and the closure criterion:
 
 ```console
-$ huntplan sources T1059
-{
-  "technique_id": "T1059",
-  "known": true,
-  "technique": "Command and Scripting Interpreter",
-  "sources": ["Process creation (command line)", "Script block logging", "Module load"]
-}
+$ huntplan validate demo/hunt.json --assessment out/verdict.json
 ```
 
-```python
->>> build_hunt_plan(
-...     question="Has actor X moved laterally?",
-...     hypothesis="If actor X moves laterally, then authentication logs will show NTLM logons to multiple hosts",
-...     techniques=["T1021", "T1078"],
-...     closure="Confirmed if two or more hosts show the pattern; refuted if no such logons exist over 30 days",
-... )
-{"ready": true, "gaps": [],
- "techniques": [{"technique_id": "T1021", "known": true,
-                 "sources": ["Authentication logs", "Network traffic", "Process creation"]}, ...]}
+```json
+{
+  "id": "HUNT-001",
+  "assessment_id": "nightjar-vs-saltwind",
+  "ready": true,
+  "techniques": [
+    {"technique_id": "T1053", "known": true,
+     "detection_strategies": [{"id": "DET0094", "name": "...", "analytics": [...]}],
+     "data_components": ["Scheduled Job", "Process Creation"]}
+  ],
+  "attack": {"collection": "Enterprise ATT&CK", "attack_version": "20.0"}
+}
 ```
 
 Four worked cases:
@@ -72,18 +70,34 @@ Four worked cases:
 - [`docs/case-001-powershell-cradle.md`](docs/case-001-powershell-cradle.md) — **simulated** end-to-end
   case: a download cradle from a document, its telemetry, findings and closure.
 
+## ATT&CK v18+
+
+ATT&CK **deprecated Data Sources in v18 (October 2025)** and replaced the detection mapping
+with **Detection Strategies** and **Analytics** that reference **Data Components**. The map
+shipped here is generated from the Enterprise ATT&CK STIX collection — currently 20.0,
+modified 2026-10-13 — and committed with its provenance:
+
+```console
+$ python scripts/build_attack_map.py --stix enterprise-attack.json
+$ huntplan sources T1059          # 14 detection strategies, with platforms and log channels
+```
+
+The subset is 12 techniques and says so: an unknown technique is reported as unknown,
+never guessed at.
+
 ## What it is not
 
 - **Not a SIEM or a query engine.** It plans; you run.
 - **Not a detector.** A confirmed hunt becomes a detection elsewhere.
-- **Not a full ATT&CK data-source database.** The subset is curated and small, and says so.
+- **Not a full ATT&CK database.** The subset is curated and small, and the output says so.
 
 ## Install and use
 
 ```bash
-pip install -e '.[mcp]'
+pip install -e ../cti-method -e '.[mcp]'
 huntplan hmm
 huntplan validate hypothesis.txt     # exit 1 if not falsifiable
+huntplan validate plan.json --assessment verdict.json
 huntplan sources T1059
 ```
 
@@ -93,8 +107,9 @@ huntplan sources T1059
 huntplan-mcp
 ```
 
-Tools: `hmm_levels_table`, `validate_hypothesis_text`, `data_sources_for_technique`,
-`assess_maturity`, `build_plan`.
+Tools: `hmm_levels_table`, `validate_hypothesis_text`, `detection_strategies_for_technique`,
+`data_sources_for_technique` (deprecated alias), `attack_map_provenance`, `assess_maturity`,
+`build_plan`, `validate_plan_document`.
 
 ## Method
 
@@ -102,8 +117,9 @@ See [docs/method.md](docs/method.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
 
 ---
 
 **Martín Eliseo** — cyber threat intelligence.
+[GitHub](https://github.com/ME0094) · [me0094.github.io](https://me0094.github.io)

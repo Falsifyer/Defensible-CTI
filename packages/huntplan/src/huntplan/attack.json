@@ -1,0 +1,4660 @@
+{
+ "source": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+ "collection": "Enterprise ATT&CK",
+ "attack_version": "20.0",
+ "attack_spec_version": "3.3.0",
+ "collection_modified": "2026-10-13T17:53:10.145Z",
+ "sha256": "a5ab7b8b734ac7ff9cca3226b4f7d01b9aef465bff02cd191708b81af9261455",
+ "generated_by": "packages/huntplan/scripts/build_attack_map.py",
+ "note": "ATT&CK v18 deprecated Data Sources. This map carries Detection Strategies and Analytics (with their Data Components), which replaced them.",
+ "techniques": {
+  "T1003": {
+   "name": "OS Credential Dumping",
+   "url": "https://attack.mitre.org/techniques/T1003",
+   "subtechniques": [
+    "T1003.001",
+    "T1003.002",
+    "T1003.003",
+    "T1003.004",
+    "T1003.005",
+    "T1003.006",
+    "T1003.007",
+    "T1003.008"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0234",
+     "name": "Credential Dumping via Sensitive Memory and Registry Access Correlation",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0234",
+     "analytics": [
+      {
+       "id": "AN0648",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "EventCode=4663, 4670, 4656"
+        },
+        {
+         "data_component": "Active Directory Object Access",
+         "data_component_id": "DC0071",
+         "channel": "EventCode=4662"
+        }
+       ]
+      },
+      {
+       "id": "AN0649",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "open"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "ptrace"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      },
+      {
+       "id": "AN0650",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Metadata",
+         "data_component_id": "DC0034",
+         "channel": "Code Execution & Entitlement Access"
+        },
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "Access to Keychain DB or system.keychain"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Invocation of osascript or dylib injection"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003"
+    },
+    {
+     "id": "DET0085",
+     "name": "Credential Dumping from SAM via Registry Dump and Local File Access",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0085",
+     "analytics": [
+      {
+       "id": "AN0235",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=2"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.002"
+    },
+    {
+     "id": "DET0437",
+     "name": "Detection of LSA Secrets Dumping via Registry and Memory Extraction",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0437",
+     "analytics": [
+      {
+       "id": "AN1212",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=4663, 4670, 4656"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.004"
+    },
+    {
+     "id": "DET0593",
+     "name": "Detecting OS Credential Dumping via /proc Filesystem Access on Linux",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0593",
+     "analytics": [
+      {
+       "id": "AN1631",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "open, read"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "ptrace or process_vm_readv"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.007"
+    },
+    {
+     "id": "DET0363",
+     "name": "Detection of Credential Dumping from LSASS Memory via Access and Dump Sequence",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0363",
+     "analytics": [
+      {
+       "id": "AN1030",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "User Account Metadata",
+         "data_component_id": "DC0013",
+         "channel": "EventCode=4673"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.001"
+    },
+    {
+     "id": "DET0513",
+     "name": "Detection of Cached Domain Credential Dumping via Local Hash Cache Access",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0513",
+     "analytics": [
+      {
+       "id": "AN1417",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "EventCode=4663, 4670, 4656"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        }
+       ]
+      },
+      {
+       "id": "AN1418",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "file"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EXECVE"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "process_events"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.005"
+    },
+    {
+     "id": "DET0446",
+     "name": "Credential Access via /etc/passwd and /etc/shadow Parsing",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0446",
+     "analytics": [
+      {
+       "id": "AN1234",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "open, read"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.008"
+    },
+    {
+     "id": "DET0586",
+     "name": "Detection of NTDS.dit Credential Dumping from Domain Controllers",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0586",
+     "analytics": [
+      {
+       "id": "AN1611",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=2"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Volume Creation",
+         "data_component_id": "DC0097",
+         "channel": "Volume Shadow Copy Creation"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.003"
+    },
+    {
+     "id": "DET0594",
+     "name": "Detection of Unauthorized DCSync Operations via Replication API Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0594",
+     "analytics": [
+      {
+       "id": "AN1632",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Active Directory Object Access",
+         "data_component_id": "DC0071",
+         "channel": "EventCode=4662"
+        },
+        {
+         "data_component": "Active Directory Object Deletion",
+         "data_component_id": "DC0068",
+         "channel": "EventCode=4929"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "Traffic on RPC DRSUAPI"
+        }
+       ]
+      }
+     ],
+     "detects": "T1003.006"
+    }
+   ]
+  },
+  "T1021": {
+   "name": "Remote Services",
+   "url": "https://attack.mitre.org/techniques/T1021",
+   "subtechniques": [
+    "T1021.001",
+    "T1021.002",
+    "T1021.003",
+    "T1021.004",
+    "T1021.005",
+    "T1021.006",
+    "T1021.007",
+    "T1021.008"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0269",
+     "name": "Behavioral Detection Strategy for Remote Service Logins and Post-Access Activity",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0269",
+     "analytics": [
+      {
+       "id": "AN0750",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0751",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "sshd: Accepted password/publickey"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "execve, USER_CMD"
+        }
+       ]
+      },
+      {
+       "id": "AN0752",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "eventMessage CONTAINS 'screensharingd' or 'AuthorizationRefCreate'"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        }
+       ]
+      },
+      {
+       "id": "AN0753",
+       "platforms": [
+        "IaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "AWS ConsoleLogin, StartSession"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "Outbound connections to port 22, 3389"
+        }
+       ]
+      },
+      {
+       "id": "AN0754",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "vim.fault.*, DCUI login, SSH shell"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "Command execution trace"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021"
+    },
+    {
+     "id": "DET0178",
+     "name": "Behavioral Detection of Unauthorized VNC Remote Control Sessions",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0178",
+     "analytics": [
+      {
+       "id": "AN0504",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "port 5900 inbound"
+        }
+       ]
+      },
+      {
+       "id": "AN0505",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "None"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "None"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "TCP port 5900 open"
+        }
+       ]
+      },
+      {
+       "id": "AN0506",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "authentication"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "inbound connection to port 5900"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.005"
+    },
+    {
+     "id": "DET0596",
+     "name": "Behavioral Detection of Remote SSH Logins Followed by Post-Login Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0596",
+     "analytics": [
+      {
+       "id": "AN1638",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EXECVE"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "None"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "TCP port 22 traffic"
+        }
+       ]
+      },
+      {
+       "id": "AN1639",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "process = 'sshd'"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "process = 'ssh' OR eventMessage CONTAINS 'ssh'"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        }
+       ]
+      },
+      {
+       "id": "AN1640",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "None"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "None"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "port 22 access"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.004"
+    },
+    {
+     "id": "DET0211",
+     "name": "Detection of Direct VM Console Access via Cloud-Native Methods",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0211",
+     "analytics": [
+      {
+       "id": "AN0594",
+       "platforms": [
+        "IaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "SendSSHPublicKey, StartSession (SSM), EC2InstanceConnect"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.008"
+    },
+    {
+     "id": "DET0530",
+     "name": "Multi-Event Detection for SMB Admin Share Lateral Movement",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0530",
+     "analytics": [
+      {
+       "id": "AN1468",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.002"
+    },
+    {
+     "id": "DET0477",
+     "name": "Behavioral Detection of WinRM-Based Remote Access",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0477",
+     "analytics": [
+      {
+       "id": "AN1313",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Service Metadata",
+         "data_component_id": "DC0041",
+         "channel": "EventCode=6"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "Inbound on ports 5985/5986"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.006"
+    },
+    {
+     "id": "DET0285",
+     "name": "Multi-Event Behavioral Detection for DCOM-Based Remote Code Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0285",
+     "analytics": [
+      {
+       "id": "AN0791",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.003"
+    },
+    {
+     "id": "DET0008",
+     "name": "Behavioral Detection of Remote Cloud Logins via Valid Accounts",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0008",
+     "analytics": [
+      {
+       "id": "AN0017",
+       "platforms": [
+        "IaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "ConsoleLogin, AssumeRole, ListResources"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "None"
+        }
+       ]
+      },
+      {
+       "id": "AN0018",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "user.authentication.sso, app.oauth.grant"
+        }
+       ]
+      },
+      {
+       "id": "AN0019",
+       "platforms": [
+        "Office Suite"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "FileAccessed, MailboxAccessed"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "UserLoggedIn"
+        }
+       ]
+      },
+      {
+       "id": "AN0020",
+       "platforms": [
+        "SaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "LoginSuccess, APIKeyUse, AdminAction"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.007"
+    },
+    {
+     "id": "DET0327",
+     "name": "Multi-event Detection Strategy for RDP-Based Remote Logins and Post-Access Activity",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0327",
+     "analytics": [
+      {
+       "id": "AN0931",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "EventCode=4778, EventCode=4779"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1021.001"
+    }
+   ]
+  },
+  "T1047": {
+   "name": "Windows Management Instrumentation",
+   "url": "https://attack.mitre.org/techniques/T1047",
+   "subtechniques": [],
+   "detection_strategies": [
+    {
+     "id": "DET0364",
+     "name": "Behavioral Detection Strategy for WMI Execution Abuse on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0364",
+     "analytics": [
+      {
+       "id": "AN1031",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "WMI Creation",
+         "data_component_id": "DC0008",
+         "channel": "EventCode=5857, 5858, 5860, 5861"
+        }
+       ]
+      }
+     ],
+     "detects": "T1047"
+    }
+   ]
+  },
+  "T1053": {
+   "name": "Scheduled Task/Job",
+   "url": "https://attack.mitre.org/techniques/T1053",
+   "subtechniques": [
+    "T1053.002",
+    "T1053.003",
+    "T1053.004",
+    "T1053.005",
+    "T1053.006",
+    "T1053.007"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0094",
+     "name": "Cross-Platform Behavioral Detection of Scheduled Task/Job Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0094",
+     "analytics": [
+      {
+       "id": "AN0258",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "EventCode=4698"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=2"
+        }
+       ]
+      },
+      {
+       "id": "AN0259",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write, rename"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "crontab, systemd_timers"
+        }
+       ]
+      },
+      {
+       "id": "AN0260",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process launch"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "disk activity on /Library/LaunchAgents or LaunchDaemons"
+        },
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "launchd_jobs"
+        }
+       ]
+      },
+      {
+       "id": "AN0261",
+       "platforms": [
+        "Containers"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "file change monitoring within /etc/cron.*, /tmp, or mounted volumes"
+        }
+       ]
+      },
+      {
+       "id": "AN0262",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "Startup script and task execution logs"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "shell access or job registration"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "manual edits to /etc/rc.local.d/local.sh or cron.d"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053"
+    },
+    {
+     "id": "DET0441",
+     "name": "Detection of Suspicious Scheduled Task Creation and Execution on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0441",
+     "analytics": [
+      {
+       "id": "AN1221",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "EventCode=4698"
+        },
+        {
+         "data_component": "Scheduled Job Modification",
+         "data_component_id": "DC0012",
+         "channel": "EventCode=4702"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053.005"
+    },
+    {
+     "id": "DET0206",
+     "name": "Detection of Malicious Kubernetes CronJob Scheduling",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0206",
+     "analytics": [
+      {
+       "id": "AN0582",
+       "platforms": [
+        "Containers"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "verb=create, resource=cronjobs, group=batch"
+        },
+        {
+         "data_component": "Container Creation",
+         "data_component_id": "DC0072",
+         "channel": "container start/stop activity via Docker, containerd, or CRI-O"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "outbound/inbound network activity from spawned pods"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053.007"
+    },
+    {
+     "id": "DET0290",
+     "name": "Cross-Platform Detection of Cron Job Abuse for Persistence and Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0290",
+     "analytics": [
+      {
+       "id": "AN0805",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      },
+      {
+       "id": "AN0806",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "process: crontab edits, launch of cron job"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "file access to /usr/lib/cron/tabs/ and cron output files"
+        }
+       ]
+      },
+      {
+       "id": "AN0807",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "modification of crontab or local.sh entries"
+        },
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "execution of scheduled job"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "spawned shell or execution environment activity"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053.003"
+    },
+    {
+     "id": "DET0231",
+     "name": "Behavioral Detection of Systemd Timer Abuse for Scheduled Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0231",
+     "analytics": [
+      {
+       "id": "AN0645",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "creat, open, write on /etc/systemd/system and /usr/lib/systemd/system"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve logging for /usr/bin/systemctl and systemd-run"
+        },
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "file_events"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053.006"
+    },
+    {
+     "id": "DET0333",
+     "name": "Cross-Platform Detection of Scheduled Task/Job Abuse via `at` Utility",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0333",
+     "analytics": [
+      {
+       "id": "AN0943",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Scheduled Job Creation",
+         "data_component_id": "DC0001",
+         "channel": "EventCode=4698"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN0944",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write"
+        }
+       ]
+      },
+      {
+       "id": "AN0945",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "process: at, job runner"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "file access to /usr/lib/cron/at and job execution path"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        }
+       ]
+      }
+     ],
+     "detects": "T1053.002"
+    }
+   ]
+  },
+  "T1055": {
+   "name": "Process Injection",
+   "url": "https://attack.mitre.org/techniques/T1055",
+   "subtechniques": [
+    "T1055.001",
+    "T1055.002",
+    "T1055.003",
+    "T1055.004",
+    "T1055.005",
+    "T1055.008",
+    "T1055.009",
+    "T1055.011",
+    "T1055.012",
+    "T1055.013",
+    "T1055.014",
+    "T1055.015"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0508",
+     "name": "Behavioral Detection of Process Injection Across Platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0508",
+     "analytics": [
+      {
+       "id": "AN1399",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "API calls"
+        }
+       ]
+      },
+      {
+       "id": "AN1400",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "ptrace, mmap, process_vm_writev"
+        },
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "open"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "/proc/[pid]/maps, /proc/[pid]/mem"
+        }
+       ]
+      },
+      {
+       "id": "AN1401",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "subsystem=com.apple.security, library=libsystem_kernel.dylib"
+        },
+        {
+         "data_component": "Process Metadata",
+         "data_component_id": "DC0034",
+         "channel": "ES_EVENT_TYPE_NOTIFY_EXEC, ES_EVENT_TYPE_NOTIFY_MMAP"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "DYLD_INSERT_LIBRARIES anomalies"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055"
+    },
+    {
+     "id": "DET0217",
+     "name": "Detection Strategy for Extra Window Memory (EWM) Injection on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0217",
+     "analytics": [
+      {
+       "id": "AN0608",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "SetWindowLong, SetClassLong, NtUserMessageCall, SendNotifyMessage, PostMessage"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.011"
+    },
+    {
+     "id": "DET0295",
+     "name": "Behavioral Detection of Thread Execution Hijacking via Thread Suspension and Context Switching",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0295",
+     "analytics": [
+      {
+       "id": "AN0822",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "API Calls"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.003"
+    },
+    {
+     "id": "DET0544",
+     "name": "Detection Strategy for Process Doppelgänging on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0544",
+     "analytics": [
+      {
+       "id": "AN1501",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "CreateTransaction, CreateFileTransacted, RollbackTransaction, NtCreateProcessEx, NtCreateThreadEx"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.013"
+    },
+    {
+     "id": "DET0100",
+     "name": "Behavioral Detection of Asynchronous Procedure Call (APC) Injection via Remote Thread Queuing",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0100",
+     "analytics": [
+      {
+       "id": "AN0277",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "APCQueueOperations"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.004"
+    },
+    {
+     "id": "DET0106",
+     "name": "Behavioral Detection of PE Injection via Remote Memory Mapping",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0106",
+     "analytics": [
+      {
+       "id": "AN0297",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.002"
+    },
+    {
+     "id": "DET0448",
+     "name": "Detection Strategy for VDSO Hijacking on Linux",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0448",
+     "analytics": [
+      {
+       "id": "AN1241",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "ptrace, mmap, mprotect, open, dlopen"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "change from PROT_READ|PROT_WRITE to PROT_EXEC"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "open of suspicious .so from non-standard paths"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "child process invoking dynamic linker post-ptrace"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.014"
+    },
+    {
+     "id": "DET0382",
+     "name": "Detection Strategy for Process Hollowing on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0382",
+     "analytics": [
+      {
+       "id": "AN1076",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "NtUnmapViewOfSection, VirtualAllocEx, WriteProcessMemory, SetThreadContext, ResumeThread"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.012"
+    },
+    {
+     "id": "DET0541",
+     "name": "Detection Strategy for /proc Memory Injection on Linux",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0541",
+     "analytics": [
+      {
+       "id": "AN1494",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "open/write to /proc/*/mem or /proc/*/maps"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "execve of dd or sed targeting /proc/*/mem"
+        },
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "/proc/*/maps access"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.009"
+    },
+    {
+     "id": "DET0467",
+     "name": "Detection Strategy for TLS Callback Injection via PE Memory Modification and Hollowing",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0467",
+     "analytics": [
+      {
+       "id": "AN1289",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "MemoryWriteToExecutable"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.005"
+    },
+    {
+     "id": "DET0203",
+     "name": "Detection Strategy for Ptrace-Based Process Injection on Linux",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0203",
+     "analytics": [
+      {
+       "id": "AN0579",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "mmap, ptrace, process_vm_writev or direct memory ops"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Process Metadata",
+         "data_component_id": "DC0034",
+         "channel": "state=attached/debugged"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.008"
+    },
+    {
+     "id": "DET0331",
+     "name": "Detection Strategy for ListPlanting Injection on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0331",
+     "analytics": [
+      {
+       "id": "AN0941",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Modification",
+         "data_component_id": "DC0020",
+         "channel": "EventCode=8"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "SendMessage, PostMessage, LVM_*"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.015"
+    },
+    {
+     "id": "DET0389",
+     "name": "Behavioral Detection of DLL Injection via Windows API",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0389",
+     "analytics": [
+      {
+       "id": "AN1095",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Named Pipe Metadata",
+         "data_component_id": "DC0048",
+         "channel": "EventCode=17"
+        }
+       ]
+      }
+     ],
+     "detects": "T1055.001"
+    }
+   ]
+  },
+  "T1059": {
+   "name": "Command and Scripting Interpreter",
+   "url": "https://attack.mitre.org/techniques/T1059",
+   "subtechniques": [
+    "T1059.001",
+    "T1059.002",
+    "T1059.003",
+    "T1059.004",
+    "T1059.005",
+    "T1059.006",
+    "T1059.007",
+    "T1059.008",
+    "T1059.009",
+    "T1059.010",
+    "T1059.011",
+    "T1059.012",
+    "T1059.013"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0516",
+     "name": "Behavioral Detection of Command and Scripting Interpreter Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0516",
+     "analytics": [
+      {
+       "id": "AN1428",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN1429",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      },
+      {
+       "id": "AN1430",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "log stream --info --predicate 'eventMessage CONTAINS \"exec\"'"
+        }
+       ]
+      },
+      {
+       "id": "AN1431",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "shell session start"
+        }
+       ]
+      },
+      {
+       "id": "AN1432",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "shell command"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "authentication & authorization"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059"
+    },
+    {
+     "id": "DET0264",
+     "name": "Cross-Platform Detection of JavaScript Execution Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0264",
+     "analytics": [
+      {
+       "id": "AN0733",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "ScriptBlockLogging + AMSI"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      },
+      {
+       "id": "AN0734",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "log stream with predicate 'eventMessage CONTAINS \"osascript\"'"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "/var/log/system.log"
+        }
+       ]
+      },
+      {
+       "id": "AN0735",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "/var/log/syslog"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.007"
+    },
+    {
+     "id": "DET0414",
+     "name": "Detection of AppleScript-Based Execution on macOS",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0414",
+     "analytics": [
+      {
+       "id": "AN1164",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process: spawn, exec"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.002"
+    },
+    {
+     "id": "DET0332",
+     "name": "Detection Strategy for AutoHotKey & AutoIT Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0332",
+     "analytics": [
+      {
+       "id": "AN0942",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.010"
+    },
+    {
+     "id": "DET0078",
+     "name": "Behavioral Detection of Malicious Cloud API Scripting",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0078",
+     "analytics": [
+      {
+       "id": "AN0215",
+       "platforms": [
+        "IaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "eventName: RunInstances, CreateUser, PutRolePolicy, InvokeCommand"
+        },
+        {
+         "data_component": "Cloud Service Modification",
+         "data_component_id": "DC0069",
+         "channel": "operationName: Write, Access Review, RoleAssignment"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "eventType: user.authentication.sso, app.oauth2.token.grant"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.009"
+    },
+    {
+     "id": "DET0142",
+     "name": "Behavioral Detection of CLI Abuse on Network Devices",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0142",
+     "analytics": [
+      {
+       "id": "AN0399",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "command_exec"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "remote CLI session detection"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "authorization/accounting logs"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.008"
+    },
+    {
+     "id": "DET0455",
+     "name": "Abuse of PowerShell for Arbitrary Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0455",
+     "analytics": [
+      {
+       "id": "AN1252",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "EventCode=4103, 4104, 4105, 4106"
+        },
+        {
+         "data_component": "Process Metadata",
+         "data_component_id": "DC0034",
+         "channel": "EventCode=400, 403"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.001"
+    },
+    {
+     "id": "DET0384",
+     "name": "Behavioral Detection of Unix Shell Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0384",
+     "analytics": [
+      {
+       "id": "AN1081",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "auth.log / secure.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1082",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "log stream --predicate 'eventMessage contains \"exec\"'"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "launchd + process_events"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "system.log, asl.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1083",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "DCUI shell start, BusyBox activity"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "Shell login or escalation"
+        }
+       ]
+      },
+      {
+       "id": "AN1084",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "CLI Command Audit"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "remote access"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.004"
+    },
+    {
+     "id": "DET0101",
+     "name": "Detection Strategy for Lua Scripting Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0101",
+     "analytics": [
+      {
+       "id": "AN0278",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        }
+       ]
+      },
+      {
+       "id": "AN0279",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "File Metadata",
+         "data_component_id": "DC0059",
+         "channel": "PATH"
+        }
+       ]
+      },
+      {
+       "id": "AN0280",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "log stream"
+        }
+       ]
+      },
+      {
+       "id": "AN0281",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "runtime"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.011"
+    },
+    {
+     "id": "DET0083",
+     "name": "Container CLI and API Abuse via Docker/Kubernetes (T1059.013)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0083",
+     "analytics": [
+      {
+       "id": "AN0233",
+       "platforms": [
+        "Containers"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve: Execution of container management CLIs (docker, crictl, kubectl) or interpreted shells (sh, bash, python) within container context"
+        },
+        {
+         "data_component": "Container Start",
+         "data_component_id": "DC0077",
+         "channel": "exec_create: docker exec events targeting running containers from non-CI sources"
+        },
+        {
+         "data_component": "Container Creation",
+         "data_component_id": "DC0072",
+         "channel": "create/exec: Kubernetes API calls to exec into containers or create pods from curl, kubectl, or SDK clients"
+        },
+        {
+         "data_component": "Pod Creation",
+         "data_component_id": "DC0019",
+         "channel": "CreatePod: Programmatic creation of new pod resources using container images not seen before in the environment"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.013"
+    },
+    {
+     "id": "DET0063",
+     "name": "Cross-Platform Behavioral Detection of Python Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0063",
+     "analytics": [
+      {
+       "id": "AN0172",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "Advanced Hunting: DeviceProcessEvents + DeviceNetworkEvents"
+        }
+       ]
+      },
+      {
+       "id": "AN0173",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "log stream --predicate 'eventMessage contains \"python\"'"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "system.log"
+        }
+       ]
+      },
+      {
+       "id": "AN0174",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "/var/log/syslog"
+        }
+       ]
+      },
+      {
+       "id": "AN0175",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "/var/log/vobd.log"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "/var/log/hostd.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.006"
+    },
+    {
+     "id": "DET0202",
+     "name": "Behavioral Detection of Windows Command Shell Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0202",
+     "analytics": [
+      {
+       "id": "AN0578",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "Process Tree + Script Block Logging"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.003"
+    },
+    {
+     "id": "DET0558",
+     "name": "Detection Strategy for ESXi Hypervisor CLI Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0558",
+     "analytics": [
+      {
+       "id": "AN1537",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "esxcli, vim-cmd invocation"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "SSH session/login"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.012"
+    },
+    {
+     "id": "DET0076",
+     "name": "Behavioral Detection of Visual Basic Execution (VBS/VBA/VBScript)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0076",
+     "analytics": [
+      {
+       "id": "AN0209",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      },
+      {
+       "id": "AN0210",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "log stream --predicate 'eventMessage contains \"wscript\" OR \"vbs\"'"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "process_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "system.log"
+        }
+       ]
+      },
+      {
+       "id": "AN0211",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "/var/log/syslog"
+        }
+       ]
+      }
+     ],
+     "detects": "T1059.005"
+    }
+   ]
+  },
+  "T1071": {
+   "name": "Application Layer Protocol",
+   "url": "https://attack.mitre.org/techniques/T1071",
+   "subtechniques": [
+    "T1071.001",
+    "T1071.002",
+    "T1071.003",
+    "T1071.004",
+    "T1071.005"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0444",
+     "name": "Detection of Command and Control Over Application Layer Protocols",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0444",
+     "analytics": [
+      {
+       "id": "AN1225",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "http, dns, smb, ssl logs"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN1226",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "dns, ssl, conn"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      },
+      {
+       "id": "AN1227",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "log stream"
+        }
+       ]
+      },
+      {
+       "id": "AN1228",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "conn.log, http.log, dns.log, ssl.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071"
+    },
+    {
+     "id": "DET0400",
+     "name": "Behavioral Detection of DNS Tunneling and Application Layer Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0400",
+     "analytics": [
+      {
+       "id": "AN1121",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "dns.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1122",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "dns.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1123",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "log stream 'eventMessage contains \"dns_request\"'"
+        }
+       ]
+      },
+      {
+       "id": "AN1124",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "dns.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1125",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "/var/log/syslog.log"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "dns.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071.004"
+    },
+    {
+     "id": "DET0002",
+     "name": "Behavioral Detection of Publish/Subscribe Protocol Misuse for C2",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0002",
+     "analytics": [
+      {
+       "id": "AN0002",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "mqtt.log / xmpp.log (custom log feeds)"
+        }
+       ]
+      },
+      {
+       "id": "AN0003",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "mqtt.log or AMQP custom log"
+        }
+       ]
+      },
+      {
+       "id": "AN0004",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "log stream 'eventMessage contains pubsub or broker'"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        }
+       ]
+      },
+      {
+       "id": "AN0005",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "mqtt.log, xmpp.log, amqp.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071.005"
+    },
+    {
+     "id": "DET0135",
+     "name": "Detection of Mail Protocol-Based C2 Activity (SMTP, IMAP, POP3)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0135",
+     "analytics": [
+      {
+       "id": "AN0379",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "smtp.log"
+        }
+       ]
+      },
+      {
+       "id": "AN0380",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "smtp.log, conn.log"
+        }
+       ]
+      },
+      {
+       "id": "AN0381",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "log stream --predicate 'processImagePath CONTAINS \"curl\" OR \"osascript\"'"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        }
+       ]
+      },
+      {
+       "id": "AN0382",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "smtp.log, conn.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071.003"
+    },
+    {
+     "id": "DET0416",
+     "name": "Detection of File Transfer Protocol-Based C2 (FTP, FTPS, SMB, TFTP)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0416",
+     "analytics": [
+      {
+       "id": "AN1169",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "ftp.log, smb_files.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1170",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "ftp.log, conn.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1171",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "log stream --predicate"
+        }
+       ]
+      },
+      {
+       "id": "AN1172",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "/root/.ash_history"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "mirror/SPAN port"
+        }
+       ]
+      },
+      {
+       "id": "AN1173",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "ftp.log, conn.log, smb_files.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071.002"
+    },
+    {
+     "id": "DET0027",
+     "name": "Detection of Web Protocol-Based C2 Over HTTP, HTTPS, or WebSockets",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0027",
+     "analytics": [
+      {
+       "id": "AN0075",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "http.log, ssl.log"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0076",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "http.log, conn.log"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        }
+       ]
+      },
+      {
+       "id": "AN0077",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "socket_events"
+        },
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "log stream --predicate"
+        }
+       ]
+      },
+      {
+       "id": "AN0078",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "SPAN or port-mirrored HTTP/S"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "/root/.ash_history or /etc/init.d/*"
+        }
+       ]
+      },
+      {
+       "id": "AN0079",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "http.log, ssl.log, websocket.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1071.001"
+    }
+   ]
+  },
+  "T1078": {
+   "name": "Valid Accounts",
+   "url": "https://attack.mitre.org/techniques/T1078",
+   "subtechniques": [
+    "T1078.001",
+    "T1078.002",
+    "T1078.003",
+    "T1078.004"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0560",
+     "name": "Detection of Valid Account Abuse Across Platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0560",
+     "analytics": [
+      {
+       "id": "AN1543",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "EventCode=4776, 4625"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN1544",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "sshd or PAM logins"
+        }
+       ]
+      },
+      {
+       "id": "AN1545",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "loginwindow, sshd"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "exec logs"
+        }
+       ]
+      },
+      {
+       "id": "AN1546",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "Sign-in logs / audit events"
+        }
+       ]
+      },
+      {
+       "id": "AN1547",
+       "platforms": [
+        "Containers"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "authentication.k8s.io"
+        }
+       ]
+      }
+     ],
+     "detects": "T1078"
+    },
+    {
+     "id": "DET0465",
+     "name": "Detection of Default Account Abuse Across Platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0465",
+     "analytics": [
+      {
+       "id": "AN1283",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        }
+       ]
+      },
+      {
+       "id": "AN1284",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "USER_LOGIN"
+        }
+       ]
+      },
+      {
+       "id": "AN1285",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "ConsoleLogin or AssumeRole"
+        }
+       ]
+      },
+      {
+       "id": "AN1286",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "/var/log/auth.log"
+        }
+       ]
+      },
+      {
+       "id": "AN1287",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "authentication logs"
+        }
+       ]
+      }
+     ],
+     "detects": "T1078.001"
+    },
+    {
+     "id": "DET0210",
+     "name": "Abuse of Domain Accounts",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0210",
+     "analytics": [
+      {
+       "id": "AN0590",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "EventCode=4624, 4625, 4768, 4769"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0591",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "pam_authenticate, sshd"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "sssd / sudo logs"
+        }
+       ]
+      },
+      {
+       "id": "AN0592",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "log show --predicate 'eventMessage contains \"Authentication\"'"
+        }
+       ]
+      },
+      {
+       "id": "AN0593",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "/var/log/vmware/vpxd.log"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "/var/log/hostd.log"
+        }
+       ]
+      }
+     ],
+     "detects": "T1078.002"
+    },
+    {
+     "id": "DET0546",
+     "name": "Detection of Abused or Compromised Cloud Accounts for Access and Persistence",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0546",
+     "analytics": [
+      {
+       "id": "AN1503",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "Sign-in activity"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "user.authentication.sso"
+        }
+       ]
+      },
+      {
+       "id": "AN1504",
+       "platforms": [
+        "IaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "ConsoleLogin, AssumeRole, ListAccessKeys, CreateUser"
+        },
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "admin.googleapis.com"
+        }
+       ]
+      },
+      {
+       "id": "AN1505",
+       "platforms": [
+        "SaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "FileAccessed, SharingSet"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "drive.activity"
+        }
+       ]
+      },
+      {
+       "id": "AN1506",
+       "platforms": [
+        "Office Suite"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "UserLogin"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "login.event"
+        }
+       ]
+      }
+     ],
+     "detects": "T1078.004"
+    },
+    {
+     "id": "DET0407",
+     "name": "Detection of Local Account Abuse for Initial Access and Persistence",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0407",
+     "analytics": [
+      {
+       "id": "AN1137",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "EventCode=4624, 4648"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "EventCode=4672"
+        }
+       ]
+      },
+      {
+       "id": "AN1138",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "USER_LOGIN"
+        },
+        {
+         "data_component": "User Account Authentication",
+         "data_component_id": "DC0002",
+         "channel": "sshd login"
+        }
+       ]
+      },
+      {
+       "id": "AN1139",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "loginwindow or sshd"
+        }
+       ]
+      }
+     ],
+     "detects": "T1078.003"
+    }
+   ]
+  },
+  "T1105": {
+   "name": "Ingress Tool Transfer",
+   "url": "https://attack.mitre.org/techniques/T1105",
+   "subtechniques": [],
+   "detection_strategies": [
+    {
+     "id": "DET0060",
+     "name": "Detect Ingress Tool Transfers via Behavioral Chain",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0060",
+     "analytics": [
+      {
+       "id": "AN0165",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN0166",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "connect, execve, write"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "file creation/modification"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "TCP connections"
+        }
+       ]
+      },
+      {
+       "id": "AN0167",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "ES_EVENT_TYPE_NOTIFY_EXEC"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "file write/create"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "connection open"
+        }
+       ]
+      },
+      {
+       "id": "AN0168",
+       "platforms": [
+        "ESXi"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "command execution"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "file write"
+        }
+       ]
+      },
+      {
+       "id": "AN0169",
+       "platforms": [
+        "Network Devices"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "connection metadata"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "firmware write/log event"
+        }
+       ]
+      }
+     ],
+     "detects": "T1105"
+    }
+   ]
+  },
+  "T1112": {
+   "name": "Modify Registry",
+   "url": "https://attack.mitre.org/techniques/T1112",
+   "subtechniques": [],
+   "detection_strategies": [
+    {
+     "id": "DET0280",
+     "name": "Behavior-Based Registry Modification Detection on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0280",
+     "analytics": [
+      {
+       "id": "AN0781",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1112"
+    }
+   ]
+  },
+  "T1547": {
+   "name": "Boot or Logon Autostart Execution",
+   "url": "https://attack.mitre.org/techniques/T1547",
+   "subtechniques": [
+    "T1547.001",
+    "T1547.002",
+    "T1547.003",
+    "T1547.004",
+    "T1547.005",
+    "T1547.006",
+    "T1547.007",
+    "T1547.008",
+    "T1547.009",
+    "T1547.010",
+    "T1547.012",
+    "T1547.013",
+    "T1547.014",
+    "T1547.015"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0274",
+     "name": "Boot or Logon Autostart Execution Detection Strategy",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0274",
+     "analytics": [
+      {
+       "id": "AN0764",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        }
+       ]
+      },
+      {
+       "id": "AN0765",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "creat"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Execution of binaries located in /etc/init.d/ or systemd service paths"
+        }
+       ]
+      },
+      {
+       "id": "AN0766",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Service Metadata",
+         "data_component_id": "DC0041",
+         "channel": "Observed loading of new LaunchAgent or LaunchDaemon plist"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "write"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Execution of binary listed in newly modified LaunchAgent plist"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547"
+    },
+    {
+     "id": "DET0312",
+     "name": "Detect Active Setup Persistence via StubPath Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0312",
+     "analytics": [
+      {
+       "id": "AN0871",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "EventCode=4672"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "Windows Registry Key Creation",
+         "data_component_id": "DC0056",
+         "channel": "EventCode=12"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.014"
+    },
+    {
+     "id": "DET0026",
+     "name": "Windows Detection Strategy for T1547.012 - Print Processor DLL Persistence",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0026",
+     "analytics": [
+      {
+       "id": "AN0074",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Process Access",
+         "data_component_id": "DC0035",
+         "channel": "EventCode=10"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.012"
+    },
+    {
+     "id": "DET0204",
+     "name": "Detection Strategy for T1547.010 – Port Monitor DLL Persistence via spoolsv.exe (Windows)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0204",
+     "analytics": [
+      {
+       "id": "AN0580",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.010"
+    },
+    {
+     "id": "DET0180",
+     "name": "Detection Strategy for T1547.009 – Shortcut Modification (Windows)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0180",
+     "analytics": [
+      {
+       "id": "AN0510",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=2"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "File Metadata",
+         "data_component_id": "DC0059",
+         "channel": "EventCode=15"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.009"
+    },
+    {
+     "id": "DET0542",
+     "name": "Registry and LSASS Monitoring for Security Support Provider Abuse",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0542",
+     "analytics": [
+      {
+       "id": "AN1495",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=4657"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.005"
+    },
+    {
+     "id": "DET0122",
+     "name": "Detect Abuse of Windows Time Providers for Persistence",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0122",
+     "analytics": [
+      {
+       "id": "AN0341",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.003"
+    },
+    {
+     "id": "DET0404",
+     "name": "Detect Winlogon Helper DLL Abuse via Registry and Process Artifacts on Windows",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0404",
+     "analytics": [
+      {
+       "id": "AN1133",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "modification to Winlogon registry keys such as Shell, Notify, or Userinit"
+        },
+        {
+         "data_component": "Windows Registry Key Access",
+         "data_component_id": "DC0050",
+         "channel": "Enumerate Winlogon subkeys for unknown or unsigned binaries"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.004"
+    },
+    {
+     "id": "DET0121",
+     "name": "Detection Strategy for T1547.015 – Login Items on macOS",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0121",
+     "analytics": [
+      {
+       "id": "AN0340",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Post-login execution of unrecognized child process from launchd or loginwindow"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "Modification of backgrounditems.btm or creation of LoginItems subdirectory in .app bundle"
+        },
+        {
+         "data_component": "OS API Execution",
+         "data_component_id": "DC0021",
+         "channel": "Invocation of SMLoginItemSetEnabled by non-system or recently installed application"
+        },
+        {
+         "data_component": "Script Execution",
+         "data_component_id": "DC0029",
+         "channel": "AppleScript creating login item via 'System Events' dictionary"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.015"
+    },
+    {
+     "id": "DET0365",
+     "name": "Detect Registry and Startup Folder Persistence (Windows)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0365",
+     "analytics": [
+      {
+       "id": "AN1032",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=13, 14"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "New startup folder shortcut or binary placed in Startup directory"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.001"
+    },
+    {
+     "id": "DET0450",
+     "name": "Detection Strategy for Kernel Modules and Extensions Autostart Execution",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0450",
+     "analytics": [
+      {
+       "id": "AN1243",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "Execution of insmod, modprobe, or rmmod commands by non-standard users or outside expected timeframes"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "Access or modification to /lib/modules or creation of .ko files"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "New or modified kernel object files (.ko) within /lib/modules directory"
+        }
+       ]
+      },
+      {
+       "id": "AN1244",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Command Execution",
+         "data_component_id": "DC0064",
+         "channel": "kextload execution from Terminal or suspicious paths"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Processes executing kextload, spctl, or modifying kernel extension directories"
+        },
+        {
+         "data_component": "Kernel Module Load",
+         "data_component_id": "DC0031",
+         "channel": "New kext entries not signed by Apple or outside standard identifier prefix"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "Modifications to /var/db/SystemPolicyConfiguration/KextPolicy or kext_policy table"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.006"
+    },
+    {
+     "id": "DET0207",
+     "name": "Detect LSA Authentication Package Persistence via Registry and LSASS DLL Load",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0207",
+     "analytics": [
+      {
+       "id": "AN0583",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Windows Registry Key Modification",
+         "data_component_id": "DC0063",
+         "channel": "EventCode=4657"
+        },
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=7"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.002"
+    },
+    {
+     "id": "DET0390",
+     "name": "Linux Detection Strategy for T1547.013 - XDG Autostart Entries",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0390",
+     "analytics": [
+      {
+       "id": "AN1096",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "creat"
+        },
+        {
+         "data_component": "File Access",
+         "data_component_id": "DC0055",
+         "channel": "open"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Process execution via .desktop Exec path from /etc/xdg/autostart or ~/.config/autostart"
+        },
+        {
+         "data_component": "File Metadata",
+         "data_component_id": "DC0059",
+         "channel": "Write or modify .desktop file in XDG autostart path"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.013"
+    },
+    {
+     "id": "DET0125",
+     "name": "Detect persistence via reopened application plist modification (macOS)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0125",
+     "analytics": [
+      {
+       "id": "AN0349",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Execution of process launched via loginwindow session restore"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "Modification or creation of files matching 'com.apple.loginwindow.*.plist' in ~/Library/Preferences/ByHost"
+        },
+        {
+         "data_component": "Logon Session Metadata",
+         "data_component_id": "DC0088",
+         "channel": "LoginWindow context with associated PID linked to reopened plist paths"
+        },
+        {
+         "data_component": "File Metadata",
+         "data_component_id": "DC0059",
+         "channel": "es_event_file_rename_t or es_event_file_write_t"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.007"
+    },
+    {
+     "id": "DET0225",
+     "name": "Detect unauthorized LSASS driver persistence via LSA plugin abuse (Windows)",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0225",
+     "analytics": [
+      {
+       "id": "AN0629",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Module Load",
+         "data_component_id": "DC0016",
+         "channel": "EventCode=3033"
+        },
+        {
+         "data_component": "Driver Load",
+         "data_component_id": "DC0079",
+         "channel": "EventCode=6"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "File Modification",
+         "data_component_id": "DC0061",
+         "channel": "EventCode=2"
+        }
+       ]
+      }
+     ],
+     "detects": "T1547.008"
+    }
+   ]
+  },
+  "T1566": {
+   "name": "Phishing",
+   "url": "https://attack.mitre.org/techniques/T1566",
+   "subtechniques": [
+    "T1566.001",
+    "T1566.002",
+    "T1566.003",
+    "T1566.004"
+   ],
+   "detection_strategies": [
+    {
+     "id": "DET0070",
+     "name": "Detection Strategy for Phishing across platforms.",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0070",
+     "analytics": [
+      {
+       "id": "AN0188",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Send/Receive: Emails with suspicious sender domains, spoofed headers, or anomalous attachment types"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN0189",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound messages with anomalous headers, spoofed SPF/DKIM failures"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve: Execution of scripts or binaries sourced from mail directories (/var/mail, ~/Maildir)"
+        }
+       ]
+      },
+      {
+       "id": "AN0190",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound email activity with suspicious domains or mismatched sender information"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Preview.app, Safari.app, or Mail.app spawning new processes outside normal patterns"
+        }
+       ]
+      },
+      {
+       "id": "AN0191",
+       "platforms": [
+        "Office Suite"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "FileAccessed: Access of email attachments by Office applications"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        }
+       ]
+      },
+      {
+       "id": "AN0192",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Logon Session Creation",
+         "data_component_id": "DC0067",
+         "channel": "Failed MFA attempts, unusual conditional access triggers, login attempts from unexpected IP ranges"
+        }
+       ]
+      },
+      {
+       "id": "AN0193",
+       "platforms": [
+        "SaaS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "MessagePosted: Suspicious links or attachment delivery via collaboration tools (Slack, Teams, Zoom)"
+        }
+       ]
+      }
+     ],
+     "detects": "T1566"
+    },
+    {
+     "id": "DET0107",
+     "name": "Detection Strategy for Spearphishing Links",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0107",
+     "analytics": [
+      {
+       "id": "AN0298",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Send/Receive: Inbound emails containing embedded or shortened URLs"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0299",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound emails containing hyperlinks from suspicious sources"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve: Execution of scripts or binaries spawned from browser processes"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "Outbound requests to domains not previously resolved or associated with phishing campaigns"
+        }
+       ]
+      },
+      {
+       "id": "AN0300",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Received messages with embedded or shortened URLs"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Browser processes launching unexpected interpreters (osascript, bash)"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "Connections to suspicious domains with mismatched certificate or unusual patterns"
+        }
+       ]
+      },
+      {
+       "id": "AN0301",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "ConsentGrant: Suspicious consent grants to non-approved or unknown applications"
+        }
+       ]
+      }
+     ],
+     "detects": "T1566.002"
+    },
+    {
+     "id": "DET0236",
+     "name": "Detection Strategy for Spearphishing Attachment across OS Platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0236",
+     "analytics": [
+      {
+       "id": "AN0655",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Send/Receive: Inbound emails with attachments from suspicious or spoofed senders"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=1"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0656",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound email attachments logged from MTAs with suspicious metadata"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve: Execution of files saved in mail or download directories"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "Outbound traffic from suspicious new processes post-attachment execution"
+        }
+       ]
+      },
+      {
+       "id": "AN0657",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound messages with attachments from suspicious domains"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Execution of Terminal, osascript, or other interpreters originating from Mail or Preview"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "Attachment files written to ~/Downloads or temporary folders"
+        }
+       ]
+      }
+     ],
+     "detects": "T1566.001"
+    },
+    {
+     "id": "DET0245",
+     "name": "Detection Strategy for Spearphishing Voice across OS platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0245",
+     "analytics": [
+      {
+       "id": "AN0683",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Outbound or inbound calls to high-risk or blocklisted numbers"
+        }
+       ]
+      },
+      {
+       "id": "AN0684",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "SIP REGISTER, INVITE, or unusual call destination metadata"
+        }
+       ]
+      },
+      {
+       "id": "AN0685",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Outgoing or incoming calls with non-standard caller IDs or unusual metadata"
+        }
+       ]
+      },
+      {
+       "id": "AN0686",
+       "platforms": [
+        "Identity Provider"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Unusual MFA requests or OAuth consent events temporally aligned with user-reported vishing call"
+        }
+       ]
+      }
+     ],
+     "detects": "T1566.004"
+    },
+    {
+     "id": "DET0115",
+     "name": "Detection Strategy for Spearphishing via a Service across OS Platforms",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0115",
+     "analytics": [
+      {
+       "id": "AN0320",
+       "platforms": [
+        "Windows"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "EventCode=4688"
+        },
+        {
+         "data_component": "File Creation",
+         "data_component_id": "DC0039",
+         "channel": "EventCode=11"
+        },
+        {
+         "data_component": "Network Connection Creation",
+         "data_component_id": "DC0082",
+         "channel": "EventCode=3, 22"
+        }
+       ]
+      },
+      {
+       "id": "AN0321",
+       "platforms": [
+        "Linux"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "execve: Execution of bash, python, or perl processes spawned by browser/email client"
+        },
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Inbound messages from webmail services containing attachments or URLs"
+        },
+        {
+         "data_component": "Network Traffic Flow",
+         "data_component_id": "DC0078",
+         "channel": "Outbound traffic to domains/IPs not previously resolved, occurring shortly after attachment download or link click"
+        }
+       ]
+      },
+      {
+       "id": "AN0322",
+       "platforms": [
+        "macOS"
+       ],
+       "log_sources": [
+        {
+         "data_component": "Application Log Content",
+         "data_component_id": "DC0038",
+         "channel": "Received messages containing embedded links or attachments from non-enterprise services"
+        },
+        {
+         "data_component": "Process Creation",
+         "data_component_id": "DC0032",
+         "channel": "Execution of osascript, bash, or Terminal initiated from Mail.app or Safari"
+        },
+        {
+         "data_component": "Network Traffic Content",
+         "data_component_id": "DC0085",
+         "channel": "Suspicious outbound HTTPS requests to domains flagged as newly registered or untrusted after spearphishing message interaction"
+        }
+       ]
+      }
+     ],
+     "detects": "T1566.003"
+    }
+   ]
+  }
+ },
+ "source_sha256": "81113ba98afa2928f3dcff62022539f7ce30c315c32e14422f11ff95ce534352"
+}

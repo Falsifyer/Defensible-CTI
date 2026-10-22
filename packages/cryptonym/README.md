@@ -11,11 +11,12 @@ designations as a **graded, evidenced, reversible hypothesis** instead: it never
 nodes, it separates diagnostic evidence from non-diagnostic overlap, and it carries the
 method — not just the result.
 
-**Status: v0.3.0.** Ingest (MISP Galaxy / ATT&CK / OpenCTI), the ACH engine, graded
+**Status: v0.7.0.** Ingest (MISP Galaxy / ATT&CK / OpenCTI), the ACH engine, graded
 reconciliation, STIX 2.1 / MISP Galaxy / TAXII export, the markdown product, source
-snapshots, a per-split evaluation harness and an **adjudicated corpus with an
-external-truth filter** are implemented and tested. See [docs/method.md](docs/method.md)
-and [docs/adjudication.md](docs/adjudication.md).
+snapshots and a **per-split evaluation harness** over an adjudicated corpus. The graded core
+now lives in [`cti-method`](../cti-method/README.md), which this package consumes rather
+than owns. See [method](src/cryptonym/docs/method.md) and
+[adjudication](src/cryptonym/docs/adjudication.md).
 
 ## Why this exists
 
@@ -35,19 +36,24 @@ Cryptonym is a *method made executable*, not another CTI platform. The stack
 
 - **Merges are reversible.** Designations are nodes; a linkage is a graded edge with
   provenance. A cluster is *computed at a threshold*, never a deleted fact.
-- **Diagnostic vs non-diagnostic evidence.** Shared tradecraft cannot sustain a merge on
-  its own; only infrastructure, code or operator artefacts can.
+- **Diagnostic vs non-diagnostic evidence.** Shared tradecraft cannot sustain a merge on its
+  own; only infrastructure, code or operator artefacts can.
 - **ACH, mechanised.** Evidence is tested against all competing hypotheses at once; the
   favoured hypothesis is the one with the *least inconsistent* evidence, not the loudest.
+- **The evidence caps the grade.** `high` needs a diagnostic discriminating item **and** two
+  independent sources; shared tradecraft alone cannot exceed `low`. A dossier that claims
+  more than that is refused (`grade-exceeds-evidence`), and one that declares no grade at
+  all is refused too — there is no silent default.
 - **Two axes, per claim.** *Confidence* (sourcing/reasoning) is kept separate from
   *probability* (likelihood of the outcome).
 - **Chains expose their weakest link.** Confidence does not multiply cleanly along a chain
   of `same-as` assertions, so Cryptonym never averages it away.
 - **The method is scored.** A golden-pair harness reports the **false-merge rate** (the
-  costly error) and checks that confidence grades calibrate — reported **per split**, so
-  the held-out result is never hidden behind the development one.
-- **Truth is external.** The accuracy figures come only from an **adjudicated corpus**:
-  a binary truth must be asserted by independent sources, a disagreement is recorded as
+  costly error) and checks that the **derived** ceiling calibrates — reported **per split**,
+  so the held-out result is never hidden behind the development one. The harness also says
+  how many cases declare more than their evidence supports.
+- **Truth is external.** The accuracy figures come only from an **adjudicated corpus**: a
+  binary truth must be asserted by independent sources, a disagreement is recorded as
   *contested*, and `--strict` rejects any ungrounded claim.
 - **Sources are snapshotted.** What a judgement was built from is captured with its
   SHA-256, so an assessment can be re-derived against the exact bytes it saw.
@@ -61,9 +67,9 @@ Cryptonym is a *method made executable*, not another CTI platform. The stack
 ## Install
 
 ```bash
-pip install -e .                          # core: standard library only
-pip install -r requirements-dev.txt       # tests, lint, security scan, STIX conformance
-pip install -r requirements-cti.txt       # optional: graph analytics
+pip install -e ../cti-method -e .           # core + this package
+pip install -r requirements-dev.txt         # tests, lint, security scan, STIX conformance
+pip install -r requirements-cti.txt         # optional: graph analytics
 ```
 
 ## Use
@@ -77,7 +83,7 @@ cryptonym snapshot --verify advisory.snapshot.json
 cryptonym ingest --source misp-galaxy --input galaxy.json
 cryptonym ingest --source attack-stix --url https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json
 
-# Re-derive and print the machine-readable judgement:
+# Re-derive and print the machine-readable judgement (exit 1 if the grade exceeds the ceiling):
 cryptonym assess assessments/voltzite-vs-volt-typhoon/assessment.json
 
 # The human product, and shareable forms:
@@ -102,18 +108,19 @@ src/cryptonym/
   reconcile/    the graded graph (clusters at threshold, weakest link)
   ingest/       MISP Galaxy / ATT&CK / OpenCTI adapters + safe network fetch
   export/       markdown product + STIX 2.1 / MISP Galaxy / TAXII
-  evaluate/     confusion, false-merge rate, calibration, per-split scoring, adjudication filter
+  evaluate/     corpus scoring on top of cti_method's confusion and calibration
   snapshot.py   capture a source's bytes and hash for reproducibility
   security.py   input and endpoint validation
+  docs/         method, adjudication, architecture, data model, evaluation
 assessments/    versioned adjudications (one dossier per pair)
-data/          curated designations and evidence catalogues
-evaluation/    golden-pair corpus (development + held-out) + adjudicated corpus, baselines, CI harness
-docs/          method, adjudication, architecture, data model, evaluation
+data/           curated designations and evidence catalogues
+evaluation/     golden-pair corpus (development + held-out) + adjudicated corpus, baselines, CI harness
 ```
 
 ## Contributing & license
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). MIT — see [LICENSE](LICENSE).
+See [CONTRIBUTING](https://github.com/ME0094/cti-suite/blob/main/CONTRIBUTING.md) and [SECURITY](https://github.com/ME0094/cti-suite/blob/main/SECURITY.md). MIT — see
+[LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
 
 ## Use as an MCP server
 
@@ -122,33 +129,26 @@ pip install -e '.[mcp]'
 cryptonym-mcp          # stdio transport; register in your MCP client
 ```
 
-See [docs/mcp.md](docs/mcp.md).
+See [docs/mcp.md](src/cryptonym/docs/mcp.md). The suite also ships one facade
+(`ctisuite-mcp`) that exposes every tool under a prefixed name.
 
 ## The shared core
 
-Every Cryptonym-family tool imports one piece — the graded-assessment core — instead of
+Every tool in the family imports one package — the graded core — instead of
 reimplementing it:
 
 ```python
-from cryptonym.method import Assessment, Confidence, Judgement, filter_adjudication
+from cti_method import Assessment, Confidence, Judgement, filter_adjudication
 ```
 
-See [docs/method-api.md](docs/method-api.md).
+`cryptonym.method` still exports the same names for existing consumers. See
+[method-api](src/cryptonym/docs/method-api.md).
 
 ## Demo end-to-end
 
-`demo/` ejecuta la cadena completa sobre un caso **ficticio** (NIGHTJAR y SALTWIND no
-existen): dossier -> juicio -> bundle STIX -> puerta de cumplimiento -> ledger graduado.
-
-```console
-$ make -C demo install   # instala esta y las dos hermanas en .venv-demo
-$ make -C demo demo
-```
-
-Lo que demuestra no es el caso, es la cadena: cada paso consume la salida del anterior y
-ninguno acepta lo que el anterior afirma sin comprobarlo. Y dos cosas que se ven al correrla:
-el exportador aún marca `TLP:WHITE` (TLP 2.0 lo renombró a `TLP:CLEAR`) y la puerta lo señala;
-y el grado no se declara, sale de la evidencia.
+The cycle runs from the repository root: `make demo` executes the seven steps over a
+fictional case (NIGHTJAR and SALTWIND do not exist) and each step consumes what the previous
+one produced. See the [suite README](https://github.com/ME0094/cti-suite/blob/main/README.md#use).
 
 ---
 

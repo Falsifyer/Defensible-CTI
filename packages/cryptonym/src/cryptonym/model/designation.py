@@ -17,7 +17,7 @@ class Designation:
     name: str
     source_url: str = ""
     date: str = ""
-    tlp: str = "TLP:WHITE"
+    tlp: str = "TLP:CLEAR"
 
     def __post_init__(self) -> None:
         if not self.vendor or not self.name:

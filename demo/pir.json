@@ -1,4 +1,7 @@
 {
+  "$schema": "https://github.com/ME0094/cti-suite/schemas/pir.schema.json",
+  "schema_version": "1.0",
+  "id": "PIR-2026-Q4",
   "version": "1.0",
   "requirements": [
     {
@@ -14,15 +17,24 @@
           "id": "EEI-001",
           "question": "Hay campanas documentadas contra proveedores del sector?",
           "indicators": [
-            {"value": "campanas publicadas en el trimestre", "source": "B2"},
-            {"value": "proveedores nombrados en avisos de terceros", "source": "A1"}
+            {
+              "value": "campanas publicadas en el trimestre",
+              "source": "B2"
+            },
+            {
+              "value": "proveedores nombrados en avisos de terceros",
+              "source": "A1"
+            }
           ]
         },
         {
           "id": "EEI-002",
           "question": "Se ha observado acceso a codigo fuente de esos proveedores?",
           "indicators": [
-            {"value": "incidentes de acceso a repositorios", "source": "B2"}
+            {
+              "value": "incidentes de acceso a repositorios",
+              "source": "B2"
+            }
           ]
         }
       ]
@@ -40,7 +52,10 @@
           "id": "EEI-003",
           "question": "Que tecnicas aparecen en al menos dos campanas del sector?",
           "indicators": [
-            {"value": "tecnicas con dos o mas fuentes independientes", "source": "A2"}
+            {
+              "value": "tecnicas con dos o mas fuentes independientes",
+              "source": "A2"
+            }
           ]
         }
       ]

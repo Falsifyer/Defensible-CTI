@@ -11,10 +11,12 @@ from assessment.core import (
     append_claim,
     assess,
     calibrate,
+    ceiling_for,
     filter_truth,
     grade,
     method_documentation,
     read_ledger,
+    verify_ledger,
     weigh,
 )
 
@@ -23,8 +25,9 @@ server = MCPServer(
     title="Assessment Ledger",
     version=__version__,
     instructions=(
-        "Grade any claim: two-axis confidence, ACH over arbitrary hypotheses, and an "
-        "external truth that must be earned from independent sources. Built on cryptonym.method."
+        "Grade any claim: two-axis confidence, ACH over arbitrary hypotheses, a ceiling "
+        "derived from the evidence, and an external truth that must be earned from "
+        "independent sources. Built on cti-method."
     ),
 )
 
@@ -36,27 +39,36 @@ def grade_claim(confidence: str, probability: str | None = None) -> dict[str, An
 
 
 @server.tool()
-def weigh_evidence(evidence: list[dict[str, Any]], hypotheses: list[str] | None = None) -> dict[str, Any]:
-    """Compare competing hypotheses against evidence (ACH); hypotheses may be any labels."""
+def weigh_evidence(evidence: list[dict[str, Any]], hypotheses: list[str]) -> dict[str, Any]:
+    """Compare competing hypotheses against evidence (ACH); hypotheses may be any labels.
+
+    At least two hypotheses are required: one option is not analysis.
+    """
     return weigh(evidence, hypotheses)
 
 
 @server.tool()
 def filter_external_truth(adjudication: dict[str, Any]) -> dict[str, Any]:
-    """Apply the external-truth filter: is a declared truth earned from independent sources?"""
+    """Apply the external-truth filter: independence, standard, contested."""
     return filter_truth(adjudication)
 
 
 @server.tool()
 def assess_document(document: dict[str, Any]) -> dict[str, Any]:
-    """Grade a full claim (evidence + hypotheses + grade, optional adjudication)."""
+    """Grade a whole claim: ranking, ceiling, declared grade and findings."""
     return assess(document)
 
 
 @server.tool()
-def append_claim_to_ledger(path: str, claim: dict[str, Any]) -> dict[str, Any]:
-    """Append a graded claim to a ledger (JSON Lines file)."""
-    return append_claim(path, claim)
+def grade_ceiling(evidence: list[dict[str, Any]]) -> dict[str, Any]:
+    """The strongest confidence this evidence can support, and why."""
+    return ceiling_for(evidence)
+
+
+@server.tool()
+def append_claim_to_ledger(path: str, claim: dict[str, Any], tool: str = "assessment") -> dict[str, Any]:
+    """Append a graded claim to a hash-chained ledger, creating it if needed."""
+    return append_claim(path, claim, tool=tool)
 
 
 @server.tool()
@@ -66,14 +78,20 @@ def read_ledger_file(path: str) -> dict[str, Any]:
 
 
 @server.tool()
+def verify_ledger_file(path: str) -> dict[str, Any]:
+    """Verify the ledger's hash chain; a silent edit is reported with its line."""
+    return verify_ledger(path)
+
+
+@server.tool()
 def calibrate_cases(cases: list[dict[str, Any]]) -> dict[str, Any]:
-    """Score labelled claims: false-merge rate, false-split rate and calibration."""
+    """Score labelled calls: confusion, false-merge rate and calibration by confidence."""
     return calibrate(cases)
 
 
 @server.tool()
 def method_docs(section: str = "method") -> dict[str, Any]:
-    """Return one of this tool's method documents."""
+    """Return one of this tool's method documents, from the installed package."""
     return method_documentation(section)
 
 

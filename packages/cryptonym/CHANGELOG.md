@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.7.0 — 2026-10-22
+
+### Changed
+
+- **The grade is checked against the evidence.** `assess` now reports the ceiling the
+  evidence supports and a `grade-exceeds-evidence` high finding when the dossier claims
+  more; the CLI exits 1 in that case. A dossier with no declared grade is `no-grade`, not a
+  silent `low`.
+- The graded core moved to `cti-method`; `cryptonym.method` and the `model`/`assess`/
+  `evaluate` modules re-export it. The alias package is a consumer of the core, not its
+  owner.
+- Default TLP is `TLP:CLEAR` (TLP 2.0), not the deprecated `TLP:WHITE`.
+- Documentation ships inside the installed package, so the MCP `documentation` tool works
+  from a wheel.
+- Calibration in the evaluation harness is computed on the derived ceiling, not on the
+  declared grade.
+
+
 ## 0.6.0 — 2026-10-09
 
 - **Generalised ACH:** `consistency_matrix`, `inconsistency_counts` and

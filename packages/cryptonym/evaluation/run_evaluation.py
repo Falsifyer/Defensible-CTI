@@ -49,6 +49,12 @@ def _reproduce_dossier(path: str) -> int:
     return 0
 
 
+def _above_ceiling(row: dict) -> bool:
+    rank = {"low": 1, "moderate": 2, "high": 3}
+    declared = row.get("confidence")
+    return bool(declared) and rank.get(str(declared), 0) > rank.get(str(row.get("ceiling")), 3)
+
+
 def _projection(summary: dict) -> dict:
     """The parts of a golden-pair summary that are committed as a baseline."""
     return {
@@ -92,6 +98,10 @@ def _summarise(corpus: str, expected: str | None, check: bool, output: str | Non
         Path(output).write_text(serialised + "\n", encoding="utf-8")
     print(serialised)
 
+    rows = evaluate_corpus(document)["results"]
+    refused = sum(1 for row in rows if _above_ceiling(row))
+    print(f"# declared above the evidence ceiling: {refused} of {len(rows)}", file=sys.stderr)
+
     overall = projection["overall"]["metrics"]
     print(
         f"# overall false_merge_rate={overall['false_merge_rate']} "
@@ -125,6 +135,9 @@ def _adjudicated(path: str, expected: str | None, check: bool, strict: bool, out
     if output:
         Path(output).write_text(serialised + "\n", encoding="utf-8")
     print(serialised)
+
+    refused = sum(1 for row in summary["results"] if _above_ceiling(row))
+    print(f"# declared above the evidence ceiling: {refused} of {len(summary['results'])}", file=sys.stderr)
 
     coverage = summary["coverage"]
     metrics = summary["metrics"]

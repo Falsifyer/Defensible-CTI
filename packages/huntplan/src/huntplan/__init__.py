@@ -6,4 +6,4 @@ be falsifiable (If … then …), to name the telemetry that would satisfy it, a
 assessed against the Hunting Maturity Model, not against enthusiasm.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

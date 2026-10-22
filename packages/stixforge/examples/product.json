@@ -1,4 +1,6 @@
 {
+  "$schema": "https://github.com/ME0094/cti-suite/schemas/product.schema.json",
+  "schema_version": "1.0",
   "id": "nightjar-2026-10",
   "title": "NIGHTJAR: loader and infrastructure, October 2026",
   "summary": "Fictional product used as the worked example. The actor does not exist.",
@@ -7,8 +9,14 @@
   "published": "2026-10-22T00:00:00Z",
   "author": "Martín Eliseo",
   "observables": [
-    {"type": "domain-name", "value": "update.nightjar.example"},
-    {"type": "ipv4-addr", "value": "203.0.113.10"}
+    {
+      "type": "domain-name",
+      "value": "update.nightjar.example"
+    },
+    {
+      "type": "ipv4-addr",
+      "value": "203.0.113.10"
+    }
   ],
   "indicators": [
     {
@@ -23,6 +31,12 @@
     }
   ],
   "malware": [
-    {"name": "NIGHTJAR loader", "is_family": false, "malware_types": ["loader"]}
+    {
+      "name": "NIGHTJAR loader",
+      "is_family": false,
+      "malware_types": [
+        "loader"
+      ]
+    }
   ]
 }

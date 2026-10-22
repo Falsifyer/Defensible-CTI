@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "huntplan"
-version = "0.1.0"
+version = "0.2.0"
 description = "Turn a question into a falsifiable threat-hunting plan: If/then hypothesis, ATT&CK data sources, closure and maturity"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,7 +18,10 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Security",
 ]
-dependencies = []
+dependencies = ["cti-method"]
+
+[tool.uv.sources]
+cti-method = { workspace = true }
 
 [project.optional-dependencies]
 mcp = ["mcp>=2.0"]
@@ -30,6 +33,10 @@ huntplan-mcp = "huntplan.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+# El mapa de ATT&CK se lee al importar: sin el, el paquete instalado no arranca.
+huntplan = ["attack.json"]
 
 [tool.ruff]
 target-version = "py311"

@@ -11,21 +11,22 @@ permissions:
 
 jobs:
   tests:
-    name: Tests (${{ matrix.package }})
+    name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        package: [cryptonym, assessment, sharegate, stixforge, pir, huntplan]
+        python: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          python-version: ${{ matrix.python }}
       - run: uv sync --all-packages --all-extras
-      - name: Tests
-        working-directory: packages/${{ matrix.package }}
-        run: uv run pytest -q
+      # Los paquetes repiten nombres de modulo de test; --import-mode=importlib (en el
+      # pyproject raiz) los resuelve por ruta. Esta es la invocacion que fallaba.
+      - run: uv run pytest -q
 
   lint:
     name: Estilo
@@ -37,6 +38,34 @@ jobs:
           enable-cache: true
       - run: uv sync --all-packages --all-extras
       - run: uv run ruff check packages
+
+  types:
+    name: Tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      - run: uv run mypy
+
+  evaluation:
+    name: La evaluacion del metodo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      # Sin esto la evaluacion es decorativa: no se ejecuta y puede podrirse.
+      - name: Corpus por split
+        run: uv run python packages/cryptonym/evaluation/run_evaluation.py --corpus --check
+      - name: Corpus adjudicado, estricto
+        run: uv run python packages/cryptonym/evaluation/run_evaluation.py --adjudicated --check --strict
+      - name: El dossier publicado se reproduce
+        run: uv run python packages/cryptonym/evaluation/run_evaluation.py --dossier packages/cryptonym/assessments/voltzite-vs-volt-typhoon/assessment.json > /dev/null
 
   demo:
     name: La cadena entera
@@ -53,6 +82,48 @@ jobs:
         run: |
           uv run stixforge validate demo/out/bundle.json
           uv run sharegate check demo/out/bundle.json
+      - name: La cadena se propaga al bundle
+        run: |
+          python - <<'PY'
+          import json, sys
+          bundle = json.load(open("demo/out/bundle.json"))
+          report = next(o for o in bundle["objects"] if o["type"] == "report")
+          refs = {r["source_name"]: r["external_id"] for r in report["external_references"]}
+          expected = {"cti-suite:pir": "PIR-001", "cti-suite:assessment": "nightjar-vs-saltwind", "cti-suite:hunt": "HUNT-001"}
+          if refs != expected:
+              sys.exit(f"trace mismatch: {refs}")
+          print("trace ok:", refs)
+          PY
+      - name: El ledger verifica
+        run: uv run assessment ledger demo/out/ledger.jsonl --verify
+      - name: El producto legible existe
+        run: test -s demo/out/product.md
+
+  build:
+    name: Paquetes construibles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      - run: uv build --all-packages --out-dir dist
+      - name: Los paquetes instalados funcionan (datos incluidos)
+        run: |
+          python -m venv /tmp/wheelcheck
+          /tmp/wheelcheck/bin/pip install --quiet dist/*.whl mcp
+          # El mapa de ATT&CK y los docs se leen al importar: si no viajan en la rueda,
+          # el paquete instalado revienta y no se descubre hasta que alguien lo instala.
+          /tmp/wheelcheck/bin/python -c "from huntplan.core import attack_provenance; print('attack', attack_provenance()['attack_version'])"
+          /tmp/wheelcheck/bin/python -c "from assessment.core import method_documentation; print('docs', method_documentation('method')['section'])"
+          /tmp/wheelcheck/bin/ctisuite --version
+          /tmp/wheelcheck/bin/huntplan hmm > /dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/
 
   credentials:
     name: Credenciales

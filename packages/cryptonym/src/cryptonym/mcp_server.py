@@ -14,6 +14,7 @@ or register it in an MCP client (see ``docs/mcp.md``).
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +44,6 @@ server = MCPServer(
     ),
 )
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
 _DOCS = {"method", "adjudication", "architecture", "data-model", "evaluating-alias-reconciliation"}
 
 
@@ -213,10 +213,10 @@ def documentation(section: str = "method") -> dict[str, Any]:
     """Return a Cryptonym method document (method, adjudication, architecture, data-model)."""
     if section not in _DOCS:
         return {"error": f"unknown section {section!r}; expected one of: {', '.join(sorted(_DOCS))}"}
-    path = _REPO_ROOT / "docs" / f"{section}.md"
-    if not path.exists():
-        return {"error": "documentation not found; install Cryptonym from its repository (editable)"}
-    return {"section": section, "content": path.read_text(encoding="utf-8")}
+    reference = resources.files("cryptonym").joinpath("docs", f"{section}.md")
+    if not reference.is_file():
+        return {"error": "documentation not found in the installed package"}
+    return {"section": section, "content": reference.read_text(encoding="utf-8")}
 
 
 def main() -> None:

@@ -2,10 +2,10 @@
 
 **A PIR that does not name the decision it informs is not a PIR: it is a topic of interest.**
 
-`pir validate` rejects the whole register when a requirement does not say which decision someone
-takes with the answer, who takes it, or what would prove it answered. The validator does not judge
-the content: it checks that the question is tied to a decision and that collection has a graded
-closure criterion.
+`pir validate` rejects the whole register when a requirement does not say which decision
+someone takes with the answer, who takes it, or what would prove it answered. The validator
+does not judge the content: it checks that the question is tied to a decision and that
+collection has a graded closure criterion.
 
 ## What it is
 
@@ -15,8 +15,8 @@ A register of **PIR → EEI → indicator** in one JSON file, plus a tool that a
 - **EEI** — the essential elements of information needed to answer it.
 - **Indicator** — what would be observed, with its source graded on the Admiralty scale (`B2`).
 
-Subcommands: `pir validate` (audits) and `pir list` (what exists, for which decision, and how long is
-left).
+Subcommands: `pir validate` (audits), `pir list` (what exists, for which decision, and how
+long is left), `pir ids` (the identifiers the rest of the cycle cites).
 
 ## What it is not
 
@@ -29,11 +29,11 @@ left).
 ## Install
 
 ```console
-$ pip install -e '.[dev]'      # development
-$ pip install .                # use
+$ pip install -e ../cti-method -e '.[dev]'      # development
+$ pip install -e ../cti-method .                # use
 ```
 
-No runtime dependencies: Python 3.11 or newer and the standard library.
+No runtime dependencies beyond the suite's core: Python 3.11 or newer.
 
 ## Use
 
@@ -41,15 +41,27 @@ No runtime dependencies: Python 3.11 or newer and the standard library.
 $ pir validate examples/pir.json
 $ pir validate examples/pir.json --json | jq .valid
 $ pir list examples/pir.json --today 2026-10-22
+$ pir ids examples/pir.json
 ```
 
-The exit code is the contract: `0` valid register, `1` a high finding, `2` the file could not be read.
-A register with a single requirement lacking a decision exits with `1` and names it.
+The exit code is the contract: `0` valid register, `1` a high finding, `2` the file could
+not be read. A register with a single requirement lacking a decision exits with `1` and names
+it.
+
+## As an MCP server
+
+```bash
+pir-mcp
+```
+
+Tools: `validate_register`, `list_requirements`, `requirement_ids`, `register_contract`.
+The first step of the cycle is reachable by an agent like the other six.
 
 ## Method
 
-The register is written in `examples/pir.json`; the format is described in
-[`docs/register.md`](docs/register.md). Three rules, and the validator checks them:
+The register format is pinned by [`schemas/pir.schema.json`](https://github.com/ME0094/cti-suite/blob/main/schemas/pir.schema.json)
+and described in [`docs/register.md`](docs/register.md). Three rules, and the validator
+checks them:
 
 1. **No decision, no PIR** (`no-decision`, high). This is the one that holds the rest up.
 2. **No consumer, no decision** (`no-consumer`, high): a person or a team, by name.
@@ -62,7 +74,7 @@ with no answer (`stale`), a duplicate identifier (high) and an EEI without indic
 
 ## Licence
 
-MIT. See [`LICENSE`](LICENSE).
+MIT — see [LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
 
 ---
 

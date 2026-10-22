@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "assessment-mcp"
-version = "0.1.0"
-description = "A ledger of graded judgements: two-axis confidence, ACH and external truth, built on cryptonym.method"
+version = "0.2.0"
+description = "A ledger of graded judgements: two-axis confidence, ACH and external truth, built on cti-method"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -18,12 +18,11 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Security",
 ]
-# The shared core (cryptonym.method) is a private dependency; install it explicitly
-# (editable locally, or from the private repository with a read-only token). See README.
-dependencies = ["cryptonym"]
+# The graded core is the shared package: this tool does not import the alias package.
+dependencies = ["cti-method"]
 
 [tool.uv.sources]
-cryptonym = { workspace = true }
+cti-method = { workspace = true }
 
 [project.optional-dependencies]
 mcp = ["mcp>=2.0"]
@@ -35,6 +34,9 @@ assessment-mcp = "assessment.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+assessment = ["docs/*.md"]
 
 [tool.ruff]
 target-version = "py311"

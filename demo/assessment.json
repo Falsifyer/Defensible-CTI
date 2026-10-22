@@ -1,5 +1,27 @@
 {
+  "$schema": "https://github.com/ME0094/cti-suite/schemas/assessment.schema.json",
+  "schema_version": "1.0",
+  "id": "nightjar-vs-saltwind",
+  "version": "1.0",
+  "requirement_id": "PIR-001",
   "question": "Are NIGHTJAR and SALTWIND the same actor?",
+  "tlp": "TLP:CLEAR",
+  "review_by": "2027-04-30",
+  "review_trigger": "A vendor split, or infrastructure that links both sets at once",
+  "subjects": [
+    {
+      "vendor": "Vendor A",
+      "name": "NIGHTJAR",
+      "source_url": "https://example.invalid/vendor-a/nightjar",
+      "date": "2026-03-02"
+    },
+    {
+      "vendor": "Vendor B",
+      "name": "SALTWIND",
+      "source_url": "https://example.invalid/vendor-b/saltwind",
+      "date": "2026-06-11"
+    }
+  ],
   "hypotheses": [
     "same_actor",
     "distinct_but_overlapping",

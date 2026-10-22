@@ -1,12 +1,12 @@
-"""CLI de pir-ledger: validar un registro y leerlo."""
+"""CLI de pir-ledger: validar un registro, listarlo y dar sus identificadores."""
 
 from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import sys
-from pathlib import Path
+
+from cti_method.contract import CANNOT_CHECK, FINDING, OK, CannotCheck, emit, read_json
 
 from pir_ledger import __version__
 from pir_ledger.validate import validate
@@ -28,45 +28,62 @@ def build_parser() -> argparse.ArgumentParser:
     lis = sub.add_parser("list", help="List the requirements with their decision and deadline.")
     lis.add_argument("path")
     lis.add_argument("--today", metavar="AAAA-MM-DD")
+
+    ids = sub.add_parser("ids", help="Print the requirement identifiers, for the rest of the cycle.")
+    ids.add_argument("path")
     return parser
 
 
-def _cargar(path: str) -> dict:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+def _today(value: str | None) -> dt.date | None:
+    if not value:
+        return None
+    try:
+        return dt.date.fromisoformat(value)
+    except ValueError as exc:
+        raise CannotCheck(f"--today {value!r} is not an ISO date") from exc
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    hoy = dt.date.fromisoformat(args.today) if getattr(args, "today", None) else None
+
     try:
-        documento = _cargar(args.path)
-    except (OSError, json.JSONDecodeError) as exc:
-        print(f"could not read {args.path}: {exc}", file=sys.stderr)
-        return 2
+        documento = read_json(args.path)
+        if not isinstance(documento, dict):
+            raise CannotCheck(f"{args.path} is not a JSON object")
+    except CannotCheck as exc:
+        print(f"cannot check: {exc}", file=sys.stderr)
+        return CANNOT_CHECK
+
+    hoy = _today(getattr(args, "today", None))
+    if args.command == "ids":
+        emit([pir.get("id") for pir in documento.get("requirements", []) if isinstance(pir, dict)])
+        return OK
 
     if args.command == "list":
-        hoy = hoy or dt.date.today()
+        referencia = hoy or dt.date.today()
         for pir in documento.get("requirements", []):
+            if not isinstance(pir, dict):
+                continue
             limite = pir.get("deadline") or "no deadline"
             dias = ""
             try:
-                dias = f" ({(dt.date.fromisoformat(limite) - hoy).days:+d}d)"
+                dias = f" ({(dt.date.fromisoformat(limite) - referencia).days:+d}d)"
             except (TypeError, ValueError):
                 pass
             print(f"{pir.get('id', '?'):10s} {pir.get('priority', '?'):7s} {limite}{dias:8s} "
                   f"{pir.get('status', 'open'):9s} {pir.get('decision', '')[:60]}")
-        return 0
+        return OK
 
     resultado = validate(documento, hoy)
     if args.json:
-        print(json.dumps(resultado, ensure_ascii=False, indent=2))
+        emit(resultado)
     else:
-        for h in resultado["findings"]:
-            marca = "HIGH " if h["severity"] == "high" else "med"
-            print(f"  {marca} {h['code']:20s} {h['where']:24s} {h['message']}")
+        for item in resultado["findings"]:
+            marca = "HIGH " if item["severity"] == "high" else "med"
+            print(f"  {marca} {item['code']:20s} {item.get('where', '-'):24s} {item['message']}")
         print(f"\nRequirements: {resultado['requirements']}   HIGH: {resultado['high']}   MED: {resultado['medium']}")
         print("Result:", "valid" if resultado["valid"] else "NOT valid")
-    return 0 if resultado["valid"] else 1
+    return OK if resultado["valid"] else FINDING
 
 
 if __name__ == "__main__":

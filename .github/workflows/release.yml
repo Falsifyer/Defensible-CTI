@@ -1,0 +1,92 @@
+name: Release
+
+# Cada paquete lleva su propia version y su propia etiqueta: `cryptonym-v0.7.0`,
+# `stixforge-v0.2.0`, ... El tag elige el paquete; el resto no se publica.
+on:
+  push:
+    tags:
+      - "*-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release, e.g. stixforge-v0.2.0"
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Resolver paquete, directorio y version desde la etiqueta
+        id: pkg
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          prefix="${tag%-v*}"
+          version="${tag##*-v}"
+          case "$prefix" in
+            cti-method)  package="cti-method";     directory="cti-method" ;;
+            cryptonym)   package="cryptonym";      directory="cryptonym" ;;
+            assessment)  package="assessment-mcp"; directory="assessment" ;;
+            sharegate)   package="sharegate";      directory="sharegate" ;;
+            stixforge)   package="stix-forge";     directory="stixforge" ;;
+            pir)         package="pir-ledger";     directory="pir" ;;
+            huntplan)    package="huntplan";       directory="huntplan" ;;
+            cti-suite)   package="cti-suite";      directory="cti-suite" ;;
+            *) echo "::error::unknown tag prefix '$prefix'"; exit 1 ;;
+          esac
+          {
+            echo "package=$package"
+            echo "directory=$directory"
+            echo "version=$version"
+            echo "tag=$tag"
+          } >> "$GITHUB_OUTPUT"
+
+      - run: uv sync --all-packages --all-extras
+
+      - name: La version de la etiqueta es la del paquete
+        run: |
+          python - "${{ steps.pkg.outputs.package }}" "${{ steps.pkg.outputs.version }}" <<'PY'
+          import sys, tomllib, pathlib
+          dist, version = sys.argv[1], sys.argv[2]
+          for path in pathlib.Path("packages").glob("*/pyproject.toml"):
+              data = tomllib.loads(path.read_text())
+              if data["project"]["name"] == dist:
+                  found = data["project"]["version"]
+                  if found != version:
+                      sys.exit(f"tag says {version}, {path} says {found}")
+                  print(f"{dist} {found}")
+                  break
+          else:
+              sys.exit(f"no package named {dist}")
+          PY
+
+      - name: Pruebas antes de publicar
+        run: uv run pytest -q
+
+      - name: Construir el paquete
+        run: uv build --package "${{ steps.pkg.outputs.package }}" --out-dir dist
+
+      - name: SBOM (CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
+
+      - name: Publicar la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.pkg.outputs.tag }}" dist/* \
+            --title "${{ steps.pkg.outputs.tag }}" \
+            --notes "Package \`${{ steps.pkg.outputs.package }}\` at \`${{ steps.pkg.outputs.version }}\`. Detail: \`packages/${{ steps.pkg.outputs.directory }}/CHANGELOG.md\`."

@@ -1,12 +1,32 @@
-"""Tests that consume the shared core. Skipped when cryptonym is not installed."""
+"""Tests for the ledger engine and the derived grade."""
 
 from __future__ import annotations
 
-import pytest
+import json
+from pathlib import Path
 
-pytest.importorskip("cryptonym")
+from assessment.core import (
+    append_claim,
+    assess,
+    calibrate,
+    check_against,
+    filter_truth,
+    grade,
+    method_documentation,
+    read_ledger,
+    verify_ledger,
+    weigh,
+)
 
-from assessment.core import assess, calibrate, filter_truth, grade, weigh  # noqa: E402
+
+def _evidence(evidence_id: str, source: str, kind: str, a: str, b: str) -> dict:
+    return {
+        "id": evidence_id,
+        "statement": f"item {evidence_id}",
+        "source": source,
+        "type": kind,
+        "consistency": {"a": a, "b": b},
+    }
 
 
 def test_grade_carries_two_independent_axes() -> None:
@@ -32,6 +52,13 @@ def test_weigh_accepts_arbitrary_hypothesis_labels() -> None:
     assert result["matrix"]["E1"]["compromise"] == "C"
 
 
+def test_weigh_needs_at_least_two_hypotheses() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="two competing hypotheses"):
+        weigh([], ["only-one"])
+
+
 def test_filter_truth_requires_independent_sources() -> None:
     adjudication = {
         "truth": "same_actor",
@@ -51,13 +78,8 @@ def test_assess_combines_ach_grading_and_adjudication() -> None:
         "question": "Did actor X compromise host Y?",
         "hypotheses": ["compromise", "benign"],
         "evidence": [
-            {
-                "id": "E1",
-                "statement": "unique implant on host Y",
-                "source": "telemetry",
-                "type": "code",
-                "consistency": {"compromise": "C", "benign": "I"},
-            }
+            _evidence("E1", "telemetry A", "code", "C", "I"),
+            _evidence("E2", "telemetry B", "infrastructure", "C", "I"),
         ],
         "judgement": {"confidence": "high", "probability": "very_likely"},
         "adjudication": {
@@ -72,27 +94,119 @@ def test_assess_combines_ach_grading_and_adjudication() -> None:
     verdict = assess(document)
     assert verdict["ranking"][0] == "compromise"
     assert verdict["grade"]["confidence"] == "high"
+    assert verdict["ceiling"] == "high"
+    assert verdict["grade_supported"] is True
     assert verdict["truth"]["admissible"] is True
 
 
-def test_calibrate_scores_a_labelled_claim() -> None:
-    cases = [
+def test_a_grade_above_the_evidence_is_refused() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "one source", "code", "C", "I")],
+        "judgement": {"confidence": "high"},
+    }
+    verdict = assess(document)
+    assert verdict["ceiling"] == "moderate"
+    assert verdict["grade_supported"] is False
+    assert [item["code"] for item in verdict["findings"]] == ["grade-exceeds-evidence"]
+
+
+def test_shared_tradecraft_cannot_carry_more_than_low() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "vendor", "tactics", "C", "I"), _evidence("E2", "vendor", "tactics", "C", "I")],
+        "judgement": {"confidence": "moderate"},
+    }
+    verdict = assess(document)
+    assert verdict["ceiling"] == "low"
+    assert verdict["findings"][0]["code"] == "grade-exceeds-evidence"
+
+
+def test_a_claim_without_a_grade_is_refused_not_defaulted() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "s", "code", "C", "I")],
+    }
+    verdict = assess(document)
+    assert verdict["grade"]["confidence"] is None
+    assert verdict["findings"][0]["code"] == "no-grade"
+
+
+def test_a_claim_with_one_hypothesis_is_refused() -> None:
+    verdict = assess(
         {
-            "id": "c1",
-            "question": "?",
-            "truth": "distinct",
-            "judgement": {"confidence": "high"},
-            "evidence": [
-                {
-                    "id": "E1",
-                    "statement": "different code",
-                    "source": "s",
-                    "type": "code",
-                    "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"},
-                }
-            ],
+            "question": "same actor?",
+            "hypotheses": ["a"],
+            "evidence": [_evidence("E1", "s", "code", "C", "I")],
+            "judgement": {"confidence": "low"},
         }
-    ]
-    summary = calibrate(cases)
-    assert summary["metrics"]["total"] == 1
-    assert summary["metrics"]["false_merge_rate"] == 0.0
+    )
+    assert "no-hypotheses" in [item["code"] for item in verdict["findings"]]
+
+
+def test_check_against_detects_a_changed_dossier() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "s", "code", "C", "I")],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    changed = check_against(verdict, {"hypotheses_favoured": ["a", "b"], "ceiling": "high"})
+    assert changed[0]["code"] == "judgement-mismatch"
+    assert check_against(verdict, {"hypotheses_favoured": ["a", "b"], "ceiling": "moderate"}) == []
+
+
+def test_calibrate_scores_labelled_calls() -> None:
+    summary = calibrate(
+        [
+            {"id": "c1", "called": True, "truth": True, "confidence": "high"},
+            {"id": "c2", "called": True, "truth": False, "confidence": "high"},
+        ]
+    )
+    assert summary["metrics"]["total"] == 2
+    assert summary["metrics"]["false_merge_rate"] == 1.0
+    assert summary["calibration"]["high"]["accuracy"] == 0.5
+
+
+def test_the_ledger_is_a_hash_chain(tmp_path: Path) -> None:
+    path = tmp_path / "ledger" / "claims.jsonl"
+    append_claim(str(path), {"id": "c1", "confidence": "moderate"})
+    append_claim(str(path), {"id": "c2", "confidence": "high"})
+
+    result = read_ledger(str(path))
+    assert result["count"] == 2
+    assert result["claims"][1]["id"] == "c2"
+    assert result["entries"][0]["prev_hash"] == "0" * 64
+    assert result["entries"][1]["prev_hash"] == result["entries"][0]["hash"]
+    assert verify_ledger(str(path))["valid"] is True
+
+
+def test_a_tampered_ledger_line_is_detected(tmp_path: Path) -> None:
+    path = tmp_path / "claims.jsonl"
+    append_claim(str(path), {"id": "c1", "confidence": "moderate"})
+    append_claim(str(path), {"id": "c2", "confidence": "high"})
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    entry = json.loads(lines[0])
+    entry["claim"]["confidence"] = "high"  # silent upgrade of a judgement
+    lines[0] = json.dumps(entry)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    result = verify_ledger(str(path))
+    assert result["valid"] is False
+    assert result["broken_at"] == 1
+
+
+def test_reading_a_missing_ledger_is_empty(tmp_path: Path) -> None:
+    result = read_ledger(str(tmp_path / "none.jsonl"))
+    assert result["count"] == 0
+    assert result["claims"] == []
+
+
+def test_method_documentation_is_available_from_the_installed_package() -> None:
+    result = method_documentation("method")
+    assert "shared core" in result["content"] or "ceiling" in result["content"]

@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.0 — 2026-10-22
+
+### Changed
+
+- **ATT&CK v18+.** Data Sources were deprecated in October 2025; the map now carries
+  Detection Strategies and Analytics with their Data Components, generated from the
+  Enterprise ATT&CK collection (20.0, October 2026) and committed with its provenance.
+  `data_sources_for` remains as a deprecated alias.
+- **Falsifiability is stricter.** The hypothesis must start with *If/When … then …*; a
+  sentence that merely contains both words, and one that names no observable, are high
+  findings.
+- JSON plans: `huntplan validate plan.json` checks the hypothesis, the closure criterion and
+  the technique, and `--assessment` verifies the id against the upstream judgement.
+
+
 ## [Unreleased]
 
 ### Added

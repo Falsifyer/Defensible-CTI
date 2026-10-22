@@ -1,28 +1,50 @@
 {
+  "$schema": "https://github.com/ME0094/cti-suite/schemas/product.schema.json",
+  "schema_version": "1.0",
   "id": "nightjar-2026-10",
+  "requirement_id": "PIR-001",
+  "assessment_id": "nightjar-vs-saltwind",
+  "hunt_id": "HUNT-001",
   "title": "NIGHTJAR: loader and infrastructure, October 2026",
   "summary": "Fictional product used as the worked example. The actor does not exist.",
   "tlp": "amber",
   "created": "2026-10-22T00:00:00Z",
   "published": "2026-10-22T00:00:00Z",
+  "valid_until": "2027-04-30T00:00:00Z",
   "author": "Martín Eliseo",
   "observables": [
-    {"type": "domain-name", "value": "update.nightjar.example"},
-    {"type": "ipv4-addr", "value": "203.0.113.10"}
+    {
+      "type": "domain-name",
+      "value": "update.nightjar.example"
+    },
+    {
+      "type": "ipv4-addr",
+      "value": "203.0.113.10"
+    }
   ],
   "indicators": [
     {
       "name": "NIGHTJAR C2 domain",
       "pattern": "[domain-name:value = 'update.nightjar.example']",
-      "valid_from": "2026-10-01T00:00:00Z"
+      "valid_from": "2026-10-01T00:00:00Z",
+      "valid_until": "2027-04-30T00:00:00Z",
+      "confidence": 60
     },
     {
       "name": "NIGHTJAR loader hash",
       "pattern": "[file:hashes.'SHA-256' = 'a3f1c2d4e5b6a7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2']",
-      "valid_from": "2026-10-01T00:00:00Z"
+      "valid_from": "2026-10-01T00:00:00Z",
+      "valid_until": "2027-04-30T00:00:00Z",
+      "confidence": 100
     }
   ],
   "malware": [
-    {"name": "NIGHTJAR loader", "is_family": false, "malware_types": ["loader"]}
+    {
+      "name": "NIGHTJAR loader",
+      "is_family": false,
+      "malware_types": [
+        "loader"
+      ]
+    }
   ]
 }

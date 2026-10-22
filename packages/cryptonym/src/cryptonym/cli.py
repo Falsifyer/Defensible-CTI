@@ -13,6 +13,8 @@ import json
 import sys
 from pathlib import Path
 
+from cti_method.contract import exit_code
+
 from cryptonym import __version__
 from cryptonym import snapshot as snapshot_module
 from cryptonym.assess.grading import assess_actor_pair
@@ -106,8 +108,9 @@ def _run_ingest(args: argparse.Namespace) -> int:
 
 def _run_assess(path: str) -> int:
     assessment = load_assessment(path)
-    print(json.dumps(assess_actor_pair(assessment), indent=2, ensure_ascii=False))
-    return 0
+    verdict = assess_actor_pair(assessment)
+    print(json.dumps(verdict, indent=2, ensure_ascii=False))
+    return exit_code(verdict["grade_findings"])
 
 
 def _run_adjudicate(path: str, strict: bool) -> int:

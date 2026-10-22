@@ -1,22 +1,24 @@
 """Turn a product document into a STIX 2.1 bundle.
 
 The product is a JSON file: what the analyst wrote, the observables and the indicators,
-and the TLP. The bundle is deterministic: the same product produces the same identifiers,
-so rebuilding it does not create a second version of the same objects.
+the TLP, the creation timestamp, and the identifiers of the steps the product answers.
+The bundle is **byte-reproducible**: identifiers are derived from content and ``created``
+is required, so rebuilding the same product does not create a second version of the same
+objects with a different timestamp under one id.
 """
 
 from __future__ import annotations
 
-import datetime as dt
 import json
 import uuid
 from pathlib import Path
 from typing import Any
 
-from stixforge.markings import marking_object
+from cti_method.stix import marking_object
+from cti_method.trace import external_references
 
 # Namespace of this tool: identifiers are derived from it, never invented by hand.
-NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/ME0094/stix-forge")
+NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/ME0094/cti-suite")
 
 SCO_TYPES = {
     "domain-name": "value",
@@ -34,15 +36,11 @@ def _id(tipo: str, clave: str) -> str:
     return f"{tipo}--{uuid.uuid5(NAMESPACE, f'{tipo}|{clave}')}"
 
 
-def _ahora() -> str:
-    return dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-
-
 def _sco(observable: dict[str, Any]) -> dict[str, Any]:
     """Observable de STIX 2.1: inmutable, sin `created`, `modified` ni marcado propio.
 
     Los SCO dejaron de llevar esas propiedades en 2.1; el marcado va en los SDO (el report
-    y los indicadores) que los referencian. Emitirlas hacía el bundle invalido para
+    y los indicadores) que los referencian. Emitirlas hacia el bundle invalido para
     `stix2.parse`, que es como se descubrio.
     """
     tipo = observable.get("type")
@@ -53,16 +51,26 @@ def _sco(observable: dict[str, Any]) -> dict[str, Any]:
     if not valor:
         raise ValueError(f"observable {tipo} needs {campo!r}")
     clave = json.dumps(valor, sort_keys=True) if isinstance(valor, dict) else str(valor)
-    return {
-        "type": tipo,
-        "spec_version": "2.1",
-        "id": _id(tipo, clave),
-        campo: valor,
-    }
+    objeto = {"type": tipo, "spec_version": "2.1", "id": _id(tipo, clave)}
+    objeto[campo] = valor
+    return objeto
 
 
-def build(producto: dict[str, Any]) -> dict[str, Any]:
-    """Build the bundle. Raises ValueError with the reason if the product is not usable."""
+def _confidence(value: Any) -> int | None:
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 100:
+        raise ValueError("confidence must be an integer between 0 and 100")
+    return value
+
+
+def build(producto: dict[str, Any], trace: dict[str, str | None] | None = None) -> dict[str, Any]:
+    """Build the bundle. Raises ValueError with the reason if the product is not usable.
+
+    ``trace`` carries the verified identifiers of the upstream artifacts
+    (``requirement_id``, ``assessment_id``, ``hunt_id``); they are emitted as
+    ``external_references`` on the report so a consumer can walk back to the evidence.
+    """
     titulo = (producto.get("title") or "").strip()
     if not titulo:
         raise ValueError("the product needs a title")
@@ -70,7 +78,12 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
     if not autor_nombre:
         raise ValueError("the product needs an author: the bundle must say who says this")
 
-    sello = producto.get("created") or _ahora()
+    sello = (producto.get("created") or "").strip()
+    if not sello:
+        raise ValueError(
+            "the product needs created (ISO 8601 UTC, ending in Z): without it the same "
+            "identifiers would be stamped with a new timestamp on every build"
+        )
     if not sello.endswith("Z"):
         raise ValueError("created must be an ISO 8601 UTC timestamp (ending in Z)")
 
@@ -101,7 +114,11 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
         if not patron:
             raise ValueError("every indicator needs a STIX pattern")
         ident = _id("indicator", f"{indicador.get('name', '')}|{patron}")
-        objetos.append({
+        valido_hasta = indicador.get("valid_until")
+        valido_desde = indicador.get("valid_from") or sello
+        if valido_hasta and str(valido_hasta) < str(valido_desde):
+            raise ValueError(f"indicator {indicador.get('name')!r}: valid_until is before valid_from")
+        objeto = {
             "type": "indicator",
             "spec_version": "2.1",
             "id": ident,
@@ -112,9 +129,15 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
             "name": indicador.get("name") or patron,
             "pattern": patron,
             "pattern_type": indicador.get("pattern_type", "stix"),
-            "valid_from": indicador.get("valid_from") or sello,
+            "valid_from": valido_desde,
             "indicator_types": indicador.get("indicator_types", ["malicious-activity"]),
-        })
+        }
+        if valido_hasta:
+            objeto["valid_until"] = valido_hasta
+        confianza = _confidence(indicador.get("confidence"))
+        if confianza is not None:
+            objeto["confidence"] = confianza
+        objetos.append(objeto)
         referencias.append(ident)
 
     for malware in producto.get("malware") or []:
@@ -140,7 +163,7 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("the product has nothing to share: add observables, indicators or malware")
 
     report_id = _id("report", producto.get("id") or titulo)
-    objetos.append({
+    report = {
         "type": "report",
         "spec_version": "2.1",
         "id": report_id,
@@ -152,8 +175,15 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
         "published": producto.get("published") or sello,
         "report_types": producto.get("report_types", ["threat-report"]),
         "object_refs": referencias,
-        **({"description": producto["summary"]} if producto.get("summary") else {}),
-    })
+    }
+    if producto.get("summary"):
+        report["description"] = producto["summary"]
+    if producto.get("valid_until"):
+        report["valid_until"] = producto["valid_until"]
+    referencias_externas = external_references(trace or {})
+    if referencias_externas:
+        report["external_references"] = referencias_externas
+    objetos.append(report)
 
     return {
         "type": "bundle",
@@ -162,9 +192,13 @@ def build(producto: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_file(entrada: str | Path, salida: str | Path | None = None) -> dict[str, Any]:
+def build_file(
+    entrada: str | Path,
+    salida: str | Path | None = None,
+    trace: dict[str, str | None] | None = None,
+) -> dict[str, Any]:
     producto = json.loads(Path(entrada).read_text(encoding="utf-8"))
-    bundle = build(producto)
+    bundle = build(producto, trace=trace)
     if salida:
         Path(salida).write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return bundle

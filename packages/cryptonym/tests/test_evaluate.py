@@ -73,7 +73,10 @@ def test_evaluate_cases_derives_the_favourite_from_evidence() -> None:
     summary = evaluate_cases(cases)
     assert summary["metrics"]["false_merge_rate"] == 0.0
     assert summary["metrics"]["false_split_rate"] == 0.0
-    assert summary["calibration"]["high"]["accuracy"] == 1.0
+    # La calibracion se mide sobre el techo que fija la evidencia, no sobre el grado
+    # declarado: un solo item diagnostico de una sola fuente no pasa de moderate.
+    assert summary["calibration"]["moderate"]["accuracy"] == 1.0
+    assert "high" not in summary["calibration"]
 
 
 def test_evaluate_corpus_reports_each_split_separately() -> None:

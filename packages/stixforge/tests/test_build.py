@@ -4,9 +4,10 @@ from pathlib import Path
 import pytest
 
 from stixforge.build import build
-from stixforge.markings import MARKINGS, marking_object
+from stixforge.markings import TLP, marking_object
 
-PRODUCTO = json.loads(Path("examples/product.json").read_text(encoding="utf-8"))
+EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
+PRODUCTO = json.loads((EXAMPLES / "product.json").read_text(encoding="utf-8"))
 
 
 def test_el_bundle_tiene_marcado_identidad_y_reporte():
@@ -18,8 +19,8 @@ def test_el_bundle_tiene_marcado_identidad_y_reporte():
     assert "report" in tipos
 
 
-def test_es_determinista():
-    assert build(PRODUCTO) == build(PRODUCTO)
+def test_es_determinista_byte_a_byte():
+    assert json.dumps(build(PRODUCTO)) == json.dumps(build(PRODUCTO))
 
 
 def test_el_reporte_referencia_todo_lo_compartible():
@@ -44,17 +45,35 @@ def test_todo_sdo_lleva_marcado_y_los_sco_no_lo_necesitan():
             assert set(o) <= {"type", "spec_version", "id", "value", "hashes"}
 
 
-def test_clear_se_emite_con_el_marcado_de_la_especificacion():
+def test_clear_usa_el_marcado_oficial_de_tlp_2_0():
     b = build({**PRODUCTO, "tlp": "clear"})
     marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
-    assert marcado["id"] == MARKINGS["white"][0]
-    assert marcado["name"] == "TLP:WHITE"
+    assert marcado["id"] == TLP["CLEAR"]["id"]
+    assert marcado["name"] == "TLP:CLEAR"
+    assert marcado["extensions"]
+
+
+def test_amber_estricto_existe_como_marcado_de_primera_clase():
+    marcado = marking_object("amber+strict")
+    assert marcado["id"] == TLP["AMBER+STRICT"]["id"]
+    assert marcado["name"] == "TLP:AMBER+STRICT"
+
+
+def test_white_esta_deprecado_y_no_se_emite():
+    with pytest.raises(ValueError, match="deprecated"):
+        marking_object("TLP:WHITE")
 
 
 def test_el_ejemplo_va_en_amber():
     b = build(PRODUCTO)
     marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
-    assert marcado["id"] == MARKINGS["amber"][0]
+    assert marcado["id"] == TLP["AMBER"]["id"]
+
+
+def test_sin_created_falla_para_no_forjar_una_version_nueva_con_el_mismo_id():
+    sin_fecha = {k: v for k, v in PRODUCTO.items() if k != "created"}
+    with pytest.raises(ValueError, match="created"):
+        build(sin_fecha)
 
 
 def test_sin_titulo_falla():
@@ -81,3 +100,28 @@ def test_marcado_desconocido_falla():
 def test_observable_de_tipo_no_soportado_falla():
     with pytest.raises(ValueError, match="unsupported"):
         build({**PRODUCTO, "observables": [{"type": "x-custom", "value": "x"}]})
+
+
+def test_la_cadena_queda_en_external_references():
+    b = build(PRODUCTO, trace={"pir": "PIR-001", "assessment": "nightjar-vs-saltwind", "hunt": "HUNT-001"})
+    report = next(o for o in b["objects"] if o["type"] == "report")
+    assert report["external_references"] == [
+        {"source_name": "cti-suite:pir", "external_id": "PIR-001"},
+        {"source_name": "cti-suite:assessment", "external_id": "nightjar-vs-saltwind"},
+        {"source_name": "cti-suite:hunt", "external_id": "HUNT-001"},
+    ]
+
+
+def test_sin_cadena_no_se_inventan_referencias():
+    report = next(o for o in build(PRODUCTO)["objects"] if o["type"] == "report")
+    assert "external_references" not in report
+
+
+def test_valid_until_se_emite_y_se_comprueba():
+    indicadores = [{**PRODUCTO["indicators"][0], "valid_until": "2027-01-01T00:00:00Z"}]
+    b = build({**PRODUCTO, "indicators": indicadores})
+    indicador = next(o for o in b["objects"] if o["type"] == "indicator")
+    assert indicador["valid_until"] == "2027-01-01T00:00:00Z"
+
+    with pytest.raises(ValueError, match="valid_until"):
+        build({**PRODUCTO, "indicators": [{**PRODUCTO["indicators"][0], "valid_until": "2020-01-01T00:00:00Z"}]})

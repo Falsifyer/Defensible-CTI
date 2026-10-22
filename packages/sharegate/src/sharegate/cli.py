@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
-import json
-from pathlib import Path
+
+from cti_method.contract import FINDING, OK, emit, exit_code, read_text, run
 
 from sharegate import __version__
 from sharegate.core import check_tlp, pre_share, tlp_policy
@@ -26,16 +26,20 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "policy":
-        print(json.dumps(tlp_policy(), indent=2, ensure_ascii=False))
-        return 0
-    text = Path(args.path).read_text(encoding="utf-8")
-    if args.command == "tlp":
-        result = check_tlp(text)
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        return 0 if result["clean"] else 1
-    result = pre_share(text)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0 if result["shareable"] else 1
+        emit(tlp_policy())
+        return OK
+
+    def body() -> int:
+        text = read_text(args.path)
+        if args.command == "tlp":
+            result = check_tlp(text)
+            emit(result)
+            return OK if result["clean"] else FINDING
+        result = pre_share(text)
+        emit(result)
+        return exit_code(result["findings"])
+
+    return run(body)
 
 
 if __name__ == "__main__":

@@ -1,40 +1,49 @@
 # cti-suite
 
-**Six tools for one intelligence cycle, in one repository.** Each one refuses something the cycle
-should not allow: a requirement with no decision behind it, a judgement without evidence for it, a
-product with no marking, a bundle that may not travel, a hypothesis that cannot be refuted.
+**Six tools for one intelligence cycle, in one repository — and the cycle is in the data, not
+in the prose.** Each tool refuses something the cycle should not allow: a requirement with no
+decision behind it, a judgement without evidence for it, a grade the evidence cannot support,
+a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
 
 | Command | Package | Refuses |
 |---|---|---|
 | `pir validate` | `packages/pir` | a requirement that does not name the decision it informs |
 | `cryptonym assess` | `packages/cryptonym` | a merge that the evidence only supports as overlap |
-| `assessment assess` | `packages/assessment` | a claim graded on one axis when it needs two |
-| `huntplan validate` | `packages/huntplan` | a hypothesis that cannot be refuted |
-| `stixforge build` | `packages/stixforge` | a product that does not say who says it |
+| `assessment assess` | `packages/assessment` | a declared confidence above what the evidence supports |
+| `huntplan validate` | `packages/huntplan` | a hypothesis that cannot be refuted, or a plan with no closure |
+| `stixforge build` | `packages/stixforge` | a product that does not say who says it, or when |
 | `sharegate check` | `packages/sharegate` | a bundle that claims to travel further than it may |
+| `ctisuite report` | `packages/cti-suite` | — it renders the cycle as one artifact |
+
+Two packages are infrastructure, not commands: **`cti-method`** owns the shared core (the
+grade ceiling, ACH, the adjudication filter, the single STIX validator, the exit-code
+contract, the trace), and **`cti-suite`** owns the readable product and one MCP facade.
 
 ## What it is
 
-A **workspace** (uv) with six installable packages that also run as one chain:
+A **workspace** (uv) with eight installable packages that also run as one chain:
 
 ```
-requirement → judgement → ledger → hunt plan → STIX product → gate
-      pir     cryptonym   assessment   huntplan    stixforge   sharegate
+requirement → judgement → ledger → hunt plan → STIX product → gate → product
+      pir     cryptonym   assessment   huntplan    stixforge   sharegate   cti-suite
 ```
 
-`make demo` runs the six in order on fictional data (NIGHTJAR and SALTWIND do not exist), each
-consuming what the previous one produced. Every package keeps its own name, its own command, its own
-version and its own `CHANGELOG`.
+`make demo` runs the seven steps on fictional data (NIGHTJAR and SALTWIND do not exist).
+**Every step after the first reads the file the previous step wrote** and verifies the
+identifier it cites against it: a mismatch is a high finding, not a typo. The identifiers
+travel into the STIX `report` as `external_references`, so a consumer can walk back from the
+bundle to the assessment and to the requirement.
+
+Every package keeps its own name, its own command, its own version and its own `CHANGELOG`.
 
 ## What it is not
 
-- **Not a platform.** No web UI, no ingestion, no database, no correlation engine. Each command reads
-  a file and writes a file.
-- **Not one product with six modes.** The packages do not share a runtime dependency, except
-  `assessment`, which imports the graded core from `cryptonym` — inside the workspace, as a real
-  path dependency, with no token and no `git+https` install.
-- **Not a substitute for judgement.** Every tool checks that a decision is stated and defensible; none
-  of them decides whether the analysis is right.
+- **Not a platform.** No web UI, no ingestion, no database, no correlation engine. Each
+  command reads a file and writes a file.
+- **Not one product with six modes.** The packages do not share a runtime dependency except
+  through `cti-method`, which is a real path dependency inside the workspace.
+- **Not a substitute for judgement.** Every tool checks that a decision is stated and
+  defensible; none of them decides whether the analysis is right.
 
 ## Install
 
@@ -42,37 +51,39 @@ version and its own `CHANGELOG`.
 $ uv sync --all-packages --all-extras   # or: make install
 ```
 
-That creates one virtual environment with the six packages in editable mode. With plain pip:
-
-```console
-$ pip install -e packages/cryptonym -e packages/assessment -e packages/sharegate \
-              -e packages/stixforge -e packages/pir -e packages/huntplan
-```
+That creates one virtual environment with the eight packages in editable mode.
 
 ## Use
 
 ```console
 $ make demo                     # the whole cycle, fictional data, outputs in demo/out/
-$ make test                     # the six test suites
-$ uv run stixforge build demo/product.json -o /tmp/bundle.json
+$ make test                     # every test suite, one process
+$ make lint types eval          # ruff, mypy, the evaluation baselines
+$ uv run stixforge build demo/product.json -o /tmp/bundle.json --assessment demo/assessment.json
 $ uv run sharegate check /tmp/bundle.json
 ```
 
-Each package keeps its own README with its full usage: [cryptonym](packages/cryptonym/README.md),
-[assessment](packages/assessment/README.md), [sharegate](packages/sharegate/README.md),
-[stixforge](packages/stixforge/README.md), [pir](packages/pir/README.md),
-[huntplan](packages/huntplan/README.md).
+The input formats are pinned by the schemas in [`schemas/`](schemas/README.md): a consumer
+can check a document before using it, and `schema_version` is part of every format.
 
 ## Method
 
-Three conventions run through the six:
+Six conventions run through the suite, and each one is enforced somewhere you can point at:
 
-1. **Exit codes are the contract.** `0` clean, `1` a high finding, `2` it could not check. *Not
-   checked is not clean*, and no tool returns 0 when it could not look.
-2. **The tool refuses; it does not warn.** A requirement with no decision, an ungraded indicator, a
-   bundle with no marking or a hypothesis that cannot be refuted fail the run by design.
-3. **One version per package.** Tags are `cryptonym-v0.6.0`, `stixforge-v0.1.0`, and so on: six
-   versions that mean something, not one number for everything.
+1. **Exit codes are the contract.** `0` clean, `1` a high finding, `2` it could not check.
+   *Not checked is not clean*: an unreadable file is `2`, never `1`. One implementation in
+   `cti_method.contract`, and one test that runs all six entry points against a missing file.
+2. **The tool refuses; it does not warn.** A requirement with no decision, a plan with no
+   closure, a bundle with no marking or a declared grade above the ceiling fail the run.
+3. **The evidence caps the grade.** `high` needs at least one diagnostic item that
+   discriminates **and** two independent sources; shared tradecraft alone cannot exceed
+   `low`. A claim that declares no grade is refused, not defaulted.
+4. **One STIX validator, one severity table.** The factory and the gate call
+   `cti_method.stix.validate_bundle`; a test asserts both report identical findings.
+5. **TLP 2.0, not an alias.** The markings are the OASIS TLP 2.0 objects, so `TLP:CLEAR` and
+   `TLP:AMBER+STRICT` are first-class and `TLP:WHITE` is recognised only to be flagged.
+6. **One version per package.** Tags are `cryptonym-v0.7.0`, `stixforge-v0.2.0`, and so on:
+   eight versions that mean something, not one number for everything.
 
 ## Licence
 

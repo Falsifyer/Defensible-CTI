@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ME0094/cti-suite/schemas/product.schema.json",
+  "title": "Intelligence product",
+  "description": "What `stixforge build` turns into a STIX 2.1 bundle. `created` is required: without it the same identifiers would be stamped with a new timestamp on every build.",
+  "type": "object",
+  "required": ["schema_version", "id", "title", "author", "created", "tlp"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "id": { "type": "string", "minLength": 1 },
+    "requirement_id": { "type": "string", "minLength": 1 },
+    "assessment_id": { "type": "string", "minLength": 1 },
+    "hunt_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string" },
+    "author": { "type": "string", "minLength": 1, "description": "A product that does not say who says it is a rumour." },
+    "author_class": { "type": "string" },
+    "created": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z$" },
+    "published": { "type": "string" },
+    "valid_until": { "type": "string" },
+    "tlp": {
+      "enum": ["clear", "green", "amber", "amber+strict", "red", "CLEAR", "GREEN", "AMBER", "AMBER+STRICT", "RED"],
+      "description": "TLP 2.0 labels. TLP:WHITE is TLP 1.0 and is refused."
+    },
+    "report_types": { "type": "array", "items": { "type": "string" } },
+    "observables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "properties": {
+          "type": { "enum": ["domain-name", "ipv4-addr", "ipv6-addr", "url", "email-addr", "mac-addr", "file", "windows-registry-key"] },
+          "value": {},
+          "hashes": { "type": "object" },
+          "key": { "type": "string" }
+        }
+      }
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "pattern"],
+        "properties": {
+          "name": { "type": "string" },
+          "pattern": { "type": "string", "minLength": 1 },
+          "pattern_type": { "type": "string" },
+          "valid_from": { "type": "string" },
+          "valid_until": { "type": "string" },
+          "confidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "indicator_types": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "malware": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "is_family": { "type": "boolean" },
+          "malware_types": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  },
+  "anyOf": [
+    { "required": ["observables"] },
+    { "required": ["indicators"] },
+    { "required": ["malware"] }
+  ]
+}

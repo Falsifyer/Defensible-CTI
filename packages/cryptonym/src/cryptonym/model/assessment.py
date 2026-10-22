@@ -8,9 +8,12 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from cryptonym.model.confidence import Confidence, Judgement, parse_confidence, parse_probability
+from cti_method.confidence import Confidence, Judgement, parse_confidence, parse_probability
+from cti_method.evidence import Consistency, Evidence, EvidenceType
+
 from cryptonym.model.designation import Designation
-from cryptonym.model.evidence import Consistency, Evidence, EvidenceType
+
+DEFAULT_TLP = "TLP:CLEAR"
 
 
 class Hypothesis(StrEnum):
@@ -37,8 +40,9 @@ class Assessment:
     """A single adjudication, versioned and reviewable.
 
     The assessment holds the question, the designations under comparison, the body of
-    evidence and the graded judgement. It carries a *review trigger* and a revision
-    history so a correction is published as a new version, never as a silent edit.
+    evidence and the graded judgement. ``declared`` records whether the dossier actually
+    stated a confidence: a missing grade is not silently defaulted to ``low``, it is a
+    finding (``no-grade``) and the tool refuses it.
     """
 
     id: str
@@ -47,11 +51,14 @@ class Assessment:
     hypotheses: list[Hypothesis] = field(default_factory=lambda: list(Hypothesis))
     evidence: list[Evidence] = field(default_factory=list)
     judgement: Judgement = field(default_factory=lambda: Judgement(Confidence.LOW))
+    declared: bool = True
+    requirement_id: str = ""
     review_trigger: str = ""
+    review_by: str = ""
     gaps: list[str] = field(default_factory=list)
     revisions: list[Revision] = field(default_factory=list)
     version: str = "1.0"
-    tlp: str = "TLP:WHITE"
+    tlp: str = DEFAULT_TLP
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Assessment:
@@ -61,7 +68,7 @@ class Assessment:
                 name=item["name"],
                 source_url=item.get("source_url", ""),
                 date=item.get("date", ""),
-                tlp=item.get("tlp", "TLP:WHITE"),
+                tlp=item.get("tlp", DEFAULT_TLP),
             )
             for item in data.get("subjects", [])
         ]
@@ -81,23 +88,27 @@ class Assessment:
             Revision(version=item["version"], date=item["date"], change=item["change"])
             for item in data.get("revisions", [])
         ]
-        judgement_data = data.get("judgement", {})
+        judgement_data = data.get("judgement") or {}
+        declared = bool(judgement_data.get("confidence"))
         judgement = Judgement(
-            confidence=parse_confidence(judgement_data.get("confidence", "low")),
+            confidence=parse_confidence(judgement_data.get("confidence", Confidence.LOW.value)),
             probability=parse_probability(judgement_data.get("probability")),
         )
         return cls(
-            id=data["id"],
-            question=data["question"],
+            id=data.get("id") or "",
+            question=data.get("question") or "",
             subjects=subjects,
             hypotheses=[Hypothesis(value) for value in data.get("hypotheses", [h.value for h in Hypothesis])],
             evidence=evidence,
             judgement=judgement,
+            declared=declared,
+            requirement_id=data.get("requirement_id", ""),
             review_trigger=data.get("review_trigger", ""),
+            review_by=data.get("review_by", ""),
             gaps=list(data.get("gaps", [])),
             revisions=revisions,
             version=data.get("version", "1.0"),
-            tlp=data.get("tlp", "TLP:WHITE"),
+            tlp=data.get("tlp", DEFAULT_TLP),
         )
 
 

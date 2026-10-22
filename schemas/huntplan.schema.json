@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ME0094/cti-suite/schemas/huntplan.schema.json",
+  "title": "Hunt plan",
+  "description": "A hunt starts from a falsifiable hypothesis. The schema requires a hypothesis, at least one technique, a closure criterion, and the assessment it answers.",
+  "type": "object",
+  "required": ["schema_version", "id", "assessment_id", "hypothesis", "techniques", "closure"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "id": { "type": "string", "minLength": 1 },
+    "assessment_id": { "type": "string", "minLength": 1, "description": "The assessment that produced this question." },
+    "question": { "type": "string" },
+    "actor": { "type": "string" },
+    "hypothesis": {
+      "type": "string",
+      "minLength": 20,
+      "description": "If <condition> then <observable>. `huntplan validate` checks the structure and the telemetry; the schema cannot."
+    },
+    "techniques": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^T\\d{4}(\\.\\d{3})?$" }
+    },
+    "closure": { "type": "string", "minLength": 1, "description": "When the hunt is done, and what 'not found' means." }
+  }
+}

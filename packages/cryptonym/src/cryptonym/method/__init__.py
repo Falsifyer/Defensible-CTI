@@ -1,27 +1,20 @@
-"""cryptonym.method — the shared, reusable assessment core.
+"""cryptonym.method — the reusable core, re-exported from :mod:`cti_method`.
 
-This is the one piece every tool in the Cryptonym family inherits: how a claim is graded,
-how evidence is typed by diagnostic strength, how competing hypotheses are compared, how
-an external truth is adjudicated and filtered, how graded linkages reconcile, and how a
-source is snapshotted.
-
-Import from **here**, not from the internal modules. This surface is the stable contract;
-everything under ``cryptonym.model``, ``cryptonym.assess``, ``cryptonym.evaluate``,
-``cryptonym.reconcile`` and ``cryptonym.snapshot`` is an implementation detail that may
-move.
+The core itself is owned by the ``cti-method`` package so the alias-specific tool is a
+consumer, not the owner. This module keeps the historic import path working:
 
     from cryptonym.method import Assessment, Confidence, Judgement, filter_adjudication
 
 The three rules the core encodes:
 
 * a judgement carries **two independent axes** (confidence, probability), per claim;
-* a binary truth must be **earned from independent sources**, or it is contested;
-* nothing is merged without **provenance** — a merge is a hypothesis, not a fact.
+* the evidence sets a **ceiling** on the declared confidence, and exceeding it is refused;
+* a binary truth must be **earned from independent sources**, or it is contested.
 """
 
 from __future__ import annotations
 
-from cryptonym.assess.ach import (
+from cti_method.ach import (
     consistency_matrix,
     consistent_with_everything,
     discriminating_evidence,
@@ -29,8 +22,7 @@ from cryptonym.assess.ach import (
     inconsistency_counts,
     least_inconsistent,
 )
-from cryptonym.assess.grading import assess_actor_pair
-from cryptonym.evaluate.adjudication import (
+from cti_method.adjudication import (
     Adjudication,
     Admissibility,
     Source,
@@ -43,34 +35,30 @@ from cryptonym.evaluate.adjudication import (
     parse_standard,
     validate_corpus,
 )
-from cryptonym.evaluate.metrics import (
-    Confusion,
-    calibration_table,
-    confusion_from_calls,
-    evaluate_adjudicated,
-    evaluate_cases,
-    evaluate_corpus,
-)
+from cti_method.confidence import Confidence, Judgement, Probability, parse_confidence, parse_probability
+from cti_method.evidence import DIAGNOSTIC_TYPES, Consistency, Evidence, EvidenceType
+from cti_method.grading import EvidenceProfile, ceiling, check_declared, derived_grade, profile
+from cti_method.metrics import Confusion, calibration_table, confusion_from_calls
+
+from cryptonym.assess.grading import assess_actor_pair
+from cryptonym.evaluate.metrics import evaluate_adjudicated, evaluate_cases, evaluate_corpus
 from cryptonym.model.assessment import Assessment, Hypothesis, Revision, load_assessment
-from cryptonym.model.confidence import (
-    Confidence,
-    Judgement,
-    Probability,
-    parse_confidence,
-    parse_probability,
-)
 from cryptonym.model.designation import Designation
-from cryptonym.model.evidence import DIAGNOSTIC_TYPES, Consistency, Evidence, EvidenceType
 from cryptonym.reconcile.graph import Linkage, Reconciliation
 from cryptonym.snapshot import Snapshot
 
 __all__ = [
-    # grading (two axes, per claim)
+    # grading (two axes, per claim, capped by the evidence)
     "Confidence",
     "Probability",
     "Judgement",
     "parse_confidence",
     "parse_probability",
+    "EvidenceProfile",
+    "profile",
+    "ceiling",
+    "derived_grade",
+    "check_declared",
     # model
     "Designation",
     "Evidence",

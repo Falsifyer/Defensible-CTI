@@ -6,7 +6,8 @@ from stixforge.build import build
 from stixforge.cli import main
 from stixforge.validate import validate
 
-PRODUCTO = json.loads(Path("examples/product.json").read_text(encoding="utf-8"))
+EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
+PRODUCTO = json.loads((EXAMPLES / "product.json").read_text(encoding="utf-8"))
 
 
 def test_un_bundle_reconstruido_es_valido():
@@ -21,37 +22,37 @@ def test_sin_marcado_en_un_objeto_falla():
     del objetivo["object_marking_refs"]
     r = validate(b)
     assert r["valid"] is False
-    assert "no-marking" in {h["code"] for h in r["findings"]}
+    assert "stix-no-marking" in {h["code"] for h in r["findings"]}
 
 
 def test_referencia_que_no_resuelve_falla():
     b = build(PRODUCTO)
     report = next(o for o in b["objects"] if o["type"] == "report")
     report["object_refs"] = report["object_refs"] + ["indicator--00000000-0000-4000-8000-000000000000"]
-    assert "unresolved-reference" in {h["code"] for h in validate(b)["findings"]}
+    assert "stix-unresolved-reference" in {h["code"] for h in validate(b)["findings"]}
 
 
 def test_id_repetido_falla():
     b = build(PRODUCTO)
     b["objects"].append(copy.deepcopy(b["objects"][1]))
-    assert "duplicate-id" in {h["code"] for h in validate(b)["findings"]}
+    assert "stix-duplicate-id" in {h["code"] for h in validate(b)["findings"]}
 
 
 def test_id_con_tipo_que_no_casa_falla():
     b = build(PRODUCTO)
     b["objects"][2]["id"] = b["objects"][2]["id"].replace("domain-name--", "indicator--")
-    assert "id-type-mismatch" in {h["code"] for h in validate(b)["findings"]}
+    assert "stix-id-type-mismatch" in {h["code"] for h in validate(b)["findings"]}
 
 
 def test_fichero_que_no_es_bundle():
     r = validate({"type": "indicator"})
     assert r["valid"] is False
-    assert r["findings"][0]["code"] == "not-a-bundle"
+    assert r["findings"][0]["code"] == "stix-not-bundle"
 
 
 def test_cli_build_y_validate(tmp_path, capsys):
     salida = tmp_path / "bundle.json"
-    assert main(["build", "examples/product.json", "-o", str(salida)]) == 0
+    assert main(["build", str(EXAMPLES / "product.json"), "-o", str(salida)]) == 0
     assert main(["validate", str(salida)]) == 0
     assert "Result: valid" in capsys.readouterr().out
 
@@ -62,7 +63,7 @@ def test_cli_sale_con_dos_si_no_puede_leer(tmp_path):
 
 def test_cli_sin_validador_externo_sale_con_dos(tmp_path, capsys):
     salida = tmp_path / "bundle.json"
-    main(["build", "examples/product.json", "-o", str(salida)])
+    main(["build", str(EXAMPLES / "product.json"), "-o", str(salida)])
     capsys.readouterr()
     # En este entorno stix2-validator no esta instalado: no comprobado no es limpio.
     codigo = main(["validate", str(salida), "--external"])

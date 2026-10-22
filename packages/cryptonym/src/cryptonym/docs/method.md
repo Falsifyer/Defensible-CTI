@@ -34,6 +34,26 @@ organisation. Cryptonym therefore classifies evidence:
 Non-diagnostic items that are consistent with every hypothesis are surfaced explicitly
 so they are not mistaken for support.
 
+## The grade is capped by the evidence
+
+A dossier declares a confidence, but the evidence sets a **ceiling** on it:
+
+| Ceiling | Requires |
+|---|---|
+| `low` | no diagnostic item discriminates; shared tradecraft and non-diagnostic overlap cannot carry more |
+| `moderate` | at least one diagnostic item discriminates, all from one source |
+| `high` | at least one diagnostic item discriminates **and** two independent sources contribute diagnostics |
+
+A grade below the ceiling is allowed (an analyst may be more cautious). A grade above it is
+`grade-exceeds-evidence` and `cryptonym assess` exits 1. A dossier with no declared grade is
+`no-grade`, also high: there is no silent default to `low`. Independence is by source
+string, normalised — coarse, checkable, and it fails closed — so a dossier that needs finer
+independence should model its sources as sources.
+
+This is also what the evaluation harness calibrates: the **derived** ceiling, not the
+declared prose. The current golden-pair corpus declares more than its evidence supports in
+five of ten cases, and the harness prints that count instead of hiding it.
+
 ## Analysis of Competing Hypotheses
 
 Evidence is tested against the competing hypotheses at once — *same actor*, *distinct
@@ -68,7 +88,7 @@ that changes a judgement is published as a **new version**, never as a silent ed
 
 ## Handling
 
-Assessments are **TLP:WHITE** unless marked otherwise.
+Assessments are **TLP:CLEAR** (TLP 2.0) unless marked otherwise.
 
 ## Related
 

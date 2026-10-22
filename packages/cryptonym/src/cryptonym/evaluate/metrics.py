@@ -1,104 +1,28 @@
-"""Confusion, error rates and calibration for the reconciliation method.
+"""Scoring the reconciliation method: the corpus-specific half.
 
-Positive class is "the two designations are the same actor". A **false positive** is a
-false merge (the costly error); a **false negative** is a false split (cheaper, and
-visible). The rates are reported separately because they trade off against each other
-and averaging them would hide the only number that matters.
+The arithmetic (confusion, calibration, splits) and the external-truth filter live in
+:mod:`cti_method.metrics` and :mod:`cti_method.adjudication`. What stays here is what is
+specific to alias work: the positive class is ``same_actor``, and a case is scored by
+re-deriving the judgement from its own evidence.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from cti_method.adjudication import Adjudication, Truth, filter_adjudication
+from cti_method.metrics import SPLITS, Confusion, calibration_table, confusion_from_calls
 
 from cryptonym.assess.grading import assess_actor_pair
-from cryptonym.config import SPLITS
-from cryptonym.evaluate.adjudication import Adjudication, Truth, filter_adjudication
 from cryptonym.model.assessment import Assessment, Hypothesis
-from cryptonym.model.confidence import Confidence
 
 POSITIVE = Hypothesis.SAME.value
-
-
-@dataclass(frozen=True)
-class Confusion:
-    """Counts for the binary call "same actor" against the adjudicated truth."""
-
-    true_positive: int = 0
-    false_positive: int = 0
-    true_negative: int = 0
-    false_negative: int = 0
-
-    @property
-    def total(self) -> int:
-        return self.true_positive + self.false_positive + self.true_negative + self.false_negative
-
-    @property
-    def false_merge_rate(self) -> float | None:
-        """Share of genuinely distinct pairs wrongly called the same actor."""
-        denominator = self.false_positive + self.true_negative
-        return self.false_positive / denominator if denominator else None
-
-    @property
-    def false_split_rate(self) -> float | None:
-        """Share of genuinely same pairs wrongly kept apart."""
-        denominator = self.false_negative + self.true_positive
-        return self.false_negative / denominator if denominator else None
-
-    def as_dict(self) -> dict[str, int | float | None]:
-        return {
-            "true_positive": self.true_positive,
-            "false_positive": self.false_positive,
-            "true_negative": self.true_negative,
-            "false_negative": self.false_negative,
-            "total": self.total,
-            "false_merge_rate": self.false_merge_rate,
-            "false_split_rate": self.false_split_rate,
-        }
-
-
-def confusion_from_calls(calls: list[tuple[bool, bool]]) -> Confusion:
-    """Build a :class:`Confusion` from ``(called_same, truth_same)`` pairs."""
-    counts = {"tp": 0, "fp": 0, "tn": 0, "fn": 0}
-    for called_same, truth_same in calls:
-        if called_same and truth_same:
-            counts["tp"] += 1
-        elif called_same and not truth_same:
-            counts["fp"] += 1
-        elif not called_same and truth_same:
-            counts["fn"] += 1
-        else:
-            counts["tn"] += 1
-    return Confusion(
-        true_positive=counts["tp"],
-        false_positive=counts["fp"],
-        true_negative=counts["tn"],
-        false_negative=counts["fn"],
-    )
-
-
-def calibration_table(records: list[tuple[str, bool]]) -> dict[str, dict[str, float | int]]:
-    """Accuracy per confidence level, from ``(confidence_value, correct)`` records.
-
-    A grading scheme that does not calibrate — high-confidence calls no more reliable
-    than low-confidence ones — is decoration. This table is how that is checked.
-    """
-    buckets: dict[str, list[bool]] = {}
-    for confidence, correct in records:
-        buckets.setdefault(confidence, []).append(correct)
-    table: dict[str, dict[str, float | int]] = {}
-    for level in (Confidence.HIGH.value, Confidence.MODERATE.value, Confidence.LOW.value):
-        outcomes = buckets.get(level)
-        if outcomes:
-            table[level] = {"n": len(outcomes), "accuracy": sum(outcomes) / len(outcomes)}
-    return table
 
 
 def evaluate_cases(cases: list[dict]) -> dict:
     """Run the engine over a labelled corpus and summarise the method.
 
     Each case carries its authored evidence plus an adjudicated ``truth``. The engine
-    must re-derive the favourite hypothesis from the evidence; the harness then asks
-    whether that favourite agrees with the truth, and at what confidence.
+    re-derives the favourite hypothesis from the evidence; the harness then asks whether
+    that favourite agrees with the truth, and at what confidence.
     """
     results: list[dict] = []
     for case in cases:
@@ -115,11 +39,14 @@ def evaluate_cases(cases: list[dict]) -> dict:
                 "called_same": called_same,
                 "correct": called_same == truth_same,
                 "confidence": verdict["confidence"],
+                "ceiling": verdict["ceiling"],
                 "probability": verdict["probability"],
             }
         )
     confusion = confusion_from_calls([(row["called_same"], row["truth"] == POSITIVE) for row in results])
-    calibration = calibration_table([(row["confidence"], row["correct"]) for row in results])
+    # Calibrate on the ceiling the evidence sets, not on the declared grade: the declared
+    # one is prose, and prose does not calibrate.
+    calibration = calibration_table([(str(row["ceiling"]), row["correct"]) for row in results])
     return {"results": results, "metrics": confusion.as_dict(), "calibration": calibration}
 
 
@@ -131,9 +58,8 @@ def _summarise(cases: list[dict]) -> dict[str, dict]:
 def evaluate_corpus(document: dict) -> dict:
     """Score a corpus, reported **per split** and overall.
 
-    A method graded on the cases it was tuned against proves nothing, so the
-    development and held-out splits are never averaged into one number: the held-out
-    result is the one that counts.
+    A method graded on the cases it was tuned against proves nothing, so the development
+    and held-out splits are never averaged into one number: the held-out result counts.
     """
     cases = document.get("cases", [])
     splits: dict[str, dict[str, dict]] = {}
@@ -153,9 +79,7 @@ def evaluate_adjudicated(document: dict) -> dict:
 
     Every case is run through the external-truth filter. Cases whose effective truth is
     ``same_actor`` or ``distinct`` enter the confusion matrix; ``contested`` and
-    ``unadjudicated`` cases are reported as **coverage**, never folded into error rates.
-    The coverage and standards tables are the honest headline: they say how much of the
-    corpus actually met the bar for an external truth.
+    ``unadjudicated`` are reported as **coverage**, never folded into error rates.
     """
     cases = document.get("cases", [])
     calls: list[tuple[bool, bool]] = []
@@ -175,7 +99,7 @@ def evaluate_adjudicated(document: dict) -> dict:
         if verdict.effective_truth.is_binary:
             calls.append((called_same, verdict.effective_truth is Truth.SAME_ACTOR))
             correct = called_same == (verdict.effective_truth is Truth.SAME_ACTOR)
-            calibration_records.append((engine["confidence"], correct))
+            calibration_records.append((str(engine["ceiling"]), bool(correct)))
             coverage["admissible"] += 1
         else:
             coverage[verdict.effective_truth.value] = coverage.get(verdict.effective_truth.value, 0) + 1
@@ -195,6 +119,8 @@ def evaluate_adjudicated(document: dict) -> dict:
                 "favourite": favourite,
                 "called_same": called_same,
                 "correct": correct,
+                "declared": engine["confidence"],
+                "ceiling": engine["ceiling"],
                 "reasons": list(verdict.reasons),
             }
         )
@@ -206,3 +132,13 @@ def evaluate_adjudicated(document: dict) -> dict:
         "by_standard": by_standard,
         "results": results,
     }
+
+
+__all__ = [
+    "Confusion",
+    "calibration_table",
+    "confusion_from_calls",
+    "evaluate_adjudicated",
+    "evaluate_cases",
+    "evaluate_corpus",
+]

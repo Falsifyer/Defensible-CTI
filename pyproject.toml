@@ -1,11 +1,13 @@
 # La raiz es un workspace, no un paquete: no tiene version. Cada paquete lleva la suya y su
-# etiqueta (cryptonym-v0.6.0, stixforge-v0.1.0, ...), que es lo que hace que seis numeros
+# etiqueta (cryptonym-v0.7.0, stixforge-v0.2.0, ...), que es lo que hace que ocho numeros
 # signifiquen algo en vez de uno que no dice nada.
 
 [tool.uv.workspace]
 members = ["packages/*"]
 
 [tool.uv.sources]
+cti-method = { workspace = true }
+cti-suite = { workspace = true }
 cryptonym = { workspace = true }
 assessment-mcp = { workspace = true }
 sharegate = { workspace = true }
@@ -14,20 +16,44 @@ pir-ledger = { workspace = true }
 huntplan = { workspace = true }
 
 [dependency-groups]
-# Los seis son el producto: `uv sync` los instala todos en editable.
+# Los ocho son el producto: `uv sync` los instala todos en editable.
 dev = [
+  "cti-method",
   "cryptonym",
   "assessment-mcp",
   "sharegate",
   "stix-forge",
   "pir-ledger",
   "huntplan",
+  "cti-suite",
   "pytest>=9.1.1",
+  "pytest-cov>=5",
   "ruff>=0.17.1",
+  "mypy>=1.11",
+  "jsonschema>=4.22",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["packages"]
+# Los paquetes repiten nombres de modulo de test (test_core.py, test_cli.py...). El modo
+# importlib los resuelve por ruta; el modo por defecto falla al recolectar desde la raiz.
+addopts = ["--import-mode=importlib"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+files = ["packages/*/src"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
+[tool.coverage.run]
+branch = true
+source = ["packages"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

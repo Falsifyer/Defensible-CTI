@@ -2,6 +2,23 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.2.0 — 2026-10-22
+
+### Changed
+
+- **Official TLP 2.0 markings** from the OASIS common objects: `TLP:CLEAR` and
+  `TLP:AMBER+STRICT` are first-class; `TLP:WHITE` is refused, never emitted.
+- **`created` is required.** Identifiers are content-derived, so a clock-derived timestamp
+  produced the same id with different content on every build. Rebuilding is now
+  byte-identical.
+- **Traceability:** `--requirement`, `--assessment` and `--hunt` verify the ids the product
+  cites and emit them as `external_references` on the report.
+- The factory validates its own output and refuses to write an invalid bundle.
+- `valid_until` and `confidence` are emitted when supplied; `validate --today` reports
+  expired indicators.
+- The structural validator moved to `cti-method`; codes are unified (`stix-*`).
+
+
 ## 0.1.0 — 2026-10-22
 
 - `stixforge build`: product JSON to STIX 2.1 bundle — marking-definition, identity, cyber-observables,

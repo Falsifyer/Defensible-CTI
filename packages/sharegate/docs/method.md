@@ -22,9 +22,22 @@ produces a known finding code. See `tests/test_core.py`.
 - **TLP conflicting** (two different levels) → high. The gate refuses to guess.
 - **TLP:WHITE** → low. Deprecated; recommend `TLP:CLEAR`.
 - **Permissive marking on sensitive content** (CLEAR/GREEN with IPs, emails or sensitive
-  terminology) → high. The most common real leak.
-- **STIX**: non-bundle, no `objects`, missing type/id, id/type mismatch, duplicate id →
-  high; wrong `spec_version` → medium; missing → low.
+  terminology) → **medium**. It is a heuristic guard, and a heuristic does not get to
+  refuse a product. For a STIX bundle it reads only fields a human wrote: an IP inside a
+  cyber-observable is an indicator, not a confession.
+- **STIX** → whatever the suite's single validator says (`cti_method.stix.validate_bundle`),
+  because the factory and the gate must not disagree: structural breakage, a missing
+  marking, an unresolved reference, a duplicate id or a wrong `spec_version` → high; no
+  marking definition, an unknown marking or an expired indicator → medium; deprecated
+  `TLP:WHITE` → low.
+
+## How the marking is read
+
+For a STIX bundle, from `object_marking_refs` and the marking definitions the bundle
+contains — not from a regex over the serialised document. A marking that is defined but
+never referenced does not travel with the content, so it does not count; two marked objects
+that reference different labels are a conflict. For plain text, the labels are read from the
+text.
 
 `shareable` is false only on a **high**-severity finding; lower findings are surfaced but
 do not block.
@@ -33,4 +46,4 @@ do not block.
 
 - It does not validate every normative STIX constraint (use `stix2`).
 - Its sensitive-content heuristic is a guard, not a classifier; it can miss and can
-  over-flag, and it says so.
+  over-flag, and it says so. It never blocks on its own.

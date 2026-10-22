@@ -3,72 +3,109 @@
 #
 #   make demo
 #
-# Six steps in the order the cycle runs, each consuming what the previous one produced: the
-# requirement says what is worth answering, the judgement answers it, the ledger grades it, the
-# hunt plan says what to look for, the product turns it into STIX, and the gate decides whether it
-# may leave. Nothing here is real: NIGHTJAR and SALTWIND do not exist.
+# Seven steps, and from step 2 onwards every step **reads the file the previous step
+# wrote** and verifies the identifier it cites against it. The chain is in the data, not
+# in the prose: if a step's output changes, the next step notices.
+#
+# Nothing here is real: NIGHTJAR and SALTWIND do not exist.
 
 set -eu
 
 aqui=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 out="$aqui/out"
+rm -rf "$out"
 mkdir -p "$out"
 
 paso() { printf '\n== %s\n' "$1"; }
 
-paso "1/6  pir validate      what is worth answering, and which decision it informs"
-pir validate "$aqui/pir.json" | sed 's/^/  /'
+paso "1/7  pir validate        what is worth answering, and which decision it informs"
+pir validate "$aqui/pir.json" --json > "$out/pir-validation.json"
+# Lo que viaja al resto del ciclo es el registro que paso la validacion, no el original.
+cp "$aqui/pir.json" "$out/pir.json"
+python3 - "$out/pir-validation.json" <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+print(f"  register    : {r.get('register_id')} ({r['requirements']} requirements, HIGH {r['high']})")
+print(f"  ids         : {', '.join(r['ids'])}")
+PY
 
-paso "2/6  cryptonym assess   the judgment on the alias question"
-cryptonym assess "$aqui/dossier.json" > "$out/judgement.json"
+paso "2/7  cryptonym assess     the judgment on the alias question"
+cryptonym assess "$aqui/assessment.json" > "$out/judgement.json"
 python3 - "$out/judgement.json" <<'PY'
 import json, sys
 j = json.load(open(sys.argv[1]))
 print("  favoured    :", ", ".join(j.get("hypotheses_favoured", [])))
 print("  discriminating:", ", ".join(j.get("discriminating_evidence", [])) or "none")
-print("  grade       :", j.get("confidence"), "| probability:", j.get("probability"))
+print("  declared    :", j.get("confidence"), "| ceiling:", j.get("ceiling"))
 PY
 
-paso "3/6  assessment assess  the same claim, graded in two axes and kept in the ledger"
-assessment assess "$aqui/claim.json" > "$out/verdict.json"
+paso "3/7  assessment assess    re-derive it against step 2, and keep the ledger"
+assessment assess "$aqui/assessment.json" \
+	--register "$out/pir.json" \
+	--against "$out/judgement.json" \
+	--append "$out/ledger.jsonl" > "$out/verdict.json"
 python3 - "$out/verdict.json" <<'PY'
 import json, sys
-v = json.load(open(sys.argv[1])); g = v.get("grade", {})
+v = json.load(open(sys.argv[1]))
 print("  ranking     :", ", ".join(v.get("ranking", [])))
-print("  confidence  :", g.get("confidence"), "| probability:", g.get("probability"))
+print("  declared    :", v["grade"]["confidence"], "| ceiling:", v.get("ceiling"),
+      "| reproduced:", v.get("reproduced"))
+PY
+assessment ledger "$out/ledger.jsonl" --verify > "$out/ledger-check.json"
+python3 - "$out/ledger-check.json" <<'PY'
+import json, sys
+r = json.load(open(sys.argv[1]))
+print(f"  ledger      : {r['entries']} entries, chain {'intact' if r['valid'] else 'BROKEN'}")
 PY
 
-paso "4/6  huntplan validate  what we would hunt, and it has to be falsifiable"
-huntplan validate "$aqui/hunt.txt" > "$out/hunt.json"
+paso "4/7  huntplan validate    the plan, linked to the assessment that produced it"
+huntplan validate "$aqui/hunt.json" --assessment "$out/verdict.json" > "$out/hunt.json"
 python3 - "$out/hunt.json" <<'PY'
 import json, sys
 h = json.load(open(sys.argv[1]))
-print("  falsifiable :", h.get("falsifiable"))
-for f in (h.get("findings") or [])[:3]:
-    print(f"  {f['code']:18s} {f['message'][:70]}")
+print("  ready       :", h.get("ready"), "| id:", h.get("id"))
+for t in h.get("techniques", []):
+    ids = ", ".join(s["id"] for s in t["detection_strategies"]) or "none"
+    print(f"  {t['technique_id']:7s} {len(t['detection_strategies'])} detection strategies ({ids})")
+attack = h.get("attack") or {}
+print(f"  ATT&CK      : {attack.get('collection')} {attack.get('attack_version')}")
 PY
 
-paso "5/6  stixforge build    the product, as a STIX 2.1 bundle"
-stixforge build "$aqui/product.json" -o "$out/bundle.json"
+paso "5/7  stixforge build       the product, with the trace of the three steps before it"
+stixforge build "$aqui/product.json" -o "$out/bundle.json" \
+	--requirement "$out/pir.json" \
+	--assessment "$out/verdict.json" \
+	--hunt "$out/hunt.json"
 python3 - "$out/bundle.json" <<'PY'
 import json, sys
 b = json.load(open(sys.argv[1]))
-print("  objects     :", len(b["objects"]))
-print("  types       :", ", ".join(sorted({o["type"] for o in b["objects"]})))
+report = next(o for o in b["objects"] if o["type"] == "report")
+print("  objects     :", len(b["objects"]), "| types:", ", ".join(sorted({o["type"] for o in b["objects"]})))
+print("  trace       :", ", ".join(f"{r['source_name']}={r['external_id']}" for r in report.get("external_references", [])))
 PY
 
-paso "6/6  sharegate check     may it leave, and how far"
+paso "6/7  sharegate check       may it leave, and how far"
 if ! sharegate check "$out/bundle.json" > "$out/gate.json"; then
 	echo "  THE GATE REFUSES: this bundle does not leave." >&2
-	sed 's/^/  /' "$out/gate.json" >&2
+	cat "$out/gate.json" >&2
 	exit 1
 fi
 python3 - "$out/gate.json" <<'PY'
 import json, sys
 r = json.load(open(sys.argv[1]))
-print("  shareable   :", r.get("shareable"))
-print("  effective   :", r.get("effective_tlp"), "| clean:", r["tlp"]["clean"])
-print("  stix valid  :", r["stix"]["valid"])
+print("  shareable   :", r.get("shareable"), "| effective:", r.get("effective_tlp"))
+print("  stix valid  :", r["stix"]["valid"], "| findings:", len(r["findings"]))
 PY
 
-printf '\nOK — the six tools run as one chain. Outputs in %s\n' "$out"
+paso "7/7  ctisuite report       the one artifact a consumer reads"
+ctisuite report \
+	--pir "$out/pir.json" \
+	--assessment "$aqui/assessment.json" \
+	--verdict "$out/verdict.json" \
+	--hunt "$out/hunt.json" \
+	--product "$aqui/product.json" \
+	--bundle "$out/bundle.json" \
+	-o "$out/product.md"
+head -12 "$out/product.md" | sed 's/^/  /'
+
+printf '\nOK — seven steps, one chain, one product. Outputs in %s\n' "$out"

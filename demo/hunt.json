@@ -1,0 +1,14 @@
+{
+  "$schema": "https://github.com/ME0094/cti-suite/schemas/huntplan.schema.json",
+  "schema_version": "1.0",
+  "id": "HUNT-001",
+  "assessment_id": "nightjar-vs-saltwind",
+  "question": "Would NIGHTJAR's loader leave a trace if they moved laterally?",
+  "hypothesis": "If the actor uses scheduled tasks to stage the loader, then process creation logs will show schtasks.exe with a /create argument referencing a path under %TEMP%",
+  "techniques": [
+    "T1053",
+    "T1059"
+  ],
+  "closure": "Confirmed if two or more hosts show the pattern; refuted if no such task creation exists over 30 days of telemetry",
+  "actor": "NIGHTJAR (fictional)"
+}
