@@ -11,11 +11,22 @@ resolution-markers = [
 members = [
     "assessment-mcp",
     "cryptonym",
-    "cti-suite",
     "huntplan",
     "pir-ledger",
     "sharegate",
     "stix-forge",
+]
+
+[manifest.dependency-groups]
+dev = [
+    { name = "assessment-mcp", editable = "packages/assessment" },
+    { name = "cryptonym", editable = "packages/cryptonym" },
+    { name = "huntplan", editable = "packages/huntplan" },
+    { name = "pir-ledger", editable = "packages/pir" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.17.1" },
+    { name = "sharegate", editable = "packages/sharegate" },
+    { name = "stix-forge", editable = "packages/stixforge" },
 ]
 
 [[package]]
@@ -703,37 +714,6 @@ requires-dist = [
     { name = "stix2", marker = "extra == 'dev'", specifier = ">=3.0" },
 ]
 provides-extras = ["cti", "opencti", "misp", "mcp", "dev"]
-
-[[package]]
-name = "cti-suite"
-version = "0.1.0"
-source = { virtual = "." }
-
-[package.dev-dependencies]
-dev = [
-    { name = "assessment-mcp" },
-    { name = "cryptonym" },
-    { name = "huntplan" },
-    { name = "pir-ledger" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "sharegate" },
-    { name = "stix-forge" },
-]
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "assessment-mcp", editable = "packages/assessment" },
-    { name = "cryptonym", editable = "packages/cryptonym" },
-    { name = "huntplan", editable = "packages/huntplan" },
-    { name = "pir-ledger", editable = "packages/pir" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.17.1" },
-    { name = "sharegate", editable = "packages/sharegate" },
-    { name = "stix-forge", editable = "packages/stixforge" },
-]
 
 [[package]]
 name = "cyclonedx-python-lib"

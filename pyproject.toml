@@ -1,11 +1,6 @@
-[project]
-name = "cti-suite"
-version = "0.1.0"
-description = "Six tools for one intelligence cycle: requirements, judgement, ledger, product, gate and hunt."
-readme = "README.md"
-requires-python = ">=3.11"
-license = { text = "MIT" }
-authors = [{ name = "Martín Eliseo" }]
+# La raiz es un workspace, no un paquete: no tiene version. Cada paquete lleva la suya y su
+# etiqueta (cryptonym-v0.6.0, stixforge-v0.1.0, ...), que es lo que hace que seis numeros
+# signifiquen algo en vez de uno que no dice nada.
 
 [tool.uv.workspace]
 members = ["packages/*"]
