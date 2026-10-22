@@ -10,7 +10,7 @@ EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 PRODUCTO = json.loads((EXAMPLES / "product.json").read_text(encoding="utf-8"))
 
 
-def test_el_bundle_tiene_marcado_identidad_y_reporte():
+def test_the_bundle_has_marking_identity_and_report():
     b = build(PRODUCTO)
     tipos = [o["type"] for o in b["objects"]]
     assert b["type"] == "bundle"
@@ -19,11 +19,11 @@ def test_el_bundle_tiene_marcado_identidad_y_reporte():
     assert "report" in tipos
 
 
-def test_es_determinista_byte_a_byte():
+def test_it_is_byte_for_byte_deterministic():
     assert json.dumps(build(PRODUCTO)) == json.dumps(build(PRODUCTO))
 
 
-def test_el_reporte_referencia_todo_lo_compartible():
+def test_the_report_references_everything_shareable():
     b = build(PRODUCTO)
     report = next(o for o in b["objects"] if o["type"] == "report")
     ids = {o["id"] for o in b["objects"]}
@@ -32,7 +32,7 @@ def test_el_reporte_referencia_todo_lo_compartible():
     assert len(report["object_refs"]) == 5  # 2 observables + 2 indicadores + 1 malware
 
 
-def test_todo_sdo_lleva_marcado_y_los_sco_no_lo_necesitan():
+def test_every_sdo_is_marked_and_scos_do_not_need_it():
     b = build(PRODUCTO)
     sco = {"domain-name", "ipv4-addr", "ipv6-addr", "url", "file", "email-addr"}
     for o in b["objects"]:
@@ -45,7 +45,7 @@ def test_todo_sdo_lleva_marcado_y_los_sco_no_lo_necesitan():
             assert set(o) <= {"type", "spec_version", "id", "value", "hashes"}
 
 
-def test_clear_usa_el_marcado_oficial_de_tlp_2_0():
+def test_clear_uses_the_official_tlp_2_0_marking():
     b = build({**PRODUCTO, "tlp": "clear"})
     marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
     assert marcado["id"] == TLP["CLEAR"]["id"]
@@ -53,56 +53,56 @@ def test_clear_usa_el_marcado_oficial_de_tlp_2_0():
     assert marcado["extensions"]
 
 
-def test_amber_estricto_existe_como_marcado_de_primera_clase():
+def test_amber_strict_is_a_first_class_marking():
     marcado = marking_object("amber+strict")
     assert marcado["id"] == TLP["AMBER+STRICT"]["id"]
     assert marcado["name"] == "TLP:AMBER+STRICT"
 
 
-def test_white_esta_deprecado_y_no_se_emite():
+def test_white_is_deprecated_and_not_emitted():
     with pytest.raises(ValueError, match="deprecated"):
         marking_object("TLP:WHITE")
 
 
-def test_el_ejemplo_va_en_amber():
+def test_the_example_ships_as_amber():
     b = build(PRODUCTO)
     marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
     assert marcado["id"] == TLP["AMBER"]["id"]
 
 
-def test_sin_created_falla_para_no_forjar_una_version_nueva_con_el_mismo_id():
+def test_without_created_it_fails_instead_of_forging_a_new_version_with_the_same_id():
     sin_fecha = {k: v for k, v in PRODUCTO.items() if k != "created"}
     with pytest.raises(ValueError, match="created"):
         build(sin_fecha)
 
 
-def test_sin_titulo_falla():
+def test_without_a_title_it_fails():
     with pytest.raises(ValueError, match="title"):
         build({**PRODUCTO, "title": ""})
 
 
-def test_sin_autor_falla():
+def test_without_an_author_it_fails():
     with pytest.raises(ValueError, match="author"):
         build({**PRODUCTO, "author": ""})
 
 
-def test_sin_nada_que_compartir_falla():
+def test_with_nothing_to_share_it_fails():
     vacio = {k: v for k, v in PRODUCTO.items() if k not in ("observables", "indicators", "malware")}
     with pytest.raises(ValueError, match="nothing to share"):
         build(vacio)
 
 
-def test_marcado_desconocido_falla():
+def test_an_unknown_marking_fails():
     with pytest.raises(ValueError):
         marking_object("violeta")
 
 
-def test_observable_de_tipo_no_soportado_falla():
+def test_an_unsupported_observable_type_fails():
     with pytest.raises(ValueError, match="unsupported"):
         build({**PRODUCTO, "observables": [{"type": "x-custom", "value": "x"}]})
 
 
-def test_la_cadena_queda_en_external_references():
+def test_the_chain_lands_in_external_references():
     b = build(PRODUCTO, trace={"pir": "PIR-001", "assessment": "nightjar-vs-saltwind", "hunt": "HUNT-001"})
     report = next(o for o in b["objects"] if o["type"] == "report")
     assert report["external_references"] == [
@@ -112,12 +112,12 @@ def test_la_cadena_queda_en_external_references():
     ]
 
 
-def test_sin_cadena_no_se_inventan_referencias():
+def test_without_a_chain_no_references_are_invented():
     report = next(o for o in build(PRODUCTO)["objects"] if o["type"] == "report")
     assert "external_references" not in report
 
 
-def test_valid_until_se_emite_y_se_comprueba():
+def test_valid_until_is_emitted_and_checked():
     indicadores = [{**PRODUCTO["indicators"][0], "valid_until": "2027-01-01T00:00:00Z"}]
     b = build({**PRODUCTO, "indicators": indicadores})
     indicador = next(o for o in b["objects"] if o["type"] == "indicator")

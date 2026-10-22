@@ -27,15 +27,16 @@ def validate(bundle: dict[str, Any], today: str | None = None) -> dict[str, Any]
 
 
 def external(bundle: dict, path: str | Path) -> dict:
-    """Comprueba el bundle con lo que haya instalado fuera de este paquete.
+    """Check the bundle with whatever is installed outside this package.
 
-    Dos comprobadores, y cualquiera de los dos vale:
-      - `stix2` (la biblioteca de OASIS): parsea el bundle contra su modelo de objetos.
-        No necesita red.
-      - `stix2-validator`: valida contra los esquemas JSON. Necesita su cache de esquemas,
-        que descarga; sin cache no puede decir nada y eso **no** es un aprobado.
+    Two checkers, and either one is enough:
+      - `stix2` (the OASIS library): parses the bundle against its object model.
+        It needs no network.
+      - `stix2-validator`: validates against the JSON schemas. It needs its schema cache,
+        which it downloads; without the cache it cannot say anything and that is **not**
+        a pass.
 
-    Devuelve `{"available": False}` cuando no hay ninguno.
+    Returns `{"available": False}` when neither is installed.
     """
     resultado: dict = {"available": True, "library": None, "validator": None}
 
@@ -46,7 +47,7 @@ def external(bundle: dict, path: str | Path) -> dict:
         resultado["library"] = {"tool": f"stix2 {stix2.__version__}", "ok": True}
     except ImportError:
         pass
-    except Exception as exc:  # noqa: BLE001 - cualquier fallo del modelo es un hallazgo
+    except Exception as exc:  # noqa: BLE001 - any failure of the model is a finding
         resultado["library"] = {"tool": "stix2", "ok": False, "error": str(exc)[:800]}
 
     ejecutable = shutil.which("stix2_validator") or shutil.which("stix2-validator")

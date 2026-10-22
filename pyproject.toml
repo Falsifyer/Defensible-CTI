@@ -1,6 +1,6 @@
-# La raiz es un workspace, no un paquete: no tiene version. Cada paquete lleva la suya y su
-# etiqueta (cryptonym-v0.7.0, stixforge-v0.2.0, ...), que es lo que hace que ocho numeros
-# signifiquen algo en vez de uno que no dice nada.
+# The root is a workspace, not a package: it has no version. Each package carries its own
+# version and its own tag (cryptonym-v0.7.0, stixforge-v0.2.0, ...), which is what makes
+# eight numbers mean something instead of one that says nothing.
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -16,7 +16,7 @@ pir-ledger = { workspace = true }
 huntplan = { workspace = true }
 
 [dependency-groups]
-# Los ocho son el producto: `uv sync` los instala todos en editable.
+# The eight are the product: `uv sync` installs them all in editable mode.
 dev = [
   "cti-method",
   "cryptonym",
@@ -36,8 +36,8 @@ dev = [
 ]
 
 [tool.uv]
-# Dependencias transitivas con avisos abiertos en el lock. Se fijan aqui para que el
-# entorno y el SBOM no arrastren versiones vulnerables conocidas.
+# Transitive dependencies with open advisories in the lock. Pinned here so the
+# environment and the SBOM do not carry known vulnerable versions.
 constraint-dependencies = [
   "pyjwt>=2.15.0",
   "starlette>=1.3.1",
@@ -46,7 +46,7 @@ constraint-dependencies = [
 [tool.pytest.ini_options]
 testpaths = ["packages"]
 # Los paquetes repiten nombres de modulo de test (test_core.py, test_cli.py...). El modo
-# importlib los resuelve por ruta; el modo por defecto falla al recolectar desde la raiz.
+# importlib resolves them by path; the default mode fails when collecting from the root.
 addopts = ["--import-mode=importlib"]
 
 [tool.ruff]

@@ -24,8 +24,8 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python }}
       - run: uv sync --all-packages --all-extras
-      # Los paquetes repiten nombres de modulo de test; --import-mode=importlib (en el
-      # pyproject raiz) los resuelve por ruta. Esta es la invocacion que fallaba.
+      # Packages reuse test module names; --import-mode=importlib (in the root
+      # pyproject) resolves them by path. This is the invocation that used to fail.
       - run: uv run pytest -q
 
   lint:
@@ -51,7 +51,7 @@ jobs:
       - run: uv run mypy
 
   evaluation:
-    name: La evaluacion del metodo
+    name: Method evaluation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --all-extras
-      # Sin esto la evaluacion es decorativa: no se ejecuta y puede podrirse.
+      # Without this the evaluation is decorative: it never runs and rots.
       - name: Corpus por split
         run: uv run python packages/cryptonym/evaluation/run_evaluation.py --corpus --check
       - name: Corpus adjudicado, estricto
@@ -78,19 +78,19 @@ jobs:
       - run: uv sync --all-packages --all-extras
       - name: make demo
         run: make demo
-      - name: El bundle que produce la demo es valido y compartible
+      - name: The bundle the demo produces is valid and shareable
         run: |
           uv run stixforge validate demo/out/bundle.json
           uv run stixforge validate demo/out/bundle.json --external
           uv run sharegate check demo/out/bundle.json
-      - name: La cadena se propaga al bundle
+      - name: The chain reaches the bundle
         run: |
           python - <<'PY'
           import json, sys
           bundle = json.load(open("demo/out/bundle.json"))
           report = next(o for o in bundle["objects"] if o["type"] == "report")
           refs = {r["source_name"]: r["external_id"] for r in report["external_references"]}
-          # La referencia lleva el hash del contenido: <id>@<sha256:12>.
+          # The reference carries the content hash: <id>@<sha256:12>.
           ids = {kind: value.split("@")[0] for kind, value in refs.items()}
           expected = {"cti-suite:pir": "PIR-001", "cti-suite:assessment": "nightjar-vs-saltwind", "cti-suite:hunt": "HUNT-001"}
           if ids != expected:
@@ -123,8 +123,8 @@ jobs:
         run: |
           python -m venv /tmp/wheelcheck
           /tmp/wheelcheck/bin/pip install --quiet dist/*.whl mcp
-          # El mapa de ATT&CK y los docs se leen al importar: si no viajan en la rueda,
-          # el paquete instalado revienta y no se descubre hasta que alguien lo instala.
+          # The ATT&CK map and the docs are read at import time: if they do not travel in
+          # the wheel, the installed package breaks and nobody finds out until they install it.
           /tmp/wheelcheck/bin/python -c "from huntplan.core import attack_provenance; print('attack', attack_provenance()['attack_version'])"
           /tmp/wheelcheck/bin/python -c "from assessment.core import method_documentation; print('docs', method_documentation('method')['section'])"
           /tmp/wheelcheck/bin/ctisuite --version
@@ -144,9 +144,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --all-extras
-      # pycti (extra `opencti`) fija setuptools a una banda que excluye 83; la version
-      # 82.0.1 solo se usa como backend de build y el suite no la importa. El aviso esta
-      # documentado en SECURITY.md; el resto de avisos no se ignoran.
+      # pycti (the `opencti` extra) pins setuptools to a band that excludes 83; 82.0.1
+      # is only used as a build backend and the suite never imports it. The advisory is
+      # documented in SECURITY.md; no other advisory is ignored.
       - run: uv run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
 
   infra:
@@ -164,13 +164,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Sin credenciales en el arbol
+      - name: No credentials in the tree
         run: |
           patron='(-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|://[^/:@ ]+:[^/ @]+@)'
-          # La marca `dsh-secrets:allow` exime una linea, igual que en el hook del harness: el
-          # banco de pruebas guarda muestras con forma de credencial a proposito.
+          # The `dsh-secrets:allow` marker exempts a line, as in the harness hook: the test
+          # fixtures keep credential-shaped samples on purpose.
           if git ls-files -z | xargs -0 grep -nEI "$patron" | grep -v 'dsh-secrets:allow'; then
-            echo "::error::credencial en el arbol versionado"
+            echo "::error::credential in the versioned tree"
             exit 1
           fi
-          echo "sin credenciales"
+          echo "no credentials"

@@ -76,7 +76,7 @@ def _run_assess(args: argparse.Namespace) -> int:
             schema_module.validate(verdict, "judgement")
         except RuntimeError as exc:
             raise CannotCheck(str(exc)) from exc
-        except Exception as exc:  # jsonschema.ValidationError y compañía
+        except Exception as exc:  # jsonschema.ValidationError and friends
             raise CannotCheck(f"the verdict does not match its schema: {exc}") from exc
     if args.against:
         previous = read_json(args.against)
@@ -88,7 +88,7 @@ def _run_assess(args: argparse.Namespace) -> int:
         )
     emit(verdict)
     if args.append and not has_high(verdict["findings"]):
-        # El ledger se escribe, pero no se imprime: la salida de `assess` es un documento.
+        # The ledger is written but not printed: the output of `assess` is one document.
         append_claim(args.append, verdict, now=args.now)
     return exit_code(verdict["findings"])
 

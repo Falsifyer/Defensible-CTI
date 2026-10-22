@@ -28,7 +28,7 @@ dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "jsonschema>=4.22"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-# Los esquemas son el contrato de los seis formatos: viajan con el nucleo.
+# The schemas are the contract of the six formats: they travel with the core.
 cti_method = ["schemas/*.json"]
 
 [tool.ruff]

@@ -122,7 +122,7 @@ def _run_assess(path: str, strict: bool = False) -> int:
         except RuntimeError as exc:
             print(f"cannot check: {exc}", file=sys.stderr)
             return 2
-        except Exception as exc:  # noqa: BLE001 - cualquier fallo del esquema es no comprobado
+        except Exception as exc:  # noqa: BLE001 - any schema failure means "not checked"
             print(f"cannot check: the judgement does not match its schema: {exc}", file=sys.stderr)
             return 2
     print(json.dumps(verdict, indent=2, ensure_ascii=False))

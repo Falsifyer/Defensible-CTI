@@ -1,8 +1,8 @@
-"""Validacion de un registro de requisitos de inteligencia.
+"""Validation of a register of intelligence requirements.
 
-La regla que sostiene todo: **una PIR que no nombra la decision que informa no es una
-PIR, es un tema de interes**. El validador la rechaza, igual que `huntplan` rechaza una
-hipotesis que no se puede refutar.
+The rule that holds everything up: **a PIR that does not name the decision it informs is
+not a PIR, it is a topic of interest**. The validator rejects it, just as `huntplan`
+rejects a hypothesis that cannot be refuted.
 """
 
 from __future__ import annotations
@@ -15,27 +15,27 @@ from cti_method.contract import HIGH, MEDIUM, finding, has_high, severity_counts
 
 SCHEMA_VERSION = "1.0"
 
-# Escala Admiralty: fiabilidad de la fuente (A-F) y credibilidad de la informacion (1-6).
+# Admiralty scale: source reliability (A-F) and information credibility (1-6).
 ADMIRALTY = re.compile(r"^[A-F][1-6]$")
-PRIORIDADES = ("high", "medium", "low")
+PRIORITIES = ("high", "medium", "low")
 
 
-def _fecha(valor: Any) -> dt.date | None:
-    if not isinstance(valor, str):
+def _date(value: Any) -> dt.date | None:
+    if not isinstance(value, str):
         return None
     try:
-        return dt.date.fromisoformat(valor)
+        return dt.date.fromisoformat(value)
     except ValueError:
         return None
 
 
-def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str, Any]:
-    """Devuelve los hallazgos y si el registro es valido.
+def validate(document: dict[str, Any], today: dt.date | None = None) -> dict[str, Any]:
+    """Return the findings and whether the register is valid.
 
-    Un hallazgo de severidad `high` invalida el registro; los `medium` avisan.
+    A `high` finding invalidates the register; `medium` findings are warnings.
     """
-    hoy = hoy or dt.date.today()
-    if not isinstance(documento, dict):
+    today = today or dt.date.today()
+    if not isinstance(document, dict):
         return {
             "valid": False,
             "findings": [finding("not-an-object", HIGH, "the register is not a JSON object")],
@@ -46,134 +46,136 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
             "register_id": None,
         }
 
-    requisitos = documento.get("requirements")
-    hallazgos: list[dict[str, str]] = []
+    requirements = document.get("requirements")
+    findings: list[dict[str, str]] = []
     ids: list[str] = []
 
-    if not isinstance(requisitos, list) or not requisitos:
-        hallazgos.append(finding("no-requirements", HIGH, "the register has no requirements"))
+    if not isinstance(requirements, list) or not requirements:
+        findings.append(finding("no-requirements", HIGH, "the register has no requirements"))
         return {
             "valid": False,
-            "findings": hallazgos,
+            "findings": findings,
             "requirements": 0,
             "high": 1,
             "medium": 0,
             "ids": [],
-            "register_id": documento.get("id"),
+            "register_id": document.get("id"),
         }
 
-    vistos: set[str] = set()
-    for i, pir in enumerate(requisitos):
+    seen: set[str] = set()
+    for index, pir in enumerate(requirements):
         if not isinstance(pir, dict):
-            hallazgos.append(finding("malformed", HIGH, "the requirement is not an object", where=f"requirements[{i}]"))
+            findings.append(
+                finding("malformed", HIGH, "the requirement is not an object", where=f"requirements[{index}]")
+            )
             continue
-        donde = str(pir.get("id") or f"requirements[{i}]")
-        if donde in vistos:
-            hallazgos.append(finding("duplicate-id", HIGH, "duplicate identifier", where=donde))
+        where = str(pir.get("id") or f"requirements[{index}]")
+        if where in seen:
+            findings.append(finding("duplicate-id", HIGH, "duplicate identifier", where=where))
         else:
-            ids.append(donde)
-        vistos.add(donde)
+            ids.append(where)
+        seen.add(where)
 
-        pregunta = (pir.get("question") or "").strip()
-        if not pregunta:
-            hallazgos.append(finding("no-question", HIGH, "no question", where=donde))
-        elif not pregunta.endswith("?"):
-            hallazgos.append(
+        question = (pir.get("question") or "").strip()
+        if not question:
+            findings.append(finding("no-question", HIGH, "no question", where=where))
+        elif not question.endswith("?"):
+            findings.append(
                 finding(
                     "not-a-question",
                     MEDIUM,
                     "the question does not end in '?': a statement is not answerable",
-                    where=donde,
+                    where=where,
                 )
             )
 
-        # La regla central: sin decision, no es una PIR.
+        # The central rule: no decision, no PIR.
         if not (pir.get("decision") or "").strip():
-            hallazgos.append(
+            findings.append(
                 finding(
                     "no-decision",
                     HIGH,
                     "does not name the decision it informs: that is a topic of interest, not a PIR",
-                    where=donde,
+                    where=where,
                 )
             )
         if not (pir.get("consumer") or "").strip():
-            hallazgos.append(finding("no-consumer", HIGH, "does not say who takes that decision", where=donde))
-        if pir.get("priority") not in PRIORIDADES:
-            hallazgos.append(
+            findings.append(finding("no-consumer", HIGH, "does not say who takes that decision", where=where))
+        if pir.get("priority") not in PRIORITIES:
+            findings.append(
                 finding(
                     "bad-priority",
                     MEDIUM,
-                    f"priority {pir.get('priority')!r}: expected one of {', '.join(PRIORIDADES)}",
-                    where=donde,
+                    f"priority {pir.get('priority')!r}: expected one of {', '.join(PRIORITIES)}",
+                    where=where,
                 )
             )
 
-        limite = _fecha(pir.get("deadline"))
-        if pir.get("deadline") and limite is None:
-            hallazgos.append(finding("bad-deadline", MEDIUM, "not an ISO date (YYYY-MM-DD)", where=donde))
-        if limite and limite < hoy and pir.get("status") != "answered":
-            hallazgos.append(
+        deadline = _date(pir.get("deadline"))
+        if pir.get("deadline") and deadline is None:
+            findings.append(finding("bad-deadline", MEDIUM, "not an ISO date (YYYY-MM-DD)", where=where))
+        if deadline and deadline < today and pir.get("status") != "answered":
+            findings.append(
                 finding(
                     "stale",
                     MEDIUM,
-                    f"overdue since {limite.isoformat()} and unanswered: retire or renew it",
-                    where=donde,
+                    f"overdue since {deadline.isoformat()} and unanswered: retire or renew it",
+                    where=where,
                 )
             )
 
         eei = pir.get("eei")
         if not isinstance(eei, list) or not eei:
-            hallazgos.append(finding("no-eei", HIGH, "no EEI: there is nothing to collect", where=donde))
+            findings.append(finding("no-eei", HIGH, "no EEI: there is nothing to collect", where=where))
             continue
-        for j, elemento in enumerate(eei):
-            punto = f"{donde}/eei[{j}]"
-            if not isinstance(elemento, dict) or not (elemento.get("question") or "").strip():
-                hallazgos.append(finding("eei-no-question", HIGH, "EEI without a question", where=punto))
+        for position, element in enumerate(eei):
+            pointer = f"{where}/eei[{position}]"
+            if not isinstance(element, dict) or not (element.get("question") or "").strip():
+                findings.append(finding("eei-no-question", HIGH, "EEI without a question", where=pointer))
                 continue
-            indicadores = elemento.get("indicators")
-            if not isinstance(indicadores, list) or not indicadores:
-                hallazgos.append(
+            indicators = element.get("indicators")
+            if not isinstance(indicators, list) or not indicators:
+                findings.append(
                     finding(
                         "eei-no-indicator",
                         MEDIUM,
                         "EEI with no indicator: there is no way to know when it is answered",
-                        where=punto,
+                        where=pointer,
                     )
                 )
                 continue
-            for indicador in indicadores:
-                valor = (indicador or {}).get("value") if isinstance(indicador, dict) else None
-                fuente = (indicador or {}).get("source") if isinstance(indicador, dict) else None
-                if not valor:
-                    hallazgos.append(finding("indicator-no-value", HIGH, "indicator without a value", where=punto))
-                if fuente is None:
-                    hallazgos.append(
+            for indicator in indicators:
+                value = (indicator or {}).get("value") if isinstance(indicator, dict) else None
+                source = (indicator or {}).get("source") if isinstance(indicator, dict) else None
+                if not value:
+                    findings.append(finding("indicator-no-value", HIGH, "indicator without a value", where=pointer))
+                if source is None:
+                    findings.append(
                         finding(
                             "indicator-ungraded",
                             HIGH,
-                            f"indicator {valor!r} is ungraded: the source goes as A-F + 1-6",
-                            where=punto,
+                            f"indicator {value!r} is ungraded: the source goes as A-F + 1-6",
+                            where=pointer,
                         )
                     )
-                elif not ADMIRALTY.match(str(fuente)):
-                    hallazgos.append(
+                elif not ADMIRALTY.match(str(source)):
+                    findings.append(
                         finding(
                             "bad-admiralty",
                             MEDIUM,
-                            f"grade {fuente!r} is outside the Admiralty scale (A2, B3, ...)",
-                            where=punto,
+                            f"grade {source!r} is outside the Admiralty scale (A2, B3, ...)",
+                            where=pointer,
                         )
                     )
 
-    counts = severity_counts(hallazgos)
+    counts = severity_counts(findings)
     return {
-        "valid": not has_high(hallazgos),
-        "findings": hallazgos,
-        "requirements": len(requisitos),
+        "valid": not has_high(findings),
+        "findings": findings,
+        "requirements": len(requirements),
         "high": counts[HIGH],
         "medium": counts[MEDIUM],
         "ids": ids,
-        "register_id": documento.get("id"),
-        "schema_version": documento.get("schema_version", SCHEMA_VERSION),
+        "register_id": document.get("id"),
+        "schema_version": document.get("schema_version", SCHEMA_VERSION),
     }

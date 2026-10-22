@@ -78,5 +78,5 @@ def test_a_ceiling_never_changes_when_a_source_registry_is_added_without_derivat
     evidence: list[Evidence],
 ) -> None:
     sources = [{"id": f"src{i}", "publisher": f"Publisher {i}"} for i in range(1, 4)]
-    # Sin source_id no hay registro que consultar: el resultado no depende del registro.
+    # Without a source_id there is no registry to consult: the result does not depend on it.
     assert ceiling(evidence, sources) == ceiling(evidence)

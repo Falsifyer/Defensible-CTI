@@ -37,11 +37,11 @@ def _id(tipo: str, clave: str) -> str:
 
 
 def _sco(observable: dict[str, Any]) -> dict[str, Any]:
-    """Observable de STIX 2.1: inmutable, sin `created`, `modified` ni marcado propio.
+    """A STIX 2.1 cyber-observable: immutable, with no `created`, `modified` or marking.
 
-    Los SCO dejaron de llevar esas propiedades en 2.1; el marcado va en los SDO (el report
-    y los indicadores) que los referencian. Emitirlas hacia el bundle invalido para
-    `stix2.parse`, que es como se descubrio.
+    SCOs stopped carrying those properties in 2.1; the marking goes on the SDOs (the report
+    and the indicators) that reference them. Emitting them made the bundle invalid for
+    `stix2.parse`, which is how it was found.
     """
     tipo = observable.get("type")
     if tipo not in SCO_TYPES:
@@ -195,12 +195,12 @@ def build(
 
 
 def build_file(
-    entrada: str | Path,
-    salida: str | Path | None = None,
+    source: str | Path,
+    output: str | Path | None = None,
     trace: dict[str, str | None] | None = None,
 ) -> dict[str, Any]:
-    producto = json.loads(Path(entrada).read_text(encoding="utf-8"))
-    bundle = build(producto, trace=trace)
-    if salida:
-        Path(salida).write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    product = json.loads(Path(source).read_text(encoding="utf-8"))
+    bundle = build(product, trace=trace)
+    if output:
+        Path(output).write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return bundle

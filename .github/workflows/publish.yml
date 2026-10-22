@@ -1,11 +1,11 @@
 name: Publish to PyPI
 
-# Publicación con trusted publishing (OIDC): no hay token de PyPI en el repositorio.
-# Requiere, una sola vez y a mano:
-#   1. reservar los nombres en PyPI y configurar un "pending publisher" por paquete
-#      apuntando a este repositorio, este workflow y el environment `pypi`;
-#   2. crear el environment `pypi` en GitHub.
-# Hasta que exista, este workflow no publica nada: el paso de OIDC falla.
+# Trusted publishing (OIDC): there is no PyPI token in the repository.
+# It needs, once and by hand:
+#   1. reserve the names on PyPI and configure a pending publisher per package
+#      pointing at this repository, this workflow and the `pypi` environment;
+#   2. create the `pypi` environment on GitHub.
+# Until that exists this workflow publishes nothing: the OIDC step fails.
 
 on:
   release:
@@ -35,7 +35,7 @@ jobs:
           enable-cache: true
       - run: uv sync --all-packages --all-extras
 
-      - name: Resolver el paquete desde la release o el input
+      - name: Resolve the package from the release or the input
         id: pkg
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}

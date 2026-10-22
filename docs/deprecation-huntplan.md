@@ -12,7 +12,7 @@ $ gh api repos/ME0094/huntplan/contents/README.md --jq .content | base64 -d > /t
 $ # prepend the banner below to /tmp/old-readme.md, then:
 $ gh api repos/ME0094/huntplan/contents/README.md \
     --method PUT \
-    -f message="docs: este repositorio esta obsoleto; el paquete vive en cti-suite" \
+    -f message="docs: this repository is deprecated; the package lives in cti-suite" \
     -f content="$(base64 -w0 /tmp/old-readme.md)" \
     -f branch=main
 ```

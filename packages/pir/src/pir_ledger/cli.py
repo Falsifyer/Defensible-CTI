@@ -1,4 +1,4 @@
-"""CLI de pir-ledger: validar un registro, listarlo y dar sus identificadores."""
+"""pir-ledger CLI: validate a register, list it, and print its identifiers."""
 
 from __future__ import annotations
 

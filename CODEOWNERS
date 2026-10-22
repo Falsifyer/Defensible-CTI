@@ -1,8 +1,8 @@
-# Un solo mantenedor: todo el repositorio.
+# One maintainer: the whole repository.
 * @ME0094
 
-# Las reglas compartidas y los esquemas son contrato: cualquier cambio aqui pide revision
-# explicita del mantenedor.
+# The shared rules and the schemas are a contract: any change here needs the maintainer's
+# explicit review.
 /packages/cti-method/ @ME0094
 /schemas/ @ME0094
 /.github/workflows/ @ME0094

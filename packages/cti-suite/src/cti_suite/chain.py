@@ -181,7 +181,7 @@ def run_chain(directory: str | Path, out: str | Path | None = None, *, clean: bo
                 step.summary = _summary(json.loads(text))
         results.append({"step": step.label, "status": step.status, "output": step.output, "summary": step.summary})
         if step.status == 0 and step.argv[0] == "pir":
-            # El registro que viaja es el que paso la validacion, no el original.
+            # What travels is the register that passed validation, not the original.
             shutil.copyfile(root / "pir.json", target / "pir.json")
         if step.status != 0:
             code = step.status

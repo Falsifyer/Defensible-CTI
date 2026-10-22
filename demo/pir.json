@@ -6,56 +6,44 @@
   "requirements": [
     {
       "id": "PIR-001",
-      "question": "Que actores atacan la cadena de suministro del sector energetico?",
-      "decision": "Que proveedores entran en el plan de vigilancia del trimestre.",
-      "consumer": "Equipo de inteligencia",
+      "question": "Which actors attack the supply chain of the energy sector?",
+      "decision": "Which suppliers enter the quarterly monitoring plan.",
+      "consumer": "Intelligence team",
       "priority": "high",
       "deadline": "2026-12-31",
       "status": "open",
       "eei": [
         {
           "id": "EEI-001",
-          "question": "Hay campanas documentadas contra proveedores del sector?",
+          "question": "Are there documented campaigns against sector suppliers?",
           "indicators": [
-            {
-              "value": "campanas publicadas en el trimestre",
-              "source": "B2"
-            },
-            {
-              "value": "proveedores nombrados en avisos de terceros",
-              "source": "A1"
-            }
+            {"value": "campaigns published this quarter", "source": "B2"},
+            {"value": "suppliers named in third-party advisories", "source": "A1"}
           ]
         },
         {
           "id": "EEI-002",
-          "question": "Se ha observado acceso a codigo fuente de esos proveedores?",
+          "question": "Has access to those suppliers' source code been observed?",
           "indicators": [
-            {
-              "value": "incidentes de acceso a repositorios",
-              "source": "B2"
-            }
+            {"value": "repository access incidents", "source": "B2"}
           ]
         }
       ]
     },
     {
       "id": "PIR-002",
-      "question": "Que tecnicas de acceso inicial usan los intermediarios del sector?",
-      "decision": "Que reglas de deteccion se priorizan este trimestre.",
-      "consumer": "Ingenieria de deteccion",
+      "question": "Which initial-access techniques do sector brokers use?",
+      "decision": "Which detection rules are prioritised this quarter.",
+      "consumer": "Detection engineering",
       "priority": "medium",
       "deadline": "2027-03-31",
       "status": "open",
       "eei": [
         {
           "id": "EEI-003",
-          "question": "Que tecnicas aparecen en al menos dos campanas del sector?",
+          "question": "Which techniques appear in at least two sector campaigns?",
           "indicators": [
-            {
-              "value": "tecnicas con dos o mas fuentes independientes",
-              "source": "A2"
-            }
+            {"value": "techniques with two or more independent sources", "source": "A2"}
           ]
         }
       ]

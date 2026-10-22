@@ -159,8 +159,8 @@ def _run_validate(args: argparse.Namespace) -> int:
                 if validador["code"] == 0:
                     pass
                 elif validador["code"] == 2 and sin_esquemas:
-                    # No es que el bundle este mal: el validador no tiene su cache de
-                    # esquemas (los descarga). "No comprobado" no es "invalido" ni "limpio".
+                    # The bundle is not necessarily wrong: the validator has no schema
+                    # cache (it downloads it). "Not checked" is neither "invalid" nor "clean".
                     resultado["findings"].append({
                         "code": "external-not-checked", "severity": "info", "where": validador["tool"],
                         "message": "could not validate: the validator has no schema cache",

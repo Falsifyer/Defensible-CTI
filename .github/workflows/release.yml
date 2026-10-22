@@ -1,7 +1,7 @@
 name: Release
 
-# Cada paquete lleva su propia version y su propia etiqueta: `cryptonym-v0.7.0`,
-# `stixforge-v0.2.0`, ... El tag elige el paquete; el resto no se publica.
+# Each package carries its own version and its own tag: `cryptonym-v0.7.0`,
+# `stixforge-v0.2.0`, ... The tag picks the package; nothing else is published.
 on:
   push:
     tags:
@@ -31,22 +31,22 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Resolver paquete, directorio y version desde la etiqueta
+      - name: Resolve package, directory and version from the tag
         id: pkg
         env:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
-        # La correspondencia tag -> paquete es codigo con tests, no un `case` en YAML.
+        # The tag -> package mapping is code with tests, not a `case` in YAML.
         run: uv run --no-project python -m cti_suite.release --tag "$TAG" --check --github-output
 
       - run: uv sync --all-packages --all-extras
 
-      - name: La version de la etiqueta es la del paquete
+      - name: The tag version is the package version
         run: uv run python -m cti_suite.release --tag "${{ steps.pkg.outputs.tag }}" --check
 
-      - name: Pruebas antes de publicar
+      - name: Tests before publishing
         run: uv run pytest -q
 
-      - name: Construir el paquete
+      - name: Build the package
         run: uv build --package "${{ steps.pkg.outputs.package }}" --out-dir dist
 
       - name: SBOM (CycloneDX)
@@ -56,7 +56,7 @@ jobs:
           format: cyclonedx-json
           output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
 
-      - name: Firmar los artefactos (sigstore, keyless)
+      - name: Sign the artifacts (sigstore, keyless)
         uses: sigstore/gh-action-sigstore-python@v3
         with:
           inputs: dist/*.whl dist/*.tar.gz

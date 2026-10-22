@@ -37,7 +37,7 @@ def test_the_bundle_carries_the_trace_of_the_steps_before_it(demo_run: dict) -> 
         "cti-suite:assessment": "nightjar-vs-saltwind",
         "cti-suite:hunt": "HUNT-001",
     }
-    # El hash fija el contenido exacto del juicio, no solo su id.
+    # The hash pins the exact content of the judgement, not just its id.
     assert references["cti-suite:assessment"].split("@")[1] == content_hash(demo_run["verdict"])[:12]
 
 

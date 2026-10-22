@@ -1,14 +1,14 @@
 # cti-suite
 #
-#   make install   crea el entorno del workspace con uv (los ocho paquetes en editable)
-#   make demo      corre la cadena completa sobre datos ficticios
-#   make test      pruebas de todos los paquetes
-#   make lint      ruff sobre los paquetes
-#   make types     mypy sobre los paquetes
-#   make eval      la evaluacion del metodo, contra sus baselines
-#   make security  pip-audit sobre el entorno
-#   make build     construye las distribuciones
-#   make clean     borra .venv, dist y las salidas de la demo
+#   make install   creates the workspace environment with uv (all eight packages, editable)
+#   make demo      runs the whole chain on fictional data
+#   make test      every package's tests
+#   make lint      ruff over the packages
+#   make types     mypy over the packages
+#   make eval      the method evaluation, against its baselines
+#   make security  pip-audit over the environment
+#   make build     builds the distributions
+#   make clean     removes .venv, dist and the demo outputs
 
 UV ?= uv
 

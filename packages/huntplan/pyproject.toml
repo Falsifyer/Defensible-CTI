@@ -35,7 +35,7 @@ huntplan-mcp = "huntplan.mcp_server:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-# El mapa de ATT&CK se lee al importar: sin el, el paquete instalado no arranca.
+# The ATT&CK map is read at import time: without it the installed package does not start.
 huntplan = ["attack.json"]
 
 [tool.ruff]
