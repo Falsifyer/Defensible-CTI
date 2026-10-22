@@ -45,8 +45,8 @@ constraint-dependencies = [
 
 [tool.pytest.ini_options]
 testpaths = ["packages"]
-# Los paquetes repiten nombres de modulo de test (test_core.py, test_cli.py...). El modo
-# importlib resolves them by path; the default mode fails when collecting from the root.
+# Packages reuse test module names (test_core.py, test_cli.py...). importlib mode
+# resolves them by path; the default mode fails when collecting from the root.
 addopts = ["--import-mode=importlib"]
 
 [tool.ruff]

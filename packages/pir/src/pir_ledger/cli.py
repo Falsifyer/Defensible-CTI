@@ -47,43 +47,43 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     try:
-        documento = read_json(args.path)
-        if not isinstance(documento, dict):
+        document = read_json(args.path)
+        if not isinstance(document, dict):
             raise CannotCheck(f"{args.path} is not a JSON object")
     except CannotCheck as exc:
         print(f"cannot check: {exc}", file=sys.stderr)
         return CANNOT_CHECK
 
-    hoy = _today(getattr(args, "today", None))
+    today = _today(getattr(args, "today", None))
     if args.command == "ids":
-        emit([pir.get("id") for pir in documento.get("requirements", []) if isinstance(pir, dict)])
+        emit([pir.get("id") for pir in document.get("requirements", []) if isinstance(pir, dict)])
         return OK
 
     if args.command == "list":
-        referencia = hoy or dt.date.today()
-        for pir in documento.get("requirements", []):
+        reference = today or dt.date.today()
+        for pir in document.get("requirements", []):
             if not isinstance(pir, dict):
                 continue
-            limite = pir.get("deadline") or "no deadline"
-            dias = ""
+            deadline = pir.get("deadline") or "no deadline"
+            days = ""
             try:
-                dias = f" ({(dt.date.fromisoformat(limite) - referencia).days:+d}d)"
+                days = f" ({(dt.date.fromisoformat(deadline) - reference).days:+d}d)"
             except (TypeError, ValueError):
                 pass
-            print(f"{pir.get('id', '?'):10s} {pir.get('priority', '?'):7s} {limite}{dias:8s} "
+            print(f"{pir.get('id', '?'):10s} {pir.get('priority', '?'):7s} {deadline}{days:8s} "
                   f"{pir.get('status', 'open'):9s} {pir.get('decision', '')[:60]}")
         return OK
 
-    resultado = validate(documento, hoy)
+    result = validate(document, today)
     if args.json:
-        emit(resultado)
+        emit(result)
     else:
-        for item in resultado["findings"]:
+        for item in result["findings"]:
             marca = "HIGH " if item["severity"] == "high" else "med"
             print(f"  {marca} {item['code']:20s} {item.get('where', '-'):24s} {item['message']}")
-        print(f"\nRequirements: {resultado['requirements']}   HIGH: {resultado['high']}   MED: {resultado['medium']}")
-        print("Result:", "valid" if resultado["valid"] else "NOT valid")
-    return OK if resultado["valid"] else FINDING
+        print(f"\nRequirements: {result['requirements']}   HIGH: {result['high']}   MED: {result['medium']}")
+        print("Result:", "valid" if result["valid"] else "NOT valid")
+    return OK if result["valid"] else FINDING
 
 
 if __name__ == "__main__":

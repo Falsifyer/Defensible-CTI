@@ -41,22 +41,22 @@ def test_every_sdo_is_marked_and_scos_do_not_need_it():
         assert o["object_marking_refs"], o["id"]
     for o in b["objects"]:
         if o["type"] in sco:
-            # En 2.1 un SCO no lleva created, modified, created_by_ref ni marcado.
+            # In 2.1 an SCO carries no created, modified, created_by_ref or marking.
             assert set(o) <= {"type", "spec_version", "id", "value", "hashes"}
 
 
 def test_clear_uses_the_official_tlp_2_0_marking():
     b = build({**PRODUCTO, "tlp": "clear"})
-    marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
-    assert marcado["id"] == TLP["CLEAR"]["id"]
-    assert marcado["name"] == "TLP:CLEAR"
-    assert marcado["extensions"]
+    marking = next(o for o in b["objects"] if o["type"] == "marking-definition")
+    assert marking["id"] == TLP["CLEAR"]["id"]
+    assert marking["name"] == "TLP:CLEAR"
+    assert marking["extensions"]
 
 
 def test_amber_strict_is_a_first_class_marking():
-    marcado = marking_object("amber+strict")
-    assert marcado["id"] == TLP["AMBER+STRICT"]["id"]
-    assert marcado["name"] == "TLP:AMBER+STRICT"
+    marking = marking_object("amber+strict")
+    assert marking["id"] == TLP["AMBER+STRICT"]["id"]
+    assert marking["name"] == "TLP:AMBER+STRICT"
 
 
 def test_white_is_deprecated_and_not_emitted():
@@ -66,8 +66,8 @@ def test_white_is_deprecated_and_not_emitted():
 
 def test_the_example_ships_as_amber():
     b = build(PRODUCTO)
-    marcado = next(o for o in b["objects"] if o["type"] == "marking-definition")
-    assert marcado["id"] == TLP["AMBER"]["id"]
+    marking = next(o for o in b["objects"] if o["type"] == "marking-definition")
+    assert marking["id"] == TLP["AMBER"]["id"]
 
 
 def test_without_created_it_fails_instead_of_forging_a_new_version_with_the_same_id():
@@ -120,8 +120,8 @@ def test_without_a_chain_no_references_are_invented():
 def test_valid_until_is_emitted_and_checked():
     indicadores = [{**PRODUCTO["indicators"][0], "valid_until": "2027-01-01T00:00:00Z"}]
     b = build({**PRODUCTO, "indicators": indicadores})
-    indicador = next(o for o in b["objects"] if o["type"] == "indicator")
-    assert indicador["valid_until"] == "2027-01-01T00:00:00Z"
+    indicator = next(o for o in b["objects"] if o["type"] == "indicator")
+    assert indicator["valid_until"] == "2027-01-01T00:00:00Z"
 
     with pytest.raises(ValueError, match="valid_until"):
         build({**PRODUCTO, "indicators": [{**PRODUCTO["indicators"][0], "valid_until": "2020-01-01T00:00:00Z"}]})

@@ -201,7 +201,7 @@ def test_id_of_is_explicit_per_artifact_kind() -> None:
         id_of({"id": "no-kind"})
 
 
-# ------------------------------------------------------------------ fuente e independencia
+# ------------------------------------------------------------------ sources and independence
 
 
 def test_two_sources_that_derive_from_one_are_one_voice() -> None:

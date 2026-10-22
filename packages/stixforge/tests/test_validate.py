@@ -18,8 +18,8 @@ def test_a_rebuilt_bundle_is_valid():
 
 def test_an_unmarked_object_fails():
     b = build(PRODUCTO)
-    objetivo = next(o for o in b["objects"] if o["type"] == "indicator")
-    del objetivo["object_marking_refs"]
+    target = next(o for o in b["objects"] if o["type"] == "indicator")
+    del target["object_marking_refs"]
     r = validate(b)
     assert r["valid"] is False
     assert "stix-no-marking" in {h["code"] for h in r["findings"]}
@@ -65,7 +65,7 @@ def test_cli_without_an_external_validator_exits_two(tmp_path, capsys):
     output = tmp_path / "bundle.json"
     main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
     capsys.readouterr()
-    # En este entorno stix2-validator no esta instalado: no comprobado no es limpio.
+    # In this environment stix2-validator is not installed: not checked is not clean.
     codigo = main(["validate", str(output), "--external"])
     assert codigo in (0, 1, 2)
     if codigo == 2:
@@ -73,7 +73,7 @@ def test_cli_without_an_external_validator_exits_two(tmp_path, capsys):
 
 
 def test_the_oasis_library_accepts_the_bundle(tmp_path):
-    """El camino --external deja de estar sin probar: valida con stix2 de verdad."""
+    """The --external path stops being untested: it validates with the real stix2."""
     pytest = __import__("pytest")
     pytest.importorskip("stix2")
     from stixforge.validate import external

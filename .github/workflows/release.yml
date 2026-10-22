@@ -61,7 +61,7 @@ jobs:
         with:
           inputs: dist/*.whl dist/*.tar.gz
 
-      - name: Publicar la release
+      - name: Publish the release
         if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}

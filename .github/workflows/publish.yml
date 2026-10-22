@@ -50,13 +50,13 @@ jobs:
       - name: Construir
         run: uv build --package "${{ steps.pkg.outputs.package }}" --out-dir dist
 
-      - name: Comprobar que la rueda se instala y arranca
+      - name: Check that the wheel installs and starts
         run: |
           python -m venv /tmp/pubcheck
           /tmp/pubcheck/bin/pip install --quiet dist/*.whl
           /tmp/pubcheck/bin/python -c "import importlib.metadata as m; print(m.version('${{ steps.pkg.outputs.package }}'))"
 
-      - name: Publicar en PyPI
+      - name: Publish to PyPI
         if: ${{ !inputs.dry_run }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

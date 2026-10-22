@@ -38,36 +38,36 @@ def external(bundle: dict, path: str | Path) -> dict:
 
     Returns `{"available": False}` when neither is installed.
     """
-    resultado: dict = {"available": True, "library": None, "validator": None}
+    result: dict = {"available": True, "library": None, "validator": None}
 
     try:
         import stix2
 
         stix2.parse(bundle, allow_custom=False, version="2.1")
-        resultado["library"] = {"tool": f"stix2 {stix2.__version__}", "ok": True}
+        result["library"] = {"tool": f"stix2 {stix2.__version__}", "ok": True}
     except ImportError:
         pass
     except Exception as exc:  # noqa: BLE001 - any failure of the model is a finding
-        resultado["library"] = {"tool": "stix2", "ok": False, "error": str(exc)[:800]}
+        result["library"] = {"tool": "stix2", "ok": False, "error": str(exc)[:800]}
 
-    ejecutable = shutil.which("stix2_validator") or shutil.which("stix2-validator")
-    if ejecutable is None:
-        al_lado = Path(sys.executable).parent
-        for nombre in ("stix2_validator", "stix2-validator"):
-            candidato = al_lado / nombre
-            if candidato.is_file():
-                ejecutable = str(candidato)
+    executable = shutil.which("stix2_validator") or shutil.which("stix2-validator")
+    if executable is None:
+        beside = Path(sys.executable).parent
+        for name in ("stix2_validator", "stix2-validator"):
+            candidate = beside / name
+            if candidate.is_file():
+                executable = str(candidate)
                 break
-    if ejecutable:
-        proceso = subprocess.run(
-            [ejecutable, str(path)], capture_output=True, text=True, timeout=180, check=False,
+    if executable:
+        process = subprocess.run(
+            [executable, str(path)], capture_output=True, text=True, timeout=180, check=False,
         )
-        resultado["validator"] = {
-            "tool": Path(ejecutable).name,
-            "code": proceso.returncode,
-            "output": (proceso.stdout + proceso.stderr).strip()[:4000],
+        result["validator"] = {
+            "tool": Path(executable).name,
+            "code": process.returncode,
+            "output": (process.stdout + process.stderr).strip()[:4000],
         }
 
-    if resultado["library"] is None and resultado["validator"] is None:
+    if result["library"] is None and result["validator"] is None:
         return {"available": False}
-    return resultado
+    return result

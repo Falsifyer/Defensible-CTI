@@ -106,5 +106,7 @@ def test_findings_are_in_english_like_the_rest_of_the_suite() -> None:
     )
     assert messages["no-consumer"] == "does not say who takes that decision"
     assert messages["no-eei"] == "no EEI: there is nothing to collect"
+    # Guard against Spanish leaking back into the user-facing messages.
+    SPANISH = ("no hay", "sin ", "el registro", "la pregunta")
     for message in messages.values():
-        assert "no hay" not in message and "sin " not in message
+        assert not any(word in message for word in SPANISH)

@@ -138,64 +138,64 @@ def _run_build(args: argparse.Namespace) -> int:
 
 def _run_validate(args: argparse.Namespace) -> int:
     bundle = read_json(args.path)
-    resultado = validate(bundle, today=args.today)
+    result = validate(bundle, today=args.today)
     if args.external:
-        externo = external(bundle, args.path)
-        resultado["external"] = externo
-        if not externo.get("available"):
+        external_check = external(bundle, args.path)
+        result["external"] = external_check
+        if not external_check.get("available"):
             print("stixforge: neither stix2 nor stix2-validator is installed; the external "
                   "check was NOT run", file=sys.stderr)
         else:
-            biblioteca = externo.get("library")
-            if biblioteca and not biblioteca["ok"]:
-                resultado["valid"] = False
-                resultado["findings"].append({
-                    "code": "external-library", "severity": "high", "where": biblioteca["tool"],
-                    "message": f"the OASIS library rejected the bundle: {biblioteca['error']}",
+            library = external_check.get("library")
+            if library and not library["ok"]:
+                result["valid"] = False
+                result["findings"].append({
+                    "code": "external-library", "severity": "high", "where": library["tool"],
+                    "message": f"the OASIS library rejected the bundle: {library['error']}",
                 })
-            validador = externo.get("validator")
-            if validador:
-                sin_esquemas = "Cannot locate a schema" in validador["output"]
-                if validador["code"] == 0:
+            validator = external_check.get("validator")
+            if validator:
+                no_schemas = "Cannot locate a schema" in validator["output"]
+                if validator["code"] == 0:
                     pass
-                elif validador["code"] == 2 and sin_esquemas:
+                elif validator["code"] == 2 and no_schemas:
                     # The bundle is not necessarily wrong: the validator has no schema
                     # cache (it downloads it). "Not checked" is neither "invalid" nor "clean".
-                    resultado["findings"].append({
-                        "code": "external-not-checked", "severity": "info", "where": validador["tool"],
+                    result["findings"].append({
+                        "code": "external-not-checked", "severity": "info", "where": validator["tool"],
                         "message": "could not validate: the validator has no schema cache",
                     })
                 else:
-                    resultado["valid"] = False
-                    resultado["findings"].append({
-                        "code": "external-validator", "severity": "high", "where": validador["tool"],
-                        "message": f"the external validator rejected the bundle (exit {validador['code']})",
+                    result["valid"] = False
+                    result["findings"].append({
+                        "code": "external-validator", "severity": "high", "where": validator["tool"],
+                        "message": f"the external validator rejected the bundle (exit {validator['code']})",
                     })
 
     if args.as_json:
-        emit(resultado)
+        emit(result)
     else:
-        for item in resultado["findings"]:
-            marca = _MARKS.get(item["severity"], item["severity"])
-            print(f"  {marca} {item['code']:26s} {item.get('where', ''):46s} {item['message']}")
-        salida_externa = resultado.get("external")
-        if salida_externa:
-            if not salida_externa.get("available"):
+        for item in result["findings"]:
+            label = _MARKS.get(item["severity"], item["severity"])
+            print(f"  {label} {item['code']:26s} {item.get('where', ''):46s} {item['message']}")
+        external_output = result.get("external")
+        if external_output:
+            if not external_output.get("available"):
                 print("\nExternal: nothing installed")
             else:
-                biblioteca = salida_externa.get("library")
-                if biblioteca:
-                    print(f"\nExternal (library): {biblioteca['tool']} -> "
-                          f"{'OK' if biblioteca['ok'] else 'REJECTED'}")
-                validador = salida_externa.get("validator")
-                if validador:
-                    print(f"External (validator): {validador['tool']} -> exit {validador['code']}")
-        print(f"\nObjects: {resultado['objects']}   HIGH: {resultado['high']}   MED: {resultado['medium']}")
-        print("Result:", "valid" if resultado["valid"] else "NOT valid")
+                library = external_output.get("library")
+                if library:
+                    print(f"\nExternal (library): {library['tool']} -> "
+                          f"{'OK' if library['ok'] else 'REJECTED'}")
+                validator = external_output.get("validator")
+                if validator:
+                    print(f"External (validator): {validator['tool']} -> exit {validator['code']}")
+        print(f"\nObjects: {result['objects']}   HIGH: {result['high']}   MED: {result['medium']}")
+        print("Result:", "valid" if result["valid"] else "NOT valid")
 
-    if args.external and not resultado.get("external", {}).get("available", False):
+    if args.external and not result.get("external", {}).get("available", False):
         return CANNOT_CHECK
-    return OK if resultado["valid"] else FINDING
+    return OK if result["valid"] else FINDING
 
 
 def main(argv: list[str] | None = None) -> int:

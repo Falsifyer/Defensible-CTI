@@ -1,3 +1,3 @@
-"""Registro de requisitos de inteligencia: PIR, EEI e indicadores."""
+"""A register of intelligence requirements: PIR, EEI and indicators."""
 
 __version__ = "0.2.0"
