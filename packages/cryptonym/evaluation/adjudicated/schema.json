@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ME0094/cryptonym/evaluation/adjudicated/schema.json",
+  "title": "Cryptonym adjudicated corpus",
+  "description": "Cases whose truth is an external adjudication, filtered for admissibility. See docs/adjudication.md.",
+  "type": "object",
+  "required": ["corpus", "cases"],
+  "properties": {
+    "corpus": {"const": "adjudicated"},
+    "schema_version": {"type": "string"},
+    "note": {"type": "string"},
+    "cases": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "designation": {
+      "type": "object",
+      "required": ["vendor", "name"],
+      "properties": {"vendor": {"type": "string"}, "name": {"type": "string"}}
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["id", "statement", "source", "type", "consistency"],
+      "properties": {
+        "id": {"type": "string"},
+        "statement": {"type": "string"},
+        "source": {"type": "string"},
+        "type": {
+          "enum": ["infrastructure", "code", "operator", "tactics", "linguistic", "structural", "open_source"]
+        },
+        "consistency": {
+          "type": "object",
+          "additionalProperties": {"enum": ["C", "I", "0"]}
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["publisher", "url", "category", "kind"],
+      "properties": {
+        "publisher": {"type": "string"},
+        "url": {"type": "string"},
+        "category": {"enum": ["government", "vendor", "community", "osint"]},
+        "kind": {"enum": ["asserts-same", "asserts-distinct", "overlap", "silent"]},
+        "derived_from": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "adjudication": {
+      "type": "object",
+      "required": ["truth"],
+      "properties": {
+        "truth": {"enum": ["same_actor", "distinct", "contested", "unadjudicated"]},
+        "standard": {
+          "enum": ["author-assertion", "single-source", "vendor-consensus", "government-statement", "independent-corroboration"]
+        },
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+        "adjudicators": {"type": "array", "items": {"type": "string"}},
+        "disagreements": {"type": "array", "items": {"type": "string"}},
+        "decided_at": {"type": "string"},
+        "note": {"type": "string"}
+      }
+    },
+    "case": {
+      "type": "object",
+      "required": ["id", "question", "evidence", "adjudication"],
+      "properties": {
+        "id": {"type": "string"},
+        "split": {"enum": ["development", "held-out"]},
+        "question": {"type": "string"},
+        "subjects": {"type": "array", "items": {"$ref": "#/$defs/designation"}},
+        "judgement": {
+          "type": "object",
+          "properties": {"confidence": {"type": "string"}, "probability": {"type": ["string", "null"]}}
+        },
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "adjudication": {"$ref": "#/$defs/adjudication"}
+      }
+    }
+  }
+}

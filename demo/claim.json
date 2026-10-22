@@ -1,0 +1,79 @@
+{
+  "question": "Are NIGHTJAR and SALTWIND the same actor?",
+  "hypotheses": [
+    "same_actor",
+    "distinct_but_overlapping",
+    "brokered_shared_access"
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "statement": "Vendor A names the cluster by its loader and does not claim an identity relationship",
+      "source": "Vendor A (2026-03-02)",
+      "type": "linguistic",
+      "consistency": {
+        "same_actor": "I",
+        "distinct_but_overlapping": "C",
+        "brokered_shared_access": "0"
+      }
+    },
+    {
+      "id": "E2",
+      "statement": "Both trackers describe the same loader, with the same three obfuscation stages",
+      "source": "Vendor A; Vendor B",
+      "type": "code",
+      "consistency": {
+        "same_actor": "C",
+        "distinct_but_overlapping": "C",
+        "brokered_shared_access": "C"
+      }
+    },
+    {
+      "id": "E3",
+      "statement": "The C2 certificates differ and were never observed together",
+      "source": "Vendor B (2026-06-11)",
+      "type": "infrastructure",
+      "consistency": {
+        "same_actor": "I",
+        "distinct_but_overlapping": "C",
+        "brokered_shared_access": "C"
+      }
+    },
+    {
+      "id": "E4",
+      "statement": "Both sets of infrastructure resolved through the same two bulletproof resellers",
+      "source": "Passive DNS, vendor appendix",
+      "type": "infrastructure",
+      "consistency": {
+        "same_actor": "C",
+        "distinct_but_overlapping": "C",
+        "brokered_shared_access": "C"
+      }
+    },
+    {
+      "id": "E5",
+      "statement": "Targeting is telecoms in both cases, in the same two countries and the same quarter",
+      "source": "Vendor A; Vendor B",
+      "type": "tactics",
+      "consistency": {
+        "same_actor": "C",
+        "distinct_but_overlapping": "C",
+        "brokered_shared_access": "C"
+      }
+    },
+    {
+      "id": "E6",
+      "statement": "Vendor B reports a contractor relationship, without naming the contractor",
+      "source": "Vendor B (2026-06-11)",
+      "type": "structural",
+      "consistency": {
+        "same_actor": "0",
+        "distinct_but_overlapping": "0",
+        "brokered_shared_access": "C"
+      }
+    }
+  ],
+  "judgement": {
+    "confidence": "low"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "id": "voltzite-vs-volt-typhoon",
+  "version": "1.0",
+  "question": "Is VOLTZITE the same actor as Volt Typhoon?",
+  "tlp": "TLP:WHITE",
+  "subjects": [
+    {"vendor": "Dragos", "name": "VOLTZITE", "source_url": "https://www.dragos.com", "date": "2026-02-17"},
+    {
+      "vendor": "Microsoft",
+      "name": "Volt Typhoon",
+      "source_url": "https://attack.mitre.org/groups/G1017",
+      "date": "2026-07-31"
+    }
+  ],
+  "hypotheses": ["same_actor", "distinct_but_overlapping", "brokered_shared_access"],
+  "evidence": [
+    {
+      "id": "E1",
+      "statement": "Dragos describes VOLTZITE as sharing 'extensive technical overlaps' rather than declaring it identical",
+      "source": "Dragos OT/ICS 2026",
+      "type": "linguistic",
+      "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E2",
+      "statement": "VOLTZITE is Dragos's analyst designation for the OT-facing activity, not an identity claim",
+      "source": "Dragos OT/ICS 2026",
+      "type": "structural",
+      "consistency": {"same_actor": "0", "distinct_but_overlapping": "C", "brokered_shared_access": "0"}
+    },
+    {
+      "id": "E3",
+      "statement": "CISA lists Voltzite among the aliases in its Volt Typhoon advisory",
+      "source": "CISA AA24-038A",
+      "type": "structural",
+      "consistency": {"same_actor": "C", "distinct_but_overlapping": "0", "brokered_shared_access": "0"}
+    },
+    {
+      "id": "E4",
+      "statement": "MITRE records the tracking names as Associated Groups, explicitly weaker than 'same actor'",
+      "source": "MITRE ATT&CK G1017",
+      "type": "structural",
+      "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "0"}
+    },
+    {
+      "id": "E5",
+      "statement": "Same targeting: critical infrastructure and OT (communications, energy, transport, water)",
+      "source": "CISA AA24-038A; Dragos OT/ICS 2026",
+      "type": "tactics",
+      "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E6",
+      "statement": "Same tradecraft: living-off-the-land, valid accounts, SOHO proxying",
+      "source": "CISA AA24-038A; MITRE ATT&CK G1017",
+      "type": "tactics",
+      "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E7",
+      "statement": "SYLVANITE establishes footholds on edge devices and hands them to Volt Typhoon / VOLTZITE",
+      "source": "MITRE ATT&CK; Dragos OT/ICS 2026",
+      "type": "infrastructure",
+      "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E8",
+      "statement": "Stage 2 ICS Cyber Kill Chain activity attributed to VOLTZITE",
+      "source": "Dragos OT/ICS 2026",
+      "type": "tactics",
+      "consistency": {"same_actor": "0", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E9",
+      "statement": "No public statement by any vendor asserting identity; the language used is overlap",
+      "source": "MITRE ATT&CK; Dragos OT/ICS 2026; Palo Alto Unit 42",
+      "type": "linguistic",
+      "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}
+    },
+    {
+      "id": "E10",
+      "statement": "Government advisories list Voltzite as an alias, implying sameness at the campaign level",
+      "source": "CISA AA24-038A",
+      "type": "structural",
+      "consistency": {"same_actor": "C", "distinct_but_overlapping": "0", "brokered_shared_access": "0"}
+    }
+  ],
+  "judgement": {"confidence": "moderate", "probability": "unlikely"},
+  "review_trigger": "A vendor or government statement that asserts or denies identity; a new joint advisory",
+  "gaps": [
+    "Vendor taxonomy is internal and seldom explained; 'overlap' is not a standardised term.",
+    "Dragos's 2026 report is the load-bearing source and represents a single vendor.",
+    "No access to private telemetry or shared-infrastructure analysis; the assessment is bounded by that."
+  ],
+  "revisions": [{"version": "1.0", "date": "2026-10-09", "change": "First release."}]
+}

@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "assessment-mcp"
+version = "0.1.0"
+description = "A ledger of graded judgements: two-axis confidence, ACH and external truth, built on cryptonym.method"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Martín Eliseo", email = "124847072+ME0094@users.noreply.github.com" }]
+keywords = ["cti", "assessment", "ach", "confidence", "threat-intelligence", "mcp"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
+# The shared core (cryptonym.method) is a private dependency; install it explicitly
+# (editable locally, or from the private repository with a read-only token). See README.
+dependencies = ["cryptonym"]
+
+[tool.uv.sources]
+cryptonym = { workspace = true }
+
+[project.optional-dependencies]
+mcp = ["mcp>=2.0"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "bandit>=1.7", "mcp>=2.0"]
+
+[project.scripts]
+assessment = "assessment.cli:main"
+assessment-mcp = "assessment.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S", "UP"]
+ignore = ["S101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "--strict-markers --strict-config"
+
+[tool.coverage.run]
+branch = true
+source = ["assessment"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

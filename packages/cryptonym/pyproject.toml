@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryptonym"
+version = "0.6.0"
+description = "Actor alias reconciliation with provenance, two-axis confidence and falsifiable merges"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Martín Eliseo", email = "124847072+ME0094@users.noreply.github.com" }]
+keywords = ["cti", "threat-intelligence", "attribution", "stix", "ach", "misp", "opencti"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
+dependencies = []
+
+[project.optional-dependencies]
+cti = ["stix2>=3.0", "networkx>=3.0"]
+opencti = ["pycti>=6.0"]
+misp = ["pymisp>=2.4"]
+mcp = ["mcp>=2.0"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "bandit>=1.7", "pip-audit>=2.7", "stix2>=3.0", "mcp>=2.0"]
+
+[project.scripts]
+cryptonym = "cryptonym.cli:main"
+cryptonym-mcp = "cryptonym.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S", "UP"]
+ignore = ["S101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "--strict-markers --strict-config"
+markers = [
+  "integration: mocked integration-boundary tests",
+  "security: adversarial and security-boundary tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["cryptonym"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

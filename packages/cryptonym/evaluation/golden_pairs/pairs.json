@@ -1,0 +1,121 @@
+{
+  "corpus": "golden-pairs",
+  "note": "Illustrative adjudications. Each case is a body of evidence plus an adjudicated truth, used to check that the engine re-derives a graded judgement and that the harness reports the errors it should. This corpus measures the METHOD and the harness mechanics; it does not estimate real-world attribution accuracy (see docs/evaluating-alias-reconciliation.md). Development cases are the ones the method was built against; held-out cases are never tuned on and are the only ones that count.",
+  "cases": [
+    {
+      "id": "apt28-vs-apt29",
+      "split": "development",
+      "question": "Are APT28 and APT29 the same actor?",
+      "truth": "distinct_but_overlapping",
+      "judgement": {"confidence": "high", "probability": "very_unlikely"},
+      "evidence": [
+        {"id": "E1", "statement": "Separate, unrelated codebases", "source": "public reporting", "type": "code", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}},
+        {"id": "E2", "statement": "Separate dedicated infrastructure", "source": "public reporting", "type": "infrastructure", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}},
+        {"id": "E3", "statement": "Some shared tradecraft (non-diagnostic)", "source": "public reporting", "type": "tactics", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "scattered-spider-vs-unc3944",
+      "split": "development",
+      "question": "Are Scattered Spider and UNC3944 the same actor?",
+      "truth": "same_actor",
+      "judgement": {"confidence": "high", "probability": "very_likely"},
+      "evidence": [
+        {"id": "E1", "statement": "Consistent operator fingerprint (distinctive self-identification, unique handles)", "source": "public reporting", "type": "operator", "consistency": {"same_actor": "C", "distinct_but_overlapping": "I", "brokered_shared_access": "C"}},
+        {"id": "E2", "statement": "Shared infrastructure", "source": "public reporting", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E3", "statement": "Same tooling", "source": "public reporting", "type": "tactics", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "voltzite-vs-volt-typhoon",
+      "split": "development",
+      "question": "Is VOLTZITE the same actor as Volt Typhoon?",
+      "truth": "distinct_but_overlapping",
+      "judgement": {"confidence": "moderate", "probability": "unlikely"},
+      "evidence": [
+        {"id": "E1", "statement": "Dragos describes 'extensive technical overlaps' rather than identity", "source": "Dragos 2026", "type": "linguistic", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E2", "statement": "VOLTZITE is an analyst designation for the OT-facing activity", "source": "Dragos 2026", "type": "structural", "consistency": {"same_actor": "0", "distinct_but_overlapping": "C", "brokered_shared_access": "0"}},
+        {"id": "E3", "statement": "MITRE records the names as Associated Groups, weaker than 'same actor'", "source": "MITRE ATT&CK", "type": "structural", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "0"}},
+        {"id": "E4", "statement": "SYLVANITE hands footholds onward", "source": "public reporting", "type": "infrastructure", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E5", "statement": "Same targeting and tradecraft (non-diagnostic)", "source": "advisories", "type": "tactics", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "apt28-vs-fancy-bear",
+      "split": "development",
+      "question": "Are APT28 and Fancy Bear the same actor?",
+      "truth": "same_actor",
+      "judgement": {"confidence": "high", "probability": "nearly_certain"},
+      "evidence": [
+        {"id": "E1", "statement": "Identical unique implant and configuration format", "source": "public reporting", "type": "code", "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"}},
+        {"id": "E2", "statement": "Shared infrastructure", "source": "public reporting", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E3", "statement": "Vendors state the alias explicitly", "source": "public reporting", "type": "linguistic", "consistency": {"same_actor": "C", "distinct_but_overlapping": "0"}}
+      ]
+    },
+    {
+      "id": "thin-evidence-same",
+      "split": "development",
+      "question": "Two designations with only shared tradecraft: same?",
+      "truth": "same_actor",
+      "judgement": {"confidence": "low", "probability": "roughly_even_chance"},
+      "evidence": [
+        {"id": "E1", "statement": "Shared tradecraft only (non-diagnostic)", "source": "one source", "type": "tactics", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "contested-overlap",
+      "split": "development",
+      "question": "Two designations that share infrastructure but differ in operator artefacts: same?",
+      "truth": "distinct_but_overlapping",
+      "judgement": {"confidence": "low", "probability": "unlikely"},
+      "evidence": [
+        {"id": "E1", "statement": "Shared infrastructure", "source": "public reporting", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E2", "statement": "Distinct operator artefacts", "source": "public reporting", "type": "operator", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}}
+      ]
+    },
+    {
+      "id": "heldout-shared-code",
+      "split": "held-out",
+      "question": "Illustrative pair sharing a unique implant: same?",
+      "truth": "same_actor",
+      "judgement": {"confidence": "high", "probability": "very_likely"},
+      "evidence": [
+        {"id": "E1", "statement": "Identical unique implant", "source": "illustrative", "type": "code", "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"}},
+        {"id": "E2", "statement": "Shared infrastructure", "source": "illustrative", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "heldout-distinct-code",
+      "split": "held-out",
+      "question": "Illustrative pair with different code and operators: same?",
+      "truth": "distinct_but_overlapping",
+      "judgement": {"confidence": "high", "probability": "very_unlikely"},
+      "evidence": [
+        {"id": "E1", "statement": "Different codebases", "source": "illustrative", "type": "code", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}},
+        {"id": "E2", "statement": "Distinct operator artefacts", "source": "illustrative", "type": "operator", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}}
+      ]
+    },
+    {
+      "id": "heldout-operator-fingerprint",
+      "split": "held-out",
+      "question": "Illustrative pair sharing an operator fingerprint: same?",
+      "truth": "same_actor",
+      "judgement": {"confidence": "moderate", "probability": "likely"},
+      "evidence": [
+        {"id": "E1", "statement": "Shared operator fingerprint", "source": "illustrative", "type": "operator", "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"}},
+        {"id": "E2", "statement": "Shared infrastructure", "source": "illustrative", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}}
+      ]
+    },
+    {
+      "id": "heldout-shared-infra-distinct-operator",
+      "split": "held-out",
+      "question": "Illustrative pair sharing infrastructure but not operators: same?",
+      "truth": "distinct_but_overlapping",
+      "judgement": {"confidence": "moderate", "probability": "unlikely"},
+      "evidence": [
+        {"id": "E1", "statement": "Shared infrastructure", "source": "illustrative", "type": "infrastructure", "consistency": {"same_actor": "C", "distinct_but_overlapping": "C", "brokered_shared_access": "C"}},
+        {"id": "E2", "statement": "Distinct operator artefacts", "source": "illustrative", "type": "operator", "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"}}
+      ]
+    }
+  ]
+}

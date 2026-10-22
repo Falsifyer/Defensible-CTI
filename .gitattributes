@@ -1,0 +1,3 @@
+# Sin conversion de fin de linea. Los SKILL.md y las plantillas se comparan byte a
+# byte (hash y -ceq), asi que git no debe reescribir CRLF/LF al hacer checkout.
+* -text

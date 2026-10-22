@@ -1,0 +1,1 @@
+If NIGHTJAR uses the loader described in the product, then at least one endpoint will show a process writing an executable into %TEMP% and then loading it from a signed Microsoft binary.

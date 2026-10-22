@@ -1,0 +1,77 @@
+# Changelog
+
+## 0.6.0 — 2026-10-09
+
+- **Generalised ACH:** `consistency_matrix`, `inconsistency_counts` and
+  `least_inconsistent` now accept arbitrary hypothesis labels, not only the actor
+  taxonomy — so the shared core can grade any question, not just aliases.
+
+## 0.5.0 — 2026-10-09
+
+- **Renamed Concord → Cryptonym.** A cryptonym is the cover name given to an actor; the
+  tool decides whether two of them are the same actor. Package, CLI, STIX custom objects,
+  docs and tests renamed; repository renamed to `ME0094/cryptonym`.
+- **`cryptonym.method`:** the shared, stable assessment core, extracted as a public
+  surface every family tool imports instead of reimplementing. See `docs/method-api.md`.
+
+## 0.4.0 — 2026-10-09
+
+- **MCP server** (`cryptonym.mcp_server`): the reconciliation method exposed as MCP tools
+  (assess, render, export, ingest, adjudicate, reconcile, snapshot, documentation) over
+  stdio. Entry point `cryptonym-mcp`; optional extra `.[mcp]`. See `docs/mcp.md`.
+
+## 0.3.0 — 2026-10-09
+
+External adjudication (the next milestone after M9).
+
+- **`cryptonym.evaluate.adjudication`:** the external-truth filter. Truth vocabulary
+  (`same_actor` / `distinct` / `contested` / `unadjudicated`), evidence standards
+  (`author-assertion` … `independent-corroboration`), an independence rule (same
+  publisher or derived sources count once), and a disagreement policy (hard conflict →
+  contested; scope dissent downgrades an uncorroborated claim).
+- **Adjudicated corpus:** `evaluation/adjudicated/` with a schema, a real-source seed
+  (CISA AA23-320A, MITRE G1015/G0007/G0032, Microsoft, Google) and a committed coverage
+  baseline. Coverage and standards are reported alongside the metrics.
+- **`evaluate_adjudicated`:** only admissible binary truths enter the error rates;
+  contested and unadjudicated cases are reported as coverage.
+- **CLI:** `cryptonym adjudicate --strict`; `run_evaluation.py --adjudicated --check
+  --strict` in CI.
+
+## 0.2.0 — 2026-10-09
+
+Milestones M7, M8 and M9.
+
+- **Snapshots (M7):** `cryptonym.snapshot` captures a source's bytes and SHA-256 so a
+  judgement can be re-derived against the exact document it was built from; the CLI
+  gains `snapshot --source/--verify`.
+- **Held-out evaluation (M8):** the corpus now carries a `development` / `held-out`
+  split; `cryptonym.evaluate.evaluate_corpus` reports the confusion matrix and
+  calibration **per split**, and `--check` fails on drift.
+- **Network fetch (M9):** `cryptonym.ingest.fetch` fetches source JSON from an
+  SSRF-validated endpoint (HTTPS enforced, size cap, JSON only). Network access stays
+  out of the core and is delegated to an injected fetcher for testing; the CLI gains
+  `ingest --url`.
+- Repository made public.
+
+## 0.1.0 — 2026-10-09
+
+Milestones M2, M4, M5 and M6.
+
+- **Ingest (M2):** MISP Galaxy, MITRE ATT&CK (STIX) and OpenCTI adapters. Offline and
+  dict-based; each keeps a source's names **apart** as separate designations.
+- **Export (M4):** STIX 2.1 bundle, MISP Galaxy cluster (`assessed_not_asserted`) and
+  TAXII 2.1 envelope. STIX is emitted as JSON and validated against the official `stix2`
+  library in CI.
+- **Evaluation (M5):** `cryptonym.evaluate` — confusion, false-merge / false-split rates
+  and a calibration table; a golden-pair corpus with a committed baseline and a CI
+  `--check`.
+- **CLI:** `ingest` added; `export --format stix|misp|taxii`.
+- **Release (M6):** version bump and release tag.
+
+## 0.0.1 — 2026-10-09
+
+- Initial skeleton: data model, two-axis grading, ACH engine, graded reconciliation
+  graph, markdown product, security boundary.
+- Worked example: `assessments/voltzite-vs-volt-typhoon/`.
+- CI: ruff, bandit, pip-audit, pytest with branch coverage on 3.11–3.13, plus a
+  reproducibility check on the worked example.

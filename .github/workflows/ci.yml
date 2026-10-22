@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [cryptonym, assessment, sharegate, stixforge, pir, huntplan]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      - name: Tests
+        working-directory: packages/${{ matrix.package }}
+        run: uv run pytest -q
+
+  lint:
+    name: Estilo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      - run: uv run ruff check packages
+
+  demo:
+    name: La cadena entera
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      - name: make demo
+        run: make demo
+      - name: El bundle que produce la demo es valido y compartible
+        run: |
+          uv run stixforge validate demo/out/bundle.json
+          uv run sharegate check demo/out/bundle.json
+
+  credentials:
+    name: Credenciales
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sin credenciales en el arbol
+        run: |
+          patron='(-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|://[^/:@ ]+:[^/ @]+@)'
+          if git ls-files -z | xargs -0 grep -nEI "$patron"; then
+            echo "::error::credencial en el arbol versionado"
+            exit 1
+          fi
+          echo "sin credenciales"

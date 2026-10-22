@@ -1,0 +1,38 @@
+[project]
+name = "cti-suite"
+version = "0.1.0"
+description = "Six tools for one intelligence cycle: requirements, judgement, ledger, product, gate and hunt."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Martín Eliseo" }]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+cryptonym = { workspace = true }
+assessment-mcp = { workspace = true }
+sharegate = { workspace = true }
+stix-forge = { workspace = true }
+pir-ledger = { workspace = true }
+huntplan = { workspace = true }
+
+[dependency-groups]
+# Los seis son el producto: `uv sync` los instala todos en editable.
+dev = [
+  "cryptonym",
+  "assessment-mcp",
+  "sharegate",
+  "stix-forge",
+  "pir-ledger",
+  "huntplan",
+  "pytest>=9.1.1",
+  "ruff>=0.17.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["packages"]
+
+[tool.ruff]
+line-length = 100
