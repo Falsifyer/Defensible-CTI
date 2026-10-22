@@ -7,8 +7,8 @@ what is **not** done, why, and what would close it.
 
 | Gap | Why it is not done here | What closes it |
 |---|---|---|
-| **PyPI publication** | needs reserved names and a trusted-publisher configuration per package | `.github/workflows/publish.yml` is ready; reserve the names and create the `pypi` environment |
-| **The release workflow has never run against a real tag** | running it means creating a public tag | `workflow_dispatch` with `dry_run: true` against a throwaway fork |
+| **PyPI publication** | needs a PyPI account: pending publishers are web-UI only and do not reserve a name until the first upload | environment `pypi` created and workflow ready; follow [`publishing.md`](publishing.md) |
+| **The release workflow has never run against a real tag** | running it means creating a public tag | `workflow_dispatch` with `dry_run: true` (the default) and then a first real tag |
 | **`ME0094/huntplan` stays public and obsolete** | it is a separate repository, kept for a while on purpose | apply the banner in [`deprecation-huntplan.md`](deprecation-huntplan.md), freeze the code, stop syncing it |
 | **Artefact signing** | configured in the release workflow, never executed | the first release; verify with `cosign verify-blob` |
 
