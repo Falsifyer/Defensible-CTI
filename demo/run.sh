@@ -11,5 +11,5 @@
 
 set -eu
 
-aqui=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+aqui=$(CDPATH='' cd -- "$(dirname "$0")" && pwd)
 exec ctisuite chain --dir "$aqui"
