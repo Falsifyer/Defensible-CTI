@@ -210,3 +210,20 @@ def test_reading_a_missing_ledger_is_empty(tmp_path: Path) -> None:
 def test_method_documentation_is_available_from_the_installed_package() -> None:
     result = method_documentation("method")
     assert "shared core" in result["content"] or "ceiling" in result["content"]
+
+
+def test_a_ledger_entry_can_be_written_at_a_fixed_instant(tmp_path: Path) -> None:
+    path = tmp_path / "fixed.jsonl"
+    append_claim(str(path), {"id": "c1"}, now="2026-10-22T00:00:00Z")
+    append_claim(str(path), {"id": "c2"}, now="2026-10-22T00:00:00Z")
+    entries = read_ledger(str(path))["entries"]
+    assert [entry["created_at"] for entry in entries] == ["2026-10-22T00:00:00Z", "2026-10-22T00:00:00Z"]
+    assert entries[1]["prev_hash"] == entries[0]["hash"]
+    assert verify_ledger(str(path))["valid"] is True
+
+
+def test_a_bad_fixed_instant_is_refused(tmp_path: Path) -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="ISO 8601"):
+        append_claim(str(tmp_path / "bad.jsonl"), {"id": "c1"}, now="yesterday")

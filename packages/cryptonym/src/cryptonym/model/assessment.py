@@ -40,9 +40,10 @@ class Assessment:
     """A single adjudication, versioned and reviewable.
 
     The assessment holds the question, the designations under comparison, the body of
-    evidence and the graded judgement. ``declared`` records whether the dossier actually
-    stated a confidence: a missing grade is not silently defaulted to ``low``, it is a
-    finding (``no-grade``) and the tool refuses it.
+    evidence, the **source registry** (who said it and who repeats whom) and the graded
+    judgement. ``declared`` records whether the dossier actually stated a confidence: a
+    missing grade is not silently defaulted to ``low``, it is a finding (``no-grade``) and
+    the tool refuses it.
     """
 
     id: str
@@ -50,6 +51,7 @@ class Assessment:
     subjects: list[Designation] = field(default_factory=list)
     hypotheses: list[Hypothesis] = field(default_factory=lambda: list(Hypothesis))
     evidence: list[Evidence] = field(default_factory=list)
+    sources: list[dict[str, Any]] = field(default_factory=list)
     judgement: Judgement = field(default_factory=lambda: Judgement(Confidence.LOW))
     declared: bool = True
     requirement_id: str = ""
@@ -81,6 +83,8 @@ class Assessment:
                 consistency={
                     key: Consistency(value) for key, value in item.get("consistency", {}).items()
                 },
+                source_id=item.get("source_id", ""),
+                reliability=item.get("reliability", ""),
             )
             for item in data.get("evidence", [])
         ]
@@ -100,6 +104,7 @@ class Assessment:
             subjects=subjects,
             hypotheses=[Hypothesis(value) for value in data.get("hypotheses", [h.value for h in Hypothesis])],
             evidence=evidence,
+            sources=list(data.get("sources") or []),
             judgement=judgement,
             declared=declared,
             requirement_id=data.get("requirement_id", ""),

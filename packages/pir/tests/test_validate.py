@@ -96,3 +96,15 @@ def test_cli_sale_con_cero_y_lista(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)["valid"] is True
     assert main(["list", str(ruta), "--today", "2026-10-22"]) == 0
     assert "PIR-001" in capsys.readouterr().out
+
+
+def test_findings_are_in_english_like_the_rest_of_the_suite() -> None:
+    result = validate({"requirements": [{"id": "PIR-1", "question": "?", "priority": "high", "eei": []}]})
+    messages = {item["code"]: item["message"] for item in result["findings"]}
+    assert messages["no-decision"] == (
+        "does not name the decision it informs: that is a topic of interest, not a PIR"
+    )
+    assert messages["no-consumer"] == "does not say who takes that decision"
+    assert messages["no-eei"] == "no EEI: there is nothing to collect"
+    for message in messages.values():
+        assert "no hay" not in message and "sin " not in message

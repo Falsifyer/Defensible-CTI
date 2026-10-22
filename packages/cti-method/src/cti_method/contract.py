@@ -8,8 +8,13 @@ instead of true of whichever one remembered to implement it:
 * ``1`` — a high finding, i.e. the tool refuses what it was given;
 * ``2`` — the tool could not check. **Not checked is not clean.**
 
-Unreadable, undecodable or structurally impossible input is a ``CannotCheck``: it maps to
-``2``, never to ``1``. A missing file is not an infraction committed by the file.
+Unreadable, undecodable, oversized or structurally impossible input is a ``CannotCheck``:
+it maps to ``2``, never to ``1``. A missing file is not an infraction committed by the
+file.
+
+The size and depth limits are part of the boundary, not a hardening afterthought: a tool
+that reads whatever it is handed can be exhausted by a 2 GB JSON document, and "the tool
+crashed" is not a finding either.
 """
 
 from __future__ import annotations
@@ -28,6 +33,12 @@ HIGH = "high"
 MEDIUM = "medium"
 LOW = "low"
 SEVERITIES = (HIGH, MEDIUM, LOW)
+
+#: Largest input the suite will read in one go (bytes).
+MAX_BYTES = 8 * 1024 * 1024
+#: Deepest JSON nesting accepted. STIX and the suite's documents are shallow; a document
+#: deeper than this is malformed or hostile.
+MAX_DEPTH = 64
 
 
 class CannotCheck(Exception):
@@ -65,9 +76,15 @@ def has_high(findings: Sequence[dict[str, str]]) -> bool:
     return any(item["severity"] == HIGH for item in findings)
 
 
-def read_text(path: str | Path) -> str:
+def read_text(path: str | Path, *, limit: int = MAX_BYTES) -> str:
     """Read a text file, or fail closed with ``CannotCheck``."""
     target = Path(path)
+    try:
+        size = target.stat().st_size
+    except OSError as exc:
+        raise CannotCheck(f"cannot read {target}: {exc.strerror or exc}") from exc
+    if size > limit:
+        raise CannotCheck(f"{target} is {size:,} bytes, over the {limit:,}-byte limit")
     try:
         return target.read_text(encoding="utf-8")
     except OSError as exc:
@@ -76,13 +93,33 @@ def read_text(path: str | Path) -> str:
         raise CannotCheck(f"cannot decode {target} as UTF-8") from exc
 
 
-def read_json(path: str | Path) -> Any:
+def nesting_depth(value: Any, limit: int = MAX_DEPTH) -> int:
+    """Depth of a parsed JSON value, or ``limit + 1`` as soon as it exceeds ``limit``."""
+    deepest = 0
+    stack: list[tuple[Any, int]] = [(value, 1)]
+    while stack:
+        current, depth = stack.pop()
+        if depth > deepest:
+            deepest = depth
+            if deepest > limit:
+                return deepest
+        if isinstance(current, dict):
+            stack.extend((item, depth + 1) for item in current.values())
+        elif isinstance(current, list):
+            stack.extend((item, depth + 1) for item in current)
+    return deepest
+
+
+def read_json(path: str | Path, *, limit: int = MAX_BYTES, max_depth: int = MAX_DEPTH) -> Any:
     """Read a JSON document, or fail closed with ``CannotCheck``."""
-    text = read_text(path)
+    text = read_text(path, limit=limit)
     try:
-        return json.loads(text)
+        document = json.loads(text)
     except json.JSONDecodeError as exc:
         raise CannotCheck(f"{path} is not valid JSON: {exc.msg} (line {exc.lineno})") from exc
+    if nesting_depth(document, max_depth) > max_depth:
+        raise CannotCheck(f"{path} nests deeper than the {max_depth}-level limit")
+    return document
 
 
 def emit(document: Any) -> None:

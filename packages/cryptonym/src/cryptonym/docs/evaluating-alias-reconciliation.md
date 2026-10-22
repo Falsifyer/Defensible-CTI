@@ -54,3 +54,30 @@ The defensible claim is narrow: *given a body of evidence and a declared standar
 Cryptonym re-derives a graded, falsifiable judgement, reproducibly, exposes what would break
 the tie, and reports its own false-merge rate.* The claim it does **not** make is that it
 will tell you who an actor is.
+
+## Calibration is measured on the derived ceiling
+
+The harness scores the **ceiling the evidence sets**, not the confidence an author typed
+into the dossier. Scoring the declaration would calibrate prose; scoring the ceiling
+calibrates the rule.
+
+Two consequences, both visible in the output:
+
+- **`declared above the evidence ceiling`** counts the cases that claim more than their
+  evidence supports. The suite refuses those dossiers, so a corpus that reports a non-zero
+  count is a corpus with a data problem, not a method problem. The current corpus reports
+  **0 of 22**.
+- **`ceilings:`** prints the band distribution, because calibration on a single band says
+  nothing. The current held-out split has **11 `high` cases**, and the development split
+  tops out at `moderate` — the split that counts is the one with the strong band.
+
+The **probability axis** is scored separately with a Brier score over the WEP bands
+(`probability_calibration`): `0` is a perfect forecast, `0.25` is what always saying
+"50/50" scores. The current corpus scores **0.0853** overall; the adjudicated corpus, on
+the two admissible cases, **0.04**. Two cases are not a calibration estimate, and the
+number is printed as a mechanism check, not as a result.
+
+The `heldout-*` cases are **synthetic**: they were generated to exercise independence
+(registered sources, a derived source, a contradiction that outweighs the support), not to
+estimate real-world accuracy. They widen the band coverage; they do not make the corpus
+external.

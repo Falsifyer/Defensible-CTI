@@ -17,6 +17,14 @@
 - Calibration in the evaluation harness is computed on the derived ceiling, not on the
   declared grade.
 
+- **Structural independence and weights**: the dossier registers its sources and evidence
+  points at them; ACH ranks by Admiralty-weighted inconsistency; evidence that contradicts
+  the favoured hypothesis lowers the ceiling.
+- **Probability calibration** on the estimative axis (Brier score), reported per split.
+- **The STIX export is marked** with the official TLP 2.0 object and validated by the
+  suite's validator, so it can be gated by `sharegate` instead of travelling unmarked.
+- The shipped worked example uses `TLP:CLEAR` (TLP 2.0) instead of the deprecated alias.
+
 
 ## 0.6.0 — 2026-10-09
 

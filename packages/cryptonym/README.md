@@ -41,9 +41,12 @@ Cryptonym is a *method made executable*, not another CTI platform. The stack
 - **ACH, mechanised.** Evidence is tested against all competing hypotheses at once; the
   favoured hypothesis is the one with the *least inconsistent* evidence, not the loudest.
 - **The evidence caps the grade.** `high` needs a diagnostic discriminating item **and** two
-  independent sources; shared tradecraft alone cannot exceed `low`. A dossier that claims
-  more than that is refused (`grade-exceeds-evidence`), and one that declares no grade at
-  all is refused too — there is no silent default.
+  independent sources; shared tradecraft alone cannot exceed `low`. Independence is
+  structural: the dossier registers its sources (`id`, `publisher`, `derived_from`,
+  `reliability`), so two reports from one vendor are one voice and a derived source does not
+  count twice. Evidence that contradicts the favoured hypothesis lowers the ceiling, and
+  items are weighted by their Admiralty band. A dossier that claims more than that is
+  refused (`grade-exceeds-evidence`); one that declares no grade is refused too.
 - **Two axes, per claim.** *Confidence* (sourcing/reasoning) is kept separate from
   *probability* (likelihood of the outcome).
 - **Chains expose their weakest link.** Confidence does not multiply cleanly along a chain
@@ -67,10 +70,14 @@ Cryptonym is a *method made executable*, not another CTI platform. The stack
 ## Install
 
 ```bash
-pip install -e ../cti-method -e .           # core + this package
-pip install -r requirements-dev.txt         # tests, lint, security scan, STIX conformance
-pip install -r requirements-cti.txt         # optional: graph analytics
+pip install -e ../cti-method -e .            # core + this package
+pip install -e ../cti-method -e '.[cti]'     # optional: stix2 conformance, graph analytics
+pip install -e ../cti-method -e '.[misp]'    # optional: MISP Galaxy adapter
+pip install -e ../cti-method -e '.[dev]'     # tests, lint, security scan
 ```
+
+The optional integrations are extras in `pyproject.toml`; the `requirements-*.txt` files
+that duplicated them have been removed.
 
 ## Use
 

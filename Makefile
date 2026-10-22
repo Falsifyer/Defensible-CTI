@@ -6,12 +6,13 @@
 #   make lint      ruff sobre los paquetes
 #   make types     mypy sobre los paquetes
 #   make eval      la evaluacion del metodo, contra sus baselines
+#   make security  pip-audit sobre el entorno
 #   make build     construye las distribuciones
 #   make clean     borra .venv, dist y las salidas de la demo
 
 UV ?= uv
 
-.PHONY: install demo test lint types eval build clean
+.PHONY: install demo test lint types eval security build clean
 
 install:
 	$(UV) sync --all-packages --all-extras
@@ -31,6 +32,9 @@ types:
 eval:
 	$(UV) run python packages/cryptonym/evaluation/run_evaluation.py --corpus --check
 	$(UV) run python packages/cryptonym/evaluation/run_evaluation.py --adjudicated --check --strict
+
+security:
+	$(UV) run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
 
 build:
 	$(UV) build --all-packages --out-dir dist

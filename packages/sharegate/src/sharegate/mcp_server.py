@@ -48,12 +48,12 @@ def check_stix_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
 
 
 @server.tool()
-def pre_share_check(document: str) -> dict[str, Any]:
+def pre_share_check(document: str, today: str | None = None) -> dict[str, Any]:
     """Run the full gate on a product (a STIX bundle as JSON, or any text).
 
     ``shareable`` is False only when a high-severity finding is present.
     """
-    return pre_share(document)
+    return pre_share(document, today=today)
 
 
 def main() -> None:

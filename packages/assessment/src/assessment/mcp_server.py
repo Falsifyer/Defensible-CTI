@@ -66,9 +66,11 @@ def grade_ceiling(evidence: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 @server.tool()
-def append_claim_to_ledger(path: str, claim: dict[str, Any], tool: str = "assessment") -> dict[str, Any]:
+def append_claim_to_ledger(
+    path: str, claim: dict[str, Any], tool: str = "assessment", now: str | None = None
+) -> dict[str, Any]:
     """Append a graded claim to a hash-chained ledger, creating it if needed."""
-    return append_claim(path, claim, tool=tool)
+    return append_claim(path, claim, tool=tool, now=now)
 
 
 @server.tool()

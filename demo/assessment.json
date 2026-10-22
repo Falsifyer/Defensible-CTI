@@ -37,7 +37,9 @@
         "same_actor": "I",
         "distinct_but_overlapping": "C",
         "brokered_shared_access": "0"
-      }
+      },
+      "source_id": "vendor-a",
+      "reliability": "B"
     },
     {
       "id": "E2",
@@ -48,7 +50,9 @@
         "same_actor": "C",
         "distinct_but_overlapping": "C",
         "brokered_shared_access": "C"
-      }
+      },
+      "source_id": "vendor-a",
+      "reliability": "B"
     },
     {
       "id": "E3",
@@ -59,7 +63,9 @@
         "same_actor": "I",
         "distinct_but_overlapping": "C",
         "brokered_shared_access": "C"
-      }
+      },
+      "source_id": "vendor-b",
+      "reliability": "B"
     },
     {
       "id": "E4",
@@ -70,7 +76,9 @@
         "same_actor": "C",
         "distinct_but_overlapping": "C",
         "brokered_shared_access": "C"
-      }
+      },
+      "source_id": "passive-dns",
+      "reliability": "C"
     },
     {
       "id": "E5",
@@ -81,7 +89,9 @@
         "same_actor": "C",
         "distinct_but_overlapping": "C",
         "brokered_shared_access": "C"
-      }
+      },
+      "source_id": "vendor-a",
+      "reliability": "B"
     },
     {
       "id": "E6",
@@ -92,10 +102,32 @@
         "same_actor": "0",
         "distinct_but_overlapping": "0",
         "brokered_shared_access": "C"
-      }
+      },
+      "source_id": "vendor-b",
+      "reliability": "B"
     }
   ],
   "judgement": {
     "confidence": "low"
-  }
+  },
+  "sources": [
+    {
+      "id": "vendor-a",
+      "publisher": "Vendor A",
+      "reliability": "B"
+    },
+    {
+      "id": "vendor-b",
+      "publisher": "Vendor B",
+      "reliability": "B"
+    },
+    {
+      "id": "passive-dns",
+      "publisher": "Passive DNS",
+      "reliability": "C",
+      "derived_from": [
+        "vendor-b"
+      ]
+    }
+  ]
 }

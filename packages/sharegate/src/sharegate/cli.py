@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from cti_method.contract import FINDING, OK, emit, exit_code, read_text, run
+from cti_method.contract import CANNOT_CHECK, FINDING, OK, emit, exit_code, read_text, run
 
 from sharegate import __version__
 from sharegate.core import check_tlp, pre_share, tlp_policy
@@ -17,6 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pre = sub.add_parser("check", help="Run the full gate on a file.")
     pre.add_argument("path", help="Path to a product or STIX bundle.")
+    pre.add_argument("--today", metavar="AAAA-MM-DD", help="Check indicator expiry against this date.")
     tlp = sub.add_parser("tlp", help="Check only the TLP marking of a file.")
     tlp.add_argument("path")
     sub.add_parser("policy", help="Print the TLP 2.0 policy table.")
@@ -35,8 +36,10 @@ def main(argv: list[str] | None = None) -> int:
             result = check_tlp(text)
             emit(result)
             return OK if result["clean"] else FINDING
-        result = pre_share(text)
+        result = pre_share(text, today=getattr(args, "today", None))
         emit(result)
+        if result.get("checked") is False:
+            return CANNOT_CHECK
         return exit_code(result["findings"])
 
     return run(body)

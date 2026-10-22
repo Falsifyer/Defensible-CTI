@@ -196,3 +196,36 @@ def test_pre_share_runs_the_stix_gate_on_a_bundle() -> None:
     result = pre_share({**VALID_BUNDLE, "objects": [{"type": "indicator", "id": "wrong--a"}]})
     assert result["stix"] is not None
     assert result["shareable"] is False
+
+
+def test_expired_indicators_are_reported_when_a_date_is_given() -> None:
+    bundle = {
+        **VALID_BUNDLE,
+        "objects": [
+            MARKING,
+            {**VALID_BUNDLE["objects"][1], "valid_until": "2026-01-01T00:00:00Z"},
+        ],
+    }
+    assert "stix-expired-indicator" not in _codes(pre_share(bundle)["stix"])
+    assert "stix-expired-indicator" in _codes(pre_share(bundle, today="2026-06-01")["stix"])
+
+
+def test_a_bundle_whose_indicators_all_expired_is_not_shareable() -> None:
+    bundle = {
+        **VALID_BUNDLE,
+        "objects": [
+            MARKING,
+            {**VALID_BUNDLE["objects"][1], "valid_until": "2026-01-01T00:00:00Z"},
+        ],
+    }
+    result = pre_share(bundle, today="2026-06-01")
+    assert result["shareable"] is False
+    assert "stix-all-indicators-expired" in _codes(result)
+
+
+def test_the_gate_reports_that_it_could_not_check() -> None:
+    from unittest import mock
+
+    unavailable = {"valid": False, "checked": False, "findings": [], "by_severity": {}, "objects": 0}
+    with mock.patch("sharegate.core.validate_bundle", return_value=unavailable):
+        assert pre_share(VALID_BUNDLE)["checked"] is False

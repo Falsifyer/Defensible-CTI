@@ -24,6 +24,13 @@ executes anything from its input. What matters:
 - A ledger entry that can be edited without `assessment ledger --verify` noticing.
 - Input that exhausts memory, or a path the user passes by mistake.
 
+## Dependency advisories
+
+`pip-audit` runs in CI. One advisory is accepted and documented: `PYSEC-2026-3447`
+(setuptools 82.0.1, fixed in 83). The `opencti` extra pins pycti, which pins setuptools to a
+band that excludes 83; setuptools is a build backend and is never imported by the suite. If
+pycti lifts its pin, the ignore is removed in the same commit.
+
 ## Out of scope
 
 That a well-formed product says something wrong is not a vulnerability: the tools check

@@ -16,6 +16,8 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
+from cti_method.stix import marking_object
+
 from cryptonym.model.assessment import Assessment
 from cryptonym.reconcile.graph import Reconciliation
 
@@ -38,7 +40,8 @@ def to_stix_objects(
 ) -> list[dict[str, Any]]:
     """Return the STIX 2.1 objects for one assessment and its graded linkages."""
     stamp = timestamp or _now()
-    objects: list[dict[str, Any]] = []
+    marking = marking_object(assessment.tlp)
+    objects: list[dict[str, Any]] = [marking]
     refs: dict[str, str] = {}
 
     for subject in assessment.subjects:
@@ -55,6 +58,7 @@ def to_stix_objects(
                 "name": subject.name,
                 "source_url": subject.source_url,
                 "tlp": subject.tlp,
+                "object_marking_refs": [marking["id"]],
             }
         )
 
@@ -72,6 +76,7 @@ def to_stix_objects(
                 "right_ref": refs.get(link.right),
                 "confidence": link.confidence.value,
                 "assessment_id": link.assessment_id or assessment.id,
+                "object_marking_refs": [marking["id"]],
             }
         )
     return objects
@@ -85,3 +90,14 @@ def to_stix_bundle(
     """Return a STIX 2.1 ``bundle`` wrapping the assessment objects."""
     objects = to_stix_objects(assessment, reconciliation, timestamp)
     return {"type": "bundle", "id": _id("bundle", assessment.id), "objects": objects}
+
+
+def validate_export(bundle: dict[str, Any]) -> dict[str, Any]:
+    """Validate the exported bundle with the suite's validator.
+
+    The export is marked and structurally checked like any other bundle, so it can be
+    gated by ``sharegate`` instead of travelling unmarked.
+    """
+    from cti_method.stix import validate_bundle
+
+    return validate_bundle(bundle)

@@ -72,3 +72,18 @@ def test_taxii_envelope_carries_the_objects() -> None:
     envelope = to_taxii_envelope(_assessment(), _reconciliation(), timestamp=STAMP)
     assert envelope["more"] is False
     assert any(obj["type"] == "x-cryptonym-linkage" for obj in envelope["objects"])
+
+
+def test_the_export_is_marked_and_validates_like_any_other_bundle():
+    from sharegate.core import pre_share
+
+    from cryptonym.export.stix_bundle import to_stix_bundle, validate_export
+
+    assessment = _assessment()
+    bundle = to_stix_bundle(assessment)
+    result = validate_export(bundle)
+    assert result["valid"] is True, result["findings"]
+    assert result["findings"] == []
+    gate = pre_share(bundle)
+    assert gate["shareable"] is True, gate["findings"]
+    assert gate["effective_tlp"] == "TLP:CLEAR"

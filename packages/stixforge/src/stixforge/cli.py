@@ -51,9 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _link(product: dict, upstream: dict, field_name: str, label: str) -> tuple[str | None, list[dict]]:
-    result = link(product, field_name, upstream, label=label)
-    return result["id"], result["findings"]
+def _link(product: dict, upstream: dict, field_name: str, label: str, kind: str) -> dict:
+    return link(product, field_name, upstream, label=label, kind=kind)
 
 
 def _run_build(args: argparse.Namespace) -> int:
@@ -67,6 +66,7 @@ def _run_build(args: argparse.Namespace) -> int:
         "hunt": product.get("hunt_id"),
     }
     findings: list[dict] = []
+    trace_hashes: dict[str, str | None] = {}
     for path, field_name, label, kind in (
         (args.requirement, "requirement_id", "requirement register", "pir"),
         (args.assessment, "assessment_id", "assessment", "assessment"),
@@ -80,9 +80,12 @@ def _run_build(args: argparse.Namespace) -> int:
         if kind == "pir":
             requirement = link_requirement(product, upstream)
             resolved, link_findings = requirement["id"], requirement["findings"]
+            digest = requirement.get("hash")
         else:
-            resolved, link_findings = _link(product, upstream, field_name, label)
+            linked = _link(product, upstream, field_name, label, kind)
+            resolved, link_findings, digest = linked["id"], linked["findings"], linked.get("hash")
         trace[kind] = resolved
+        trace_hashes[kind] = digest
         findings.extend(link_findings)
 
     if has_high(findings):
@@ -96,7 +99,7 @@ def _run_build(args: argparse.Namespace) -> int:
         return FINDING
 
     try:
-        bundle = build(product, trace=trace)
+        bundle = build(product, trace=trace, trace_hashes=trace_hashes)
     except ValueError as exc:
         findings.append(finding("product-invalid", "high", str(exc)))
         if args.as_json:
@@ -107,6 +110,8 @@ def _run_build(args: argparse.Namespace) -> int:
 
     # The factory does not write what its own validator would reject.
     check = validate(bundle)
+    if not check.get("checked", True):
+        raise CannotCheck(f"the bundle is too large to check: {check['findings'][0]['message']}")
     if not check["valid"]:
         payload = {"built": False, "findings": check["findings"]}
         if args.as_json:

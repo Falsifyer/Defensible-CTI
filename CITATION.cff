@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, cite it as below."
+title: "cti-suite: six tools for one intelligence cycle"
+abstract: >-
+  A workspace of eight packages that run one CTI cycle: requirements, alias
+  reconciliation, a graded ledger, a hunt plan, a STIX product and a pre-share gate.
+  Every tool refuses something the cycle should not allow; the grade a claim may carry is
+  capped by the evidence behind it.
+type: software
+authors:
+  - family-names: "Eliseo"
+    given-names: "Martín"
+    alias: "ME0094"
+    website: "https://me0094.github.io"
+repository-code: "https://github.com/ME0094/cti-suite"
+license: MIT
+keywords:
+  - cyber threat intelligence
+  - threat intelligence lifecycle
+  - STIX 2.1
+  - TLP 2.0
+  - analysis of competing hypotheses
+  - threat hunting
+version: "0.1.0"
+date-released: "2026-10-22"

@@ -9,7 +9,13 @@ re-deriving the judgement from its own evidence.
 from __future__ import annotations
 
 from cti_method.adjudication import Adjudication, Truth, filter_adjudication
-from cti_method.metrics import SPLITS, Confusion, calibration_table, confusion_from_calls
+from cti_method.metrics import (
+    SPLITS,
+    Confusion,
+    calibration_table,
+    confusion_from_calls,
+    probability_calibration,
+)
 
 from cryptonym.assess.grading import assess_actor_pair
 from cryptonym.model.assessment import Assessment, Hypothesis
@@ -41,18 +47,29 @@ def evaluate_cases(cases: list[dict]) -> dict:
                 "confidence": verdict["confidence"],
                 "ceiling": verdict["ceiling"],
                 "probability": verdict["probability"],
+                "truth_same": truth_same,
             }
         )
     confusion = confusion_from_calls([(row["called_same"], row["truth"] == POSITIVE) for row in results])
     # Calibrate on the ceiling the evidence sets, not on the declared grade: the declared
     # one is prose, and prose does not calibrate.
     calibration = calibration_table([(str(row["ceiling"]), row["correct"]) for row in results])
-    return {"results": results, "metrics": confusion.as_dict(), "calibration": calibration}
+    probabilities = probability_calibration([(row["probability"], row["truth"] == POSITIVE) for row in results])
+    return {
+        "results": results,
+        "metrics": confusion.as_dict(),
+        "calibration": calibration,
+        "probability_calibration": probabilities,
+    }
 
 
 def _summarise(cases: list[dict]) -> dict[str, dict]:
     result = evaluate_cases(cases)
-    return {"metrics": result["metrics"], "calibration": result["calibration"]}
+    return {
+        "metrics": result["metrics"],
+        "calibration": result["calibration"],
+        "probability_calibration": result["probability_calibration"],
+    }
 
 
 def evaluate_corpus(document: dict) -> dict:
@@ -84,6 +101,7 @@ def evaluate_adjudicated(document: dict) -> dict:
     cases = document.get("cases", [])
     calls: list[tuple[bool, bool]] = []
     calibration_records: list[tuple[str, bool]] = []
+    probability_records: list[tuple[str | None, bool]] = []
     coverage = {"admissible": 0, "contested": 0, "unadjudicated": 0}
     by_standard: dict[str, int] = {}
     results: list[dict] = []
@@ -100,6 +118,7 @@ def evaluate_adjudicated(document: dict) -> dict:
             calls.append((called_same, verdict.effective_truth is Truth.SAME_ACTOR))
             correct = called_same == (verdict.effective_truth is Truth.SAME_ACTOR)
             calibration_records.append((str(engine["ceiling"]), bool(correct)))
+            probability_records.append((engine["probability"], verdict.effective_truth is Truth.SAME_ACTOR))
             coverage["admissible"] += 1
         else:
             coverage[verdict.effective_truth.value] = coverage.get(verdict.effective_truth.value, 0) + 1
@@ -128,6 +147,7 @@ def evaluate_adjudicated(document: dict) -> dict:
     return {
         "metrics": confusion_from_calls(calls).as_dict(),
         "calibration": calibration_table(calibration_records),
+        "probability_calibration": probability_calibration(probability_records),
         "coverage": coverage,
         "by_standard": by_standard,
         "results": results,

@@ -38,7 +38,7 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
     if not isinstance(documento, dict):
         return {
             "valid": False,
-            "findings": [finding("not-an-object", HIGH, "el registro no es un objeto JSON")],
+            "findings": [finding("not-an-object", HIGH, "the register is not a JSON object")],
             "requirements": 0,
             "high": 1,
             "medium": 0,
@@ -51,7 +51,7 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
     ids: list[str] = []
 
     if not isinstance(requisitos, list) or not requisitos:
-        hallazgos.append(finding("no-requirements", HIGH, "el registro no tiene requisitos"))
+        hallazgos.append(finding("no-requirements", HIGH, "the register has no requirements"))
         return {
             "valid": False,
             "findings": hallazgos,
@@ -65,24 +65,24 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
     vistos: set[str] = set()
     for i, pir in enumerate(requisitos):
         if not isinstance(pir, dict):
-            hallazgos.append(finding("malformed", HIGH, "el requisito no es un objeto", where=f"requirements[{i}]"))
+            hallazgos.append(finding("malformed", HIGH, "the requirement is not an object", where=f"requirements[{i}]"))
             continue
         donde = str(pir.get("id") or f"requirements[{i}]")
         if donde in vistos:
-            hallazgos.append(finding("duplicate-id", HIGH, "identificador repetido", where=donde))
+            hallazgos.append(finding("duplicate-id", HIGH, "duplicate identifier", where=donde))
         else:
             ids.append(donde)
         vistos.add(donde)
 
         pregunta = (pir.get("question") or "").strip()
         if not pregunta:
-            hallazgos.append(finding("no-question", HIGH, "no hay pregunta", where=donde))
+            hallazgos.append(finding("no-question", HIGH, "no question", where=donde))
         elif not pregunta.endswith("?"):
             hallazgos.append(
                 finding(
                     "not-a-question",
                     MEDIUM,
-                    "la pregunta no termina en '?': un enunciado no es contestable",
+                    "the question does not end in '?': a statement is not answerable",
                     where=donde,
                 )
             )
@@ -93,43 +93,43 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
                 finding(
                     "no-decision",
                     HIGH,
-                    "no nombra la decision que informa: es un tema de interes, no una PIR",
+                    "does not name the decision it informs: that is a topic of interest, not a PIR",
                     where=donde,
                 )
             )
         if not (pir.get("consumer") or "").strip():
-            hallazgos.append(finding("no-consumer", HIGH, "no dice quien toma esa decision", where=donde))
+            hallazgos.append(finding("no-consumer", HIGH, "does not say who takes that decision", where=donde))
         if pir.get("priority") not in PRIORIDADES:
             hallazgos.append(
                 finding(
                     "bad-priority",
                     MEDIUM,
-                    f"prioridad {pir.get('priority')!r}: se espera una de {', '.join(PRIORIDADES)}",
+                    f"priority {pir.get('priority')!r}: expected one of {', '.join(PRIORIDADES)}",
                     where=donde,
                 )
             )
 
         limite = _fecha(pir.get("deadline"))
         if pir.get("deadline") and limite is None:
-            hallazgos.append(finding("bad-deadline", MEDIUM, "fecha no ISO (AAAA-MM-DD)", where=donde))
+            hallazgos.append(finding("bad-deadline", MEDIUM, "not an ISO date (YYYY-MM-DD)", where=donde))
         if limite and limite < hoy and pir.get("status") != "answered":
             hallazgos.append(
                 finding(
                     "stale",
                     MEDIUM,
-                    f"vencida el {limite.isoformat()} y sin responder: se retira o se renueva",
+                    f"overdue since {limite.isoformat()} and unanswered: retire or renew it",
                     where=donde,
                 )
             )
 
         eei = pir.get("eei")
         if not isinstance(eei, list) or not eei:
-            hallazgos.append(finding("no-eei", HIGH, "no tiene EEI: no hay nada que recolectar", where=donde))
+            hallazgos.append(finding("no-eei", HIGH, "no EEI: there is nothing to collect", where=donde))
             continue
         for j, elemento in enumerate(eei):
             punto = f"{donde}/eei[{j}]"
             if not isinstance(elemento, dict) or not (elemento.get("question") or "").strip():
-                hallazgos.append(finding("eei-no-question", HIGH, "EEI sin pregunta", where=punto))
+                hallazgos.append(finding("eei-no-question", HIGH, "EEI without a question", where=punto))
                 continue
             indicadores = elemento.get("indicators")
             if not isinstance(indicadores, list) or not indicadores:
@@ -137,7 +137,7 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
                     finding(
                         "eei-no-indicator",
                         MEDIUM,
-                        "EEI sin indicador: no se sabria cuando esta contestada",
+                        "EEI with no indicator: there is no way to know when it is answered",
                         where=punto,
                     )
                 )
@@ -146,13 +146,13 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
                 valor = (indicador or {}).get("value") if isinstance(indicador, dict) else None
                 fuente = (indicador or {}).get("source") if isinstance(indicador, dict) else None
                 if not valor:
-                    hallazgos.append(finding("indicator-no-value", HIGH, "indicador sin valor", where=punto))
+                    hallazgos.append(finding("indicator-no-value", HIGH, "indicator without a value", where=punto))
                 if fuente is None:
                     hallazgos.append(
                         finding(
                             "indicator-ungraded",
                             HIGH,
-                            f"indicador {valor!r} sin graduar: la fuente va como A-F + 1-6",
+                            f"indicator {valor!r} is ungraded: the source goes as A-F + 1-6",
                             where=punto,
                         )
                     )
@@ -161,7 +161,7 @@ def validate(documento: dict[str, Any], hoy: dt.date | None = None) -> dict[str,
                         finding(
                             "bad-admiralty",
                             MEDIUM,
-                            f"graduacion {fuente!r} fuera de la escala Admiralty (A2, B3, ...)",
+                            f"grade {fuente!r} is outside the Admiralty scale (A2, B3, ...)",
                             where=punto,
                         )
                     )

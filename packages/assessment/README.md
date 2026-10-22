@@ -18,6 +18,8 @@ the judgements.
   needs a diagnostic discriminating item and two independent sources; shared tradecraft
   alone cannot exceed `low`.
 - A comparison with **one hypothesis** (`no-hypotheses`): one option is not analysis.
+- A claim whose declared sources derive from one another: independence is structural, not
+  typographic, so a derived source does not raise the ceiling.
 - A ledger entry that was edited after it was written: `ledger --verify` reports the line.
 
 ## What it is not
@@ -40,8 +42,12 @@ There is no dependency on the alias package: this tool works on any claim.
 ```bash
 assessment grade --confidence moderate --probability likely
 assessment assess claim.json --register pir.json --against judgement.json --append ledger.jsonl
+assessment assess claim.json --strict                # validate the verdict against its schema
 assessment ledger ledger.jsonl --verify
 ```
+
+`--now 2026-10-22T00:00:00Z` on `assess` writes the ledger entry at a fixed instant, so two
+runs of the same claim produce the same ledger.`
 
 `assess --against` re-derives the previous step's judgement and reports `judgement-mismatch`
 if the dossier changed after it was produced. `--register` verifies the `requirement_id`
@@ -60,7 +66,7 @@ Tools: `grade_claim`, `weigh_evidence`, `grade_ceiling`, `filter_external_truth`
 ## The ledger
 
 Each line is an entry with `seq`, `created_at`, `tool`, `claim_id`, `claim_hash`, `claim`,
-`prev_hash` and `hash`. The hash covers the entry without itself; `prev_hash` chains to the
+`prev_hash` and `hash`; the schema is `ledger-entry` in `cti-method`. The hash covers the entry without itself; `prev_hash` chains to the
 previous line. Editing a claim, dropping a line or reordering two lines breaks the chain at a
 known index.
 

@@ -27,13 +27,18 @@ def demo_run() -> dict:
 
 
 def test_the_bundle_carries_the_trace_of_the_steps_before_it(demo_run: dict) -> None:
+    from cti_method.trace import content_hash
+
     report = next(obj for obj in demo_run["bundle"]["objects"] if obj["type"] == "report")
     references = {item["source_name"]: item["external_id"] for item in report["external_references"]}
-    assert references == {
+    ids = {kind: value.split("@")[0] for kind, value in references.items()}
+    assert ids == {
         "cti-suite:pir": "PIR-001",
         "cti-suite:assessment": "nightjar-vs-saltwind",
         "cti-suite:hunt": "HUNT-001",
     }
+    # El hash fija el contenido exacto del juicio, no solo su id.
+    assert references["cti-suite:assessment"].split("@")[1] == content_hash(demo_run["verdict"])[:12]
 
 
 def test_the_hunt_plan_cites_the_assessment_and_uses_attack_v18_plus(demo_run: dict) -> None:
@@ -62,5 +67,5 @@ def test_the_report_reads_as_one_product(demo_run: dict) -> None:
     assert "PIR-001" in report
     assert "the evidence supports at most **moderate**" in report
     assert "detection strategies" in report
-    assert "cti-suite:assessment=nightjar-vs-saltwind" in report
+    assert "cti-suite:assessment=nightjar-vs-saltwind@" in report
     assert "does not contain" not in report

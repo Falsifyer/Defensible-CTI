@@ -1,9 +1,16 @@
-"""Confusion, error rates and calibration: the arithmetic of scoring a method.
+"""Confusion, error rates, confidence calibration and probability scoring.
 
 Positive class is whatever the caller says it is (``same_actor`` for alias work). A
 **false positive** is a false merge, the costly error; a false negative is a false split,
 cheaper and visible. The two rates are reported separately because they trade off and
 averaging them would hide the only number that matters.
+
+The two axes of a judgement are scored separately, because they answer different questions:
+
+* **confidence calibration** — when the evidence ceiling says ``high``, how often is the
+  call right? (``calibration_table``)
+* **probability calibration** — when the estimate says ``likely``, how often does it
+  happen? (``probability_calibration``, with a Brier score)
 """
 
 from __future__ import annotations
@@ -13,6 +20,17 @@ from dataclasses import dataclass
 #: Evaluation splits. A method graded on the cases it was tuned against proves nothing,
 #: so results are always reported per split and never averaged into one headline.
 SPLITS = ("development", "held-out")
+
+#: WEP-style probability bands mapped to the midpoint of the range they describe. The
+#: bands are the ones the suite emits; the points are what a Brier score can use.
+PROBABILITY_POINTS: dict[str, float] = {
+    "nearly_certain": 0.95,
+    "very_likely": 0.80,
+    "likely": 0.65,
+    "roughly_even_chance": 0.50,
+    "unlikely": 0.35,
+    "very_unlikely": 0.20,
+}
 
 
 @dataclass(frozen=True)
@@ -55,8 +73,8 @@ class Confusion:
             "true_negative": self.true_negative,
             "false_negative": self.false_negative,
             "total": self.total,
-            "false_merge_rate": self.false_positive_rate,
-            "false_split_rate": self.false_negative_rate,
+            "false_merge_rate": self.false_merge_rate,
+            "false_split_rate": self.false_split_rate,
         }
 
 
@@ -95,3 +113,45 @@ def calibration_table(records: list[tuple[str, bool]]) -> dict[str, dict[str, fl
         if outcomes:
             table[level] = {"n": len(outcomes), "accuracy": sum(outcomes) / len(outcomes)}
     return table
+
+
+def probability_calibration(records: list[tuple[str | None, bool]]) -> dict[str, object]:
+    """Brier score and per-band reliability for estimative calls.
+
+    Each record is ``(probability_label, happened)``. Records with no probability are not
+    estimative and are excluded — they have nothing to score on this axis.
+
+    The Brier score is the mean squared error of the forecast: ``0`` is a perfect
+    forecast, ``0.25`` is what always saying "50/50" scores, and a method that never beats
+    that is not adding information.
+    """
+    usable: list[tuple[str, float, bool]] = []
+    for label, happened in records:
+        if not label:
+            continue
+        point = PROBABILITY_POINTS.get(str(label))
+        if point is None:
+            continue
+        usable.append((str(label), point, bool(happened)))
+
+    if not usable:
+        return {"n": 0, "brier_score": None, "buckets": {}, "points": dict(PROBABILITY_POINTS)}
+
+    differences = [(point - (1.0 if happened else 0.0)) ** 2 for _, point, happened in usable]
+    buckets: dict[str, list[tuple[float, bool]]] = {}
+    for label, point, happened in usable:
+        buckets.setdefault(label, []).append((point, happened))
+    table = {
+        label: {
+            "n": len(values),
+            "mean_forecast": round(sum(point for point, _ in values) / len(values), 4),
+            "observed_rate": round(sum(1 for _, happened in values if happened) / len(values), 4),
+        }
+        for label, values in sorted(buckets.items(), key=lambda item: -PROBABILITY_POINTS[item[0]])
+    }
+    return {
+        "n": len(usable),
+        "brier_score": round(sum(differences) / len(differences), 4),
+        "buckets": table,
+        "points": dict(PROBABILITY_POINTS),
+    }

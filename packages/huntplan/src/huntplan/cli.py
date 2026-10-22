@@ -37,7 +37,7 @@ def _link(plan: dict, path: str) -> list[dict]:
     upstream = read_json(path)
     if not isinstance(upstream, dict):
         raise CannotCheck(f"{path} is not a JSON object")
-    return link(plan, "assessment_id", upstream, label="assessment")["findings"]
+    return link(plan, "assessment_id", upstream, label="assessment", kind="assessment")["findings"]
 
 
 def main(argv: list[str] | None = None) -> int:

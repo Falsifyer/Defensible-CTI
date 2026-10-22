@@ -17,6 +17,69 @@ def _row(cells: list[Any]) -> str:
     return "| " + " | ".join(str(cell) if cell not in (None, "") else "—" for cell in cells) + " |"
 
 
+def missing_artifacts(
+    *,
+    pir: dict[str, Any] | None = None,
+    assessment: dict[str, Any] | None = None,
+    hunt: dict[str, Any] | None = None,
+    product: dict[str, Any] | None = None,
+) -> list[str]:
+    """The links of the chain that were not supplied, by name."""
+    return [
+        name
+        for name, value in (
+            ("requirement register", pir),
+            ("assessment", assessment),
+            ("hunt plan", hunt),
+            ("product", product),
+        )
+        if not value
+    ]
+
+
+def _bottom_line(assessment: dict[str, Any] | None, marking: str | None) -> list[str]:
+    """The BLUF: what is claimed, how strong it is, why, and what would change it.
+
+    Every sentence is read from the judgement the previous step produced; nothing here is
+    written by hand for a particular case.
+    """
+    if not assessment:
+        return []
+    question = assessment.get("question") or "Judgement"
+    ranking = assessment.get("hypotheses_favoured") or assessment.get("ranking") or []
+    favoured = ranking[0] if ranking else None
+    grade = assessment.get("grade") or {}
+    confidence = grade.get("confidence", assessment.get("confidence"))
+    ceiling = assessment.get("ceiling")
+    reasons = assessment.get("grade_reasons") or []
+    findings = assessment.get("findings") or assessment.get("grade_findings") or []
+    refused = any(item.get("code") == "grade-exceeds-evidence" for item in findings)
+
+    lines = ["## Bottom line", "", f"**{question}**", ""]
+    if favoured:
+        lines.append(f"The evidence favours **{favoured}**.")
+    else:
+        lines.append("The evidence favours none of the stated hypotheses.")
+    if confidence and ceiling:
+        sentence = f"The judgement declares **{confidence}** confidence; the evidence supports at most **{ceiling}**."
+        if refused:
+            sentence += " The declaration exceeds the evidence and the tool refuses it."
+        lines.append(sentence)
+    elif ceiling:
+        lines.append(f"No grade was declared; the evidence supports at most **{ceiling}**.")
+    for reason in reasons:
+        lines.append(f"- {reason}")
+    if assessment.get("review_trigger"):
+        lines.append("")
+        lines.append(f"What would change it: {assessment['review_trigger']}")
+    if assessment.get("review_by"):
+        lines.append(f"Review by: {assessment['review_by']}")
+    if marking:
+        lines.append(f"Handling: {marking}")
+    lines.append("")
+    return lines
+
+
 def _requirement_heading(pir: dict[str, Any] | None, requirement_id: str | None) -> list[str]:
     if not pir:
         return []
@@ -158,22 +221,14 @@ def render_report(
         header.append(f"> {marking}")
         header.append("")
     body: list[str] = []
+    body += _bottom_line(assessment, marking)
     body += _requirement_heading(pir, requirement_id)
     body += _judgement(assessment)
     body += _evidence_table(assessment)
     body += _hunt(hunt)
     body += _product(product, bundle, marking)
 
-    missing = [
-        name
-        for name, value in (
-            ("requirement register", pir),
-            ("assessment", assessment),
-            ("hunt plan", hunt),
-            ("product", product or bundle),
-        )
-        if not value
-    ]
+    missing = missing_artifacts(pir=pir, assessment=assessment, hunt=hunt, product=product or bundle)
     if missing:
         body += ["## What this product does not contain", ""]
         for name in missing:

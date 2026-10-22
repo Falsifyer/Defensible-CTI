@@ -23,6 +23,7 @@ from cti_method.ach import (
     discriminating_evidence,
     identity_supporting_evidence,
     inconsistency_counts,
+    inconsistency_scores,
     least_inconsistent,
 )
 from cti_method.adjudication import (
@@ -62,7 +63,15 @@ from cti_method.contract import (
 )
 from cti_method.evidence import DIAGNOSTIC_TYPES, Consistency, Evidence, EvidenceType
 from cti_method.grading import EvidenceProfile, ceiling, check_declared, derived_grade, profile
-from cti_method.metrics import SPLITS, Confusion, calibration_table, confusion_from_calls
+from cti_method.metrics import (
+    PROBABILITY_POINTS,
+    SPLITS,
+    Confusion,
+    calibration_table,
+    confusion_from_calls,
+    probability_calibration,
+)
+from cti_method.sources import SourceRef, independent_ids, registry
 from cti_method.stix import (
     TLP,
     TLP_EXTENSION_ID,
@@ -74,7 +83,16 @@ from cti_method.stix import (
     referenced_markings,
     validate_bundle,
 )
-from cti_method.trace import LINK_FIELDS, external_references, id_of, link, link_requirement, requirement_ids
+from cti_method.trace import (
+    LINK_FIELDS,
+    content_hash,
+    external_references,
+    hash_field,
+    id_of,
+    link,
+    link_requirement,
+    requirement_ids,
+)
 
 __all__ = [
     "__version__",
@@ -110,6 +128,7 @@ __all__ = [
     # ACH
     "consistency_matrix",
     "inconsistency_counts",
+    "inconsistency_scores",
     "least_inconsistent",
     "discriminating_evidence",
     "identity_supporting_evidence",
@@ -131,6 +150,8 @@ __all__ = [
     "Confusion",
     "confusion_from_calls",
     "calibration_table",
+    "PROBABILITY_POINTS",
+    "probability_calibration",
     # STIX
     "TLP",
     "TLP_EXTENSION_ID",
@@ -141,9 +162,14 @@ __all__ = [
     "referenced_markings",
     "effective_marking",
     "validate_bundle",
-    # traceability
+    # sources and traceability
+    "SourceRef",
+    "registry",
+    "independent_ids",
     "LINK_FIELDS",
     "id_of",
+    "content_hash",
+    "hash_field",
     "link",
     "link_requirement",
     "requirement_ids",

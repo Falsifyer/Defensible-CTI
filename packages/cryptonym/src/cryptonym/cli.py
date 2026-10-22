@@ -51,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     assess = sub.add_parser("assess", help="Print the machine-readable judgement for a dossier.")
     assess.add_argument("dossier", help="Path to an assessment JSON file.")
+    assess.add_argument(
+        "--strict",
+        action="store_true",
+        help="Validate the judgement against the published schema (needs the jsonschema extra).",
+    )
 
     adjudicate = sub.add_parser("adjudicate", help="Run the external-truth filter over an adjudicated corpus.")
     adjudicate.add_argument("corpus", help="Path to an adjudicated corpus JSON file.")
@@ -106,9 +111,20 @@ def _run_ingest(args: argparse.Namespace) -> int:
     return 0
 
 
-def _run_assess(path: str) -> int:
+def _run_assess(path: str, strict: bool = False) -> int:
     assessment = load_assessment(path)
     verdict = assess_actor_pair(assessment)
+    if strict:
+        from cti_method import schema as schema_module
+
+        try:
+            schema_module.validate(verdict, "judgement")
+        except RuntimeError as exc:
+            print(f"cannot check: {exc}", file=sys.stderr)
+            return 2
+        except Exception as exc:  # noqa: BLE001 - cualquier fallo del esquema es no comprobado
+            print(f"cannot check: the judgement does not match its schema: {exc}", file=sys.stderr)
+            return 2
     print(json.dumps(verdict, indent=2, ensure_ascii=False))
     return exit_code(verdict["grade_findings"])
 
@@ -174,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ingest":
             return _run_ingest(args)
         if args.command == "assess":
-            return _run_assess(args.dossier)
+            return _run_assess(args.dossier, args.strict)
         if args.command == "adjudicate":
             return _run_adjudicate(args.corpus, args.strict)
         if args.command == "render":

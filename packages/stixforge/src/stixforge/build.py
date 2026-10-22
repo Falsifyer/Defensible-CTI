@@ -64,7 +64,11 @@ def _confidence(value: Any) -> int | None:
     return value
 
 
-def build(producto: dict[str, Any], trace: dict[str, str | None] | None = None) -> dict[str, Any]:
+def build(
+    producto: dict[str, Any],
+    trace: dict[str, str | None] | None = None,
+    trace_hashes: dict[str, str | None] | None = None,
+) -> dict[str, Any]:
     """Build the bundle. Raises ValueError with the reason if the product is not usable.
 
     ``trace`` carries the verified identifiers of the upstream artifacts
@@ -114,7 +118,7 @@ def build(producto: dict[str, Any], trace: dict[str, str | None] | None = None) 
         if not patron:
             raise ValueError("every indicator needs a STIX pattern")
         ident = _id("indicator", f"{indicador.get('name', '')}|{patron}")
-        valido_hasta = indicador.get("valid_until")
+        valido_hasta = indicador.get("valid_until") or producto.get("valid_until")
         valido_desde = indicador.get("valid_from") or sello
         if valido_hasta and str(valido_hasta) < str(valido_desde):
             raise ValueError(f"indicator {indicador.get('name')!r}: valid_until is before valid_from")
@@ -178,9 +182,7 @@ def build(producto: dict[str, Any], trace: dict[str, str | None] | None = None) 
     }
     if producto.get("summary"):
         report["description"] = producto["summary"]
-    if producto.get("valid_until"):
-        report["valid_until"] = producto["valid_until"]
-    referencias_externas = external_references(trace or {})
+    referencias_externas = external_references(trace or {}, trace_hashes)
     if referencias_externas:
         report["external_references"] = referencias_externas
     objetos.append(report)

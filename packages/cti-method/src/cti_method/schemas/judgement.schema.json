@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ME0094/cti-suite/schemas/judgement.schema.json",
+  "title": "Machine-readable judgement",
+  "description": "What `assessment assess` and `cryptonym assess` print: the ranking, the consistency, the derived ceiling and the declared grade with its findings. `ranking` and `hypotheses_favoured` are the same list under the two tools' names.",
+  "type": "object",
+  "required": ["ceiling", "grade_findings"],
+  "anyOf": [
+    { "required": ["ranking"] },
+    { "required": ["hypotheses_favoured"] }
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": "1.0" },
+    "id": { "type": ["string", "null"] },
+    "assessment_id": { "type": ["string", "null"] },
+    "requirement_id": { "type": ["string", "null"] },
+    "question": { "type": ["string", "null"] },
+    "favoured": { "type": ["string", "null"] },
+    "ranking": { "type": "array", "items": { "type": "string" } },
+    "hypotheses_favoured": { "type": "array", "items": { "type": "string" } },
+    "inconsistencies": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "inconsistency_scores": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "discriminating": { "type": "array", "items": { "type": "string" } },
+    "discriminating_evidence": { "type": "array", "items": { "type": "string" } },
+    "consistent_with_everything": { "type": "array", "items": { "type": "string" } },
+    "confidence": { "type": ["string", "null"], "enum": ["high", "moderate", "low", null] },
+    "probability": {
+      "type": ["string", "null"],
+      "enum": ["nearly_certain", "very_likely", "likely", "roughly_even_chance", "unlikely", "very_unlikely", null]
+    },
+    "ceiling": { "enum": ["high", "moderate", "low"] },
+    "grade_supported": { "type": "boolean" },
+    "grade_findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "evidence_profile": { "type": "object" },
+    "grade_reasons": { "type": "array", "items": { "type": "string" } },
+    "grade": {
+      "type": "object",
+      "required": ["confidence"],
+      "properties": {
+        "confidence": { "type": ["string", "null"] },
+        "probability": { "type": ["string", "null"] },
+        "two_axis": { "type": "boolean" },
+        "label": { "type": "string" }
+      }
+    },
+    "truth": { "type": "object" },
+    "review_by": { "type": ["string", "null"] },
+    "reproduced": { "type": "boolean" }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string" },
+        "severity": { "enum": ["high", "medium", "low"] },
+        "message": { "type": "string" },
+        "pointer": { "type": "string" },
+        "where": { "type": "string" }
+      }
+    }
+  }
+}

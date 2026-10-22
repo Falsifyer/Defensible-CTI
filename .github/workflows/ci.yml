@@ -81,6 +81,7 @@ jobs:
       - name: El bundle que produce la demo es valido y compartible
         run: |
           uv run stixforge validate demo/out/bundle.json
+          uv run stixforge validate demo/out/bundle.json --external
           uv run sharegate check demo/out/bundle.json
       - name: La cadena se propaga al bundle
         run: |
@@ -124,6 +125,30 @@ jobs:
         with:
           name: distributions
           path: dist/
+
+  security:
+    name: Dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+      # pycti (extra `opencti`) fija setuptools a una banda que excluye 83; la version
+      # 82.0.1 solo se usa como backend de build y el suite no la importa. El aviso esta
+      # documentado en SECURITY.md; el resto de avisos no se ignoran.
+      - run: uv run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
+
+  infra:
+    name: Infraestructura (workflows y shell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: actionlint
+        uses: raven-actions/actionlint@v2
+      - name: shellcheck
+        run: shellcheck demo/run.sh
 
   credentials:
     name: Credenciales

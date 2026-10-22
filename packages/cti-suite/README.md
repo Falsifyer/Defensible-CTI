@@ -7,7 +7,8 @@ things that only work when the six are together:
 
 | Command | What it does |
 |---|---|
-| `ctisuite report` | renders requirement, judgement, evidence, hunt plan and marking as one markdown product |
+| `ctisuite chain --dir demo` | runs the seven steps in code, each reading the previous output, and returns one exit code |
+| `ctisuite report` | renders requirement, judgement, evidence, hunt plan and marking as one markdown product, opening with a bottom line read from the judgement |
 | `ctisuite-mcp` | one MCP server with prefixed tools for the whole cycle |
 
 ## Report
@@ -25,7 +26,17 @@ $ ctisuite report \
 
 Nothing in the report is computed from thin air: the ceiling and the ranking come from the
 judgement, the ranking's supporting evidence from the dossier, the trace from the STIX
-`external_references`, and anything missing is listed as a gap.
+`external_references`, and anything missing is listed as a gap. `--require-complete` turns a
+missing link into exit code 1 instead of a paragraph.
+
+## Chain
+
+```console
+$ ctisuite chain --dir demo --out /tmp/out
+```
+
+Eight steps, one exit code. The chain calls the six commands' real entry points, so it
+cannot drift from what the CLIs do; `demo/run.sh` is a three-line wrapper around it.
 
 ## One MCP server
 

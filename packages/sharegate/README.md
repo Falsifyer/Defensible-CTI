@@ -26,6 +26,8 @@ From `object_marking_refs`, not from a regex over the serialised document:
 - `TLP:CLEAR` on a bundle of IP observables is **not** a leak: an indicator is not a
   confession. The sensitive-content heuristic reads only fields a human wrote, and it is a
   **medium** guard — it surfaces, it does not block.
+- **Expiry**: with `--today`, an expired indicator is a medium finding, and a bundle whose
+  indicators have *all* expired is not shareable — it is not intelligence any more.
 
 ## What it is not
 
@@ -40,7 +42,8 @@ From `object_marking_refs`, not from a regex over the serialised document:
 pip install -e ../cti-method -e '.[mcp]'
 sharegate policy
 sharegate tlp product.md
-sharegate check bundle.json       # exit 1 if not shareable, 2 if it cannot be read
+sharegate check bundle.json                 # exit 1 if not shareable, 2 if it cannot be read
+sharegate check bundle.json --today 2027-01-01   # also report expired indicators
 ```
 
 ## As an MCP server

@@ -16,6 +16,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Findings use the shared shape (`code`, `severity`, `message`, `where`).
 - An unreadable or invalid file exits **2**; a high finding exits 1.
 
+- Findings are in English, like the rest of the CLI surface.
+
 
 ## 0.1.0 — 2026-10-22
 

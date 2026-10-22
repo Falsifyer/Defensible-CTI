@@ -70,3 +70,17 @@ def test_cli_sin_validador_externo_sale_con_dos(tmp_path, capsys):
     assert codigo in (0, 1, 2)
     if codigo == 2:
         assert "NOT run" in capsys.readouterr().err or "not installed" in capsys.readouterr().out
+
+
+def test_the_oasis_library_accepts_the_bundle(tmp_path):
+    """El camino --external deja de estar sin probar: valida con stix2 de verdad."""
+    pytest = __import__("pytest")
+    pytest.importorskip("stix2")
+    from stixforge.validate import external
+
+    bundle = build(PRODUCTO)
+    path = tmp_path / "bundle.json"
+    path.write_text(json.dumps(bundle), encoding="utf-8")
+    result = external(bundle, path)
+    assert result["available"] is True
+    assert result["library"]["ok"] is True, result["library"]

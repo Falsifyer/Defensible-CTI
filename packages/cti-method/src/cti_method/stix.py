@@ -19,6 +19,9 @@ from typing import Any
 from cti_method.contract import HIGH, LOW, MEDIUM, finding, has_high, severity_counts
 
 SPEC_VERSION = "2.1"
+#: Largest bundle the validator will walk. A bundle with a million objects is not checked,
+#: it is refused: "not checked" is honest, "still running" is not.
+MAX_OBJECTS = 20_000
 TLP_EXTENSION_ID = "extension-definition--60a3c5c5-0d10-413e-aab3-9e08dde9e88d"
 
 #: OASIS TLP 2.0 marking definitions. ``rank`` orders them from least to most restrictive.
@@ -179,7 +182,7 @@ def _check_id(obj: dict[str, Any], pointer: str, findings: list[dict[str, str]])
         )
 
 
-def validate_bundle(bundle: Any, today: str | None = None) -> dict[str, Any]:
+def validate_bundle(bundle: Any, today: str | None = None, max_objects: int = MAX_OBJECTS) -> dict[str, Any]:
     """Validate a STIX 2.1 bundle. One implementation, used by the factory and the gate.
 
     ``today`` (``YYYY-MM-DD``) enables the expiry check on indicators; without it the
@@ -197,6 +200,15 @@ def validate_bundle(bundle: Any, today: str | None = None) -> dict[str, Any]:
     if not isinstance(objects, list) or not objects:
         findings.append(finding("stix-no-objects", HIGH, "Bundle has no non-empty 'objects' array"))
         return _result(findings, 0)
+    if len(objects) > max_objects:
+        findings.append(
+            finding(
+                "stix-too-large",
+                HIGH,
+                f"bundle has {len(objects):,} objects, over the {max_objects:,}-object limit: not checked",
+            )
+        )
+        return _result(findings, len(objects), checked=False)
 
     bundle_id = str(bundle.get("id") or "")
     if not _ID.match(bundle_id) or not bundle_id.startswith("bundle--"):
@@ -301,6 +313,23 @@ def validate_bundle(bundle: Any, today: str | None = None) -> dict[str, Any]:
                 )
             )
 
+    if today:
+        indicators = [obj for obj in by_id.values() if obj.get("type") == "indicator"]
+        expired = [
+            obj
+            for obj in indicators
+            if obj.get("valid_until") and str(obj["valid_until"])[:10] < today
+        ]
+        if indicators and len(expired) == len(indicators):
+            findings.append(
+                finding(
+                    "stix-all-indicators-expired",
+                    HIGH,
+                    f"every indicator in the bundle expired before {today}: "
+                    "the product is not shareable as intelligence",
+                )
+            )
+
     # Marking: defined, referenced, and not deprecated.
     definitions = markings_in(bundle)
     if not definitions:
@@ -339,10 +368,11 @@ def validate_bundle(bundle: Any, today: str | None = None) -> dict[str, Any]:
     return _result(findings, len(objects))
 
 
-def _result(findings: list[dict[str, str]], objects: int) -> dict[str, Any]:
+def _result(findings: list[dict[str, str]], objects: int, checked: bool = True) -> dict[str, Any]:
     counts = severity_counts(findings)
     return {
         "valid": not has_high(findings),
+        "checked": checked,
         "findings": findings,
         "objects": objects,
         "by_severity": counts,

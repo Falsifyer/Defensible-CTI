@@ -11,6 +11,10 @@ on:
       tag:
         description: "Tag to release, e.g. stixforge-v0.2.0"
         required: true
+      dry_run:
+        description: "Build and verify, but do not create the release"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -29,46 +33,15 @@ jobs:
 
       - name: Resolver paquete, directorio y version desde la etiqueta
         id: pkg
-        run: |
-          tag="${{ github.event.inputs.tag || github.ref_name }}"
-          prefix="${tag%-v*}"
-          version="${tag##*-v}"
-          case "$prefix" in
-            cti-method)  package="cti-method";     directory="cti-method" ;;
-            cryptonym)   package="cryptonym";      directory="cryptonym" ;;
-            assessment)  package="assessment-mcp"; directory="assessment" ;;
-            sharegate)   package="sharegate";      directory="sharegate" ;;
-            stixforge)   package="stix-forge";     directory="stixforge" ;;
-            pir)         package="pir-ledger";     directory="pir" ;;
-            huntplan)    package="huntplan";       directory="huntplan" ;;
-            cti-suite)   package="cti-suite";      directory="cti-suite" ;;
-            *) echo "::error::unknown tag prefix '$prefix'"; exit 1 ;;
-          esac
-          {
-            echo "package=$package"
-            echo "directory=$directory"
-            echo "version=$version"
-            echo "tag=$tag"
-          } >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        # La correspondencia tag -> paquete es codigo con tests, no un `case` en YAML.
+        run: uv run --no-project python -m cti_suite.release --tag "$TAG" --check --github-output
 
       - run: uv sync --all-packages --all-extras
 
       - name: La version de la etiqueta es la del paquete
-        run: |
-          python - "${{ steps.pkg.outputs.package }}" "${{ steps.pkg.outputs.version }}" <<'PY'
-          import sys, tomllib, pathlib
-          dist, version = sys.argv[1], sys.argv[2]
-          for path in pathlib.Path("packages").glob("*/pyproject.toml"):
-              data = tomllib.loads(path.read_text())
-              if data["project"]["name"] == dist:
-                  found = data["project"]["version"]
-                  if found != version:
-                      sys.exit(f"tag says {version}, {path} says {found}")
-                  print(f"{dist} {found}")
-                  break
-          else:
-              sys.exit(f"no package named {dist}")
-          PY
+        run: uv run python -m cti_suite.release --tag "${{ steps.pkg.outputs.tag }}" --check
 
       - name: Pruebas antes de publicar
         run: uv run pytest -q
@@ -83,7 +56,13 @@ jobs:
           format: cyclonedx-json
           output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
 
+      - name: Firmar los artefactos (sigstore, keyless)
+        uses: sigstore/gh-action-sigstore-python@v3
+        with:
+          inputs: dist/*.whl dist/*.tar.gz
+
       - name: Publicar la release
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

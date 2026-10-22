@@ -17,6 +17,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   deprecated.
 - An unreadable file exits **2** (`cannot check`), not 1.
 
+- `--today` checks indicator expiry; a bundle whose indicators have **all** expired is not
+  shareable (`stix-all-indicators-expired`).
+- A bundle over the object limit reports `checked: false` and exits 2 instead of walking it.
+
 
 ## 0.1.0 — 2026-10-22
 

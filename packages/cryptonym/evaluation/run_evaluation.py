@@ -61,9 +61,14 @@ def _projection(summary: dict) -> dict:
         "overall": {
             "metrics": summary["overall"]["metrics"],
             "calibration": summary["overall"]["calibration"],
+            "probability_calibration": summary["overall"]["probability_calibration"],
         },
         "splits": {
-            name: {"metrics": data["metrics"], "calibration": data["calibration"]}
+            name: {
+                "metrics": data["metrics"],
+                "calibration": data["calibration"],
+                "probability_calibration": data["probability_calibration"],
+            }
             for name, data in summary["splits"].items()
         },
     }
@@ -74,6 +79,7 @@ def _adjudicated_projection(summary: dict) -> dict:
     return {
         "metrics": summary["metrics"],
         "calibration": summary["calibration"],
+        "probability_calibration": summary["probability_calibration"],
         "coverage": summary["coverage"],
         "by_standard": summary["by_standard"],
     }
@@ -101,6 +107,10 @@ def _summarise(corpus: str, expected: str | None, check: bool, output: str | Non
     rows = evaluate_corpus(document)["results"]
     refused = sum(1 for row in rows if _above_ceiling(row))
     print(f"# declared above the evidence ceiling: {refused} of {len(rows)}", file=sys.stderr)
+    bands: dict[str, int] = {}
+    for row in rows:
+        bands[str(row.get("ceiling"))] = bands.get(str(row.get("ceiling")), 0) + 1
+    print("# ceilings: " + ", ".join(f"{key}={value}" for key, value in sorted(bands.items())), file=sys.stderr)
 
     overall = projection["overall"]["metrics"]
     print(

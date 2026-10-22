@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 
+from cti_method import schema as schema_module
 from cti_method.contract import (
     FINDING,
     OK,
@@ -44,6 +45,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="The previous step's judgement, to re-derive and compare.",
     )
     assess_cmd.add_argument("--append", metavar="PATH", help="Append the verdict to this ledger.")
+    assess_cmd.add_argument(
+        "--strict",
+        action="store_true",
+        help="Validate the verdict against the published schema (needs the jsonschema extra).",
+    )
+    assess_cmd.add_argument(
+        "--now",
+        metavar="AAAA-MM-DDTHH:MM:SSZ",
+        help="Fixed timestamp for the ledger entry (reproducible runs).",
+    )
 
     ledger = sub.add_parser("ledger", help="Read a ledger of graded claims.")
     ledger.add_argument("path")
@@ -60,6 +71,13 @@ def _run_assess(args: argparse.Namespace) -> int:
         raise CannotCheck(f"{args.register} is not a JSON object")
 
     verdict = assess(document, register=register)
+    if args.strict:
+        try:
+            schema_module.validate(verdict, "judgement")
+        except RuntimeError as exc:
+            raise CannotCheck(str(exc)) from exc
+        except Exception as exc:  # jsonschema.ValidationError y compañía
+            raise CannotCheck(f"the verdict does not match its schema: {exc}") from exc
     if args.against:
         previous = read_json(args.against)
         if not isinstance(previous, dict):
@@ -71,7 +89,7 @@ def _run_assess(args: argparse.Namespace) -> int:
     emit(verdict)
     if args.append and not has_high(verdict["findings"]):
         # El ledger se escribe, pero no se imprime: la salida de `assess` es un documento.
-        append_claim(args.append, verdict)
+        append_claim(args.append, verdict, now=args.now)
     return exit_code(verdict["findings"])
 
 

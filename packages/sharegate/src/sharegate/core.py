@@ -137,18 +137,19 @@ def check_tlp(document: str | dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def check_stix(bundle: Any) -> dict[str, Any]:
+def check_stix(bundle: Any, today: str | None = None) -> dict[str, Any]:
     """Check a STIX 2.1 bundle with the suite's single validator."""
-    result = validate_bundle(bundle)
+    result = validate_bundle(bundle, today=today)
     return {
         "valid": result["valid"],
+        "checked": result.get("checked", True),
         "findings": result["findings"],
         "by_severity": result["by_severity"],
         "objects": result["objects"],
     }
 
 
-def pre_share(document: Any) -> dict[str, Any]:
+def pre_share(document: Any, today: str | None = None) -> dict[str, Any]:
     """Run the full gate on a product (a STIX bundle, or any text/JSON).
 
     ``shareable`` is False only when a **high**-severity finding is present; lower
@@ -167,11 +168,12 @@ def pre_share(document: Any) -> dict[str, Any]:
     tlp = check_tlp(data) if isinstance(data, dict) else check_tlp(text)
     stix = None
     if isinstance(data, dict) and ("objects" in data or data.get("type") == "bundle"):
-        stix = check_stix(data)
+        stix = check_stix(data, today=today)
 
     findings = list(tlp["findings"]) + (stix["findings"] if stix else [])
     return {
         "shareable": not has_high(findings),
+        "checked": stix.get("checked", True) if stix else True,
         "effective_tlp": tlp["effective"],
         "tlp": tlp,
         "stix": stix,

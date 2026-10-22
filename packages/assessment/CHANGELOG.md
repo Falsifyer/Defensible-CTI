@@ -18,6 +18,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `weigh` requires at least two hypotheses; `calibrate` scores labelled calls generically.
 - Docs moved into the package and ship with it.
 
+- **Structural independence and weights**, shared with `cryptonym` through `cti-method`.
+- `--now` writes a ledger entry at a fixed instant, so the same claim produces the same
+  ledger; `--strict` validates the verdict against the published schema (exit 2 when it
+  cannot).
+- The verdict carries `$schema`, `favoured` and `inconsistency_scores`.
+
 
 ## 0.1.0 — 2026-10-22
 

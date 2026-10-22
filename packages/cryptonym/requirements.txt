@@ -1,2 +1,0 @@
-# Cryptonym has no required runtime dependencies: the core is standard library only.
-# Optional integrations live in requirements-cti.txt and requirements-opencti.txt.

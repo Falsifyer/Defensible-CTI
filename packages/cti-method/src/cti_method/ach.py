@@ -1,9 +1,13 @@
-"""Analysis of Competing Hypotheses (Heuer), mechanised and taxonomy-free.
+"""Analysis of Competing Hypotheses (Heuer), mechanised, taxonomy-free and weighted.
 
 Unstructured comparison drifts toward the most recent or loudest source. ACH forces the
 alternatives to be written down and tests each item of evidence against all of them at
-once: the favoured hypothesis is the one with the **least inconsistent** evidence, not
+once: the favoured hypothesis is the one with the **least inconsistent evidence**, not
 the one with the most supporters.
+
+Items are weighted by their Admiralty reliability band (`Evidence.weight`), so a `C3`
+report does not move the ranking as much as an `A1` one. Without a band, every item weighs
+the same, which is the old behaviour.
 
 The engine accepts any hypothesis labels, so it grades an alias question, a targeting
 question or any other claim. Two senses of "diagnostic" are kept apart: an item is
@@ -55,17 +59,35 @@ def inconsistency_counts(
     return {label: counts[label] for label in labels}
 
 
+def inconsistency_scores(
+    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+) -> dict[str, float]:
+    """Weighted contradiction score per hypothesis: the sum of the weights of the items
+    that contradict it. This is what ranks hypotheses; the raw count is for display."""
+    labels = _labels(hypotheses)
+    matrix = consistency_matrix(evidence, labels)
+    weights = {item.id: item.weight for item in evidence}
+    scores: dict[str, float] = {label: 0.0 for label in labels}
+    for evidence_id, row in matrix.items():
+        for label in labels:
+            if row[label] is Consistency.INCONSISTENT:
+                scores[label] += weights.get(evidence_id, 1.0)
+    return {label: round(score, 4) for label, score in scores.items()}
+
+
 def least_inconsistent(
     evidence: list[Evidence], hypotheses: Sequence[str] | None = None
 ) -> list[str]:
-    """Rank hypotheses by fewest inconsistencies, most favoured first.
+    """Rank hypotheses by least weighted inconsistency, most favoured first.
 
-    Ties are broken by hypothesis order for determinism, not by strength of support.
+    Ties are broken by the raw count and then by hypothesis order, for determinism and
+    not by strength of support.
     """
     labels = _labels(hypotheses)
+    scores = inconsistency_scores(evidence, labels)
     counts = inconsistency_counts(evidence, labels)
     order = list(labels)
-    return sorted(order, key=lambda label: (counts[label], order.index(label)))
+    return sorted(order, key=lambda label: (scores[label], counts[label], order.index(label)))
 
 
 def discriminating_evidence(evidence: list[Evidence]) -> list[str]:

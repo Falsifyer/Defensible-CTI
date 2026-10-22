@@ -1,0 +1,63 @@
+name: Publish to PyPI
+
+# Publicación con trusted publishing (OIDC): no hay token de PyPI en el repositorio.
+# Requiere, una sola vez y a mano:
+#   1. reservar los nombres en PyPI y configurar un "pending publisher" por paquete
+#      apuntando a este repositorio, este workflow y el environment `pypi`;
+#   2. crear el environment `pypi` en GitHub.
+# Hasta que exista, este workflow no publica nada: el paso de OIDC falla.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Distribution name to publish (e.g. cti-method)"
+        required: true
+      dry_run:
+        description: "Build and check only"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --all-extras
+
+      - name: Resolver el paquete desde la release o el input
+        id: pkg
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_PACKAGE: ${{ github.event.inputs.package }}
+        run: |
+          if [ -n "$INPUT_PACKAGE" ]; then
+            uv run python -m cti_suite.release --package "$INPUT_PACKAGE" --github-output
+          else
+            uv run python -m cti_suite.release --tag "$RELEASE_TAG" --check --github-output
+          fi
+
+      - name: Construir
+        run: uv build --package "${{ steps.pkg.outputs.package }}" --out-dir dist
+
+      - name: Comprobar que la rueda se instala y arranca
+        run: |
+          python -m venv /tmp/pubcheck
+          /tmp/pubcheck/bin/pip install --quiet dist/*.whl
+          /tmp/pubcheck/bin/python -c "import importlib.metadata as m; print(m.version('${{ steps.pkg.outputs.package }}'))"
+
+      - name: Publicar en PyPI
+        if: ${{ !inputs.dry_run }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

@@ -4,6 +4,10 @@ The judgement is not declared and then printed: the evidence sets a **ceiling**,
 dossier may declare a confidence at or below it, and a declaration above it is a high
 finding. This is the rule that makes "two-axis confidence" a claim about evidence rather
 than a text field.
+
+The ceiling uses the dossier's source registry (independence is structural), weighs
+evidence by its Admiralty band, and drops a step when the diagnostic evidence contradicts
+the favoured hypothesis.
 """
 
 from __future__ import annotations
@@ -15,6 +19,7 @@ from cti_method.ach import (
     discriminating_evidence,
     identity_supporting_evidence,
     inconsistency_counts,
+    inconsistency_scores,
     least_inconsistent,
 )
 from cti_method.grading import check_declared, derived_grade
@@ -25,14 +30,15 @@ from cryptonym.model.assessment import Assessment
 def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
     """Produce the machine-readable judgement for an assessment.
 
-    The result is deliberately thin: it states the ranking, the inconsistencies, what
-    discriminates, what can actually bear on identity, the evidence-derived ceiling, the
-    declared grade (if any) and the findings that say whether the declaration is allowed.
+    The result is deliberately thin: it states the ranking, the weighted inconsistencies,
+    what discriminates, what can actually bear on identity, the evidence-derived ceiling,
+    the declared grade (if any) and the findings that say whether the declaration is allowed.
     """
     ranking = least_inconsistent(assessment.evidence, assessment.hypotheses)
-    derived = derived_grade(assessment.evidence)
+    favoured = ranking[0] if ranking else None
+    derived = derived_grade(assessment.evidence, assessment.sources, favoured)
     declared = assessment.judgement.confidence if assessment.declared else None
-    findings = check_declared(declared, assessment.evidence)
+    findings = check_declared(declared, assessment.evidence, assessment.sources, favoured)
     return {
         "assessment_id": assessment.id,
         "version": assessment.version,
@@ -40,6 +46,7 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
         "requirement_id": assessment.requirement_id or None,
         "hypotheses_favoured": ranking,
         "inconsistencies": inconsistency_counts(assessment.evidence, assessment.hypotheses),
+        "inconsistency_scores": inconsistency_scores(assessment.evidence, assessment.hypotheses),
         "discriminating_evidence": discriminating_evidence(assessment.evidence),
         "identity_supporting_evidence": identity_supporting_evidence(assessment.evidence),
         "consistent_with_everything": consistent_with_everything(assessment.evidence),

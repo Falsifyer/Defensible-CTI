@@ -39,6 +39,8 @@ def _evidence(items: list[dict[str, Any]]) -> list[cti_method.Evidence]:
             consistency={
                 key: cti_method.Consistency(value) for key, value in item.get("consistency", {}).items()
             },
+            source_id=item.get("source_id", ""),
+            reliability=item.get("reliability", ""),
         )
         for item in items
     ]
@@ -77,6 +79,7 @@ def weigh(evidence: list[dict[str, Any]], hypotheses: list[str] | None = None) -
     return {
         "ranking": cti_method.least_inconsistent(items, labels),
         "inconsistencies": cti_method.inconsistency_counts(items, labels),
+        "inconsistency_scores": cti_method.inconsistency_scores(items, labels),
         "discriminating": cti_method.discriminating_evidence(items),
         "consistent_with_everything": cti_method.consistent_with_everything(items),
         "matrix": {
@@ -100,6 +103,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
     truth is admissible.
     """
     evidence_items = _evidence(document.get("evidence") or [])
+    sources = list(document.get("sources") or [])
     labels = [str(item) for item in document.get("hypotheses") or [] if str(item).strip()]
     findings: list[dict[str, str]] = []
 
@@ -110,11 +114,13 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         weighed: dict[str, Any] = {
             "ranking": [],
             "inconsistencies": {},
+            "inconsistency_scores": {},
             "discriminating": [],
             "consistent_with_everything": [],
         }
     else:
         weighed = weigh(document.get("evidence") or [], labels)
+    favoured = weighed["ranking"][0] if weighed["ranking"] else None
 
     judgement = document.get("judgement") or {}
     declared_raw = judgement.get("confidence")
@@ -122,19 +128,22 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
     probability = judgement.get("probability")
     parsed_probability = cti_method.parse_probability(probability) if probability else None
 
-    findings.extend(check_declared(declared, evidence_items))
-    derived = derived_grade(evidence_items)
+    findings.extend(check_declared(declared, evidence_items, sources, favoured))
+    derived = derived_grade(evidence_items, sources, favoured)
 
     if document.get("requirement_id") and register is not None:
         findings.extend(link_requirement(document, register)["findings"])
 
     verdict: dict[str, Any] = {
+        "$schema": "https://github.com/ME0094/cti-suite/schemas/judgement.schema.json",
         "schema_version": document.get("schema_version", SCHEMA_VERSION),
         "id": document.get("id"),
         "requirement_id": document.get("requirement_id"),
         "question": document.get("question"),
         "ranking": weighed["ranking"],
+        "favoured": favoured,
         "inconsistencies": weighed["inconsistencies"],
+        "inconsistency_scores": weighed["inconsistency_scores"],
         "discriminating": weighed["discriminating"],
         "consistent_with_everything": weighed["consistent_with_everything"],
         "grade": {
@@ -147,7 +156,8 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
             + (f"; probability: {parsed_probability.value}" if parsed_probability is not None else ""),
         },
         "ceiling": derived["ceiling"],
-        "grade_supported": declared is not None and not has_high(check_declared(declared, evidence_items)),
+        "grade_supported": declared is not None
+        and not has_high(check_declared(declared, evidence_items, sources, favoured)),
         "evidence_profile": derived["profile"],
         "grade_reasons": derived["reasons"],
         "review_by": document.get("review_by"),
@@ -218,7 +228,13 @@ def _entries(path: str | Path) -> list[dict[str, Any]]:
     return entries
 
 
-def append_claim(path: str | Path, claim: dict[str, Any], *, tool: str = "assessment") -> dict[str, Any]:
+def append_claim(
+    path: str | Path,
+    claim: dict[str, Any],
+    *,
+    tool: str = "assessment",
+    now: str | None = None,
+) -> dict[str, Any]:
     """Append a graded claim to the ledger, chained to the previous entry.
 
     Each entry records when it was written, what tool wrote it, the hash of the claim, the
@@ -226,9 +242,14 @@ def append_claim(path: str | Path, claim: dict[str, Any], *, tool: str = "assess
     """
     entries = _entries(path)
     previous = entries[-1]["hash"] if entries else GENESIS
+    stamp = now or dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    try:
+        dt.datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError as exc:
+        raise ValueError("now must be an ISO 8601 UTC timestamp ending in Z") from exc
     entry = {
         "seq": len(entries) + 1,
-        "created_at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "created_at": stamp,
         "tool": tool,
         "claim_id": claim.get("id") or claim.get("assessment_id"),
         "claim_hash": _digest(claim),

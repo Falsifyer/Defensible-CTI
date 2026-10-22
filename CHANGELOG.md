@@ -35,3 +35,19 @@ own tag:
   reach), `pir ids`, `schema_version`, exit 2 on unreadable input.
 - **`cti-suite` 0.1.0** — `ctisuite report` and the `ctisuite-mcp` facade.
 - The demo now chains: each step consumes the previous output and verifies the id.
+- **Sources are structural**: a dossier registers its sources (`id`, `publisher`,
+  `derived_from`, `reliability`) and the ceiling counts independent voices, not strings.
+- **ACH is weighted** by the Admiralty band, and evidence that contradicts the favoured
+  hypothesis lowers the ceiling.
+- **The probability axis is scored**: Brier score and per-band reliability alongside
+  confidence calibration; the corpus now has a `high` band (11 held-out cases) and reports
+  0 declared above the ceiling.
+- **The trace pins content**: `<kind>_hash` is verified and `<id>@<sha256:12>` travels in
+  the STIX references.
+- **Limits**: 8 MiB / 64 levels on input, 20,000 objects on a bundle, exit 2.
+- **`ctisuite chain`** runs the seven steps in code; `demo/run.sh` wraps it.
+- **BLUF** in the report, `--require-complete`, `sharegate --today`, ledger `--now`,
+  `--strict` against the published schemas, English findings in `pir`.
+- **Engineering**: external STIX validation in CI, property tests for the ceiling, pip-audit
+  with one documented exception, actionlint/shellcheck, a testable tag→package mapping,
+  signed releases and a trusted-publishing workflow.

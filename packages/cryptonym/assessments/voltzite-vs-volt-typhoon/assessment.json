@@ -2,7 +2,7 @@
   "id": "voltzite-vs-volt-typhoon",
   "version": "1.0",
   "question": "Is VOLTZITE the same actor as Volt Typhoon?",
-  "tlp": "TLP:WHITE",
+  "tlp": "TLP:CLEAR",
   "subjects": [
     {"vendor": "Dragos", "name": "VOLTZITE", "source_url": "https://www.dragos.com", "date": "2026-02-17"},
     {
