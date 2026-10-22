@@ -5,6 +5,27 @@ the prose.** Each tool refuses something the cycle should not allow: a requireme
 decision behind it, a judgement without evidence for it, a grade the evidence cannot support,
 a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
 
+> **Status: 0.1, reference implementation of an analytic method.** The mechanism is tested
+> (300+ tests, CI, one STIX validator, published schemas); real-world accuracy is **not**
+> claimed, and the corpus is illustrative — it says so. There is no support SLA: issues are
+> read, not promised.
+
+## Start with the door
+
+The cycle is the argument; the gate is the door. Two commands answer the question every CTI
+team gets wrong at least once:
+
+```console
+$ git clone https://github.com/ME0094/cti-suite && cd cti-suite
+$ uv sync --all-packages
+$ uv run stixforge build demo/product.json -o /tmp/bundle.json
+$ uv run sharegate check /tmp/bundle.json          # exit 1 if it may not travel
+$ uv run stixforge validate /tmp/bundle.json --external
+```
+
+The rest — requirements, the evidence ceiling, the hunt plan, the ledger — is what makes that
+gate mean something. `make demo` runs the whole chain in one command.
+
 | Command | Package | Refuses |
 |---|---|---|
 | `pir validate` | `packages/pir` | a requirement that does not name the decision it informs |
