@@ -90,9 +90,18 @@ jobs:
           bundle = json.load(open("demo/out/bundle.json"))
           report = next(o for o in bundle["objects"] if o["type"] == "report")
           refs = {r["source_name"]: r["external_id"] for r in report["external_references"]}
+          # La referencia lleva el hash del contenido: <id>@<sha256:12>.
+          ids = {kind: value.split("@")[0] for kind, value in refs.items()}
           expected = {"cti-suite:pir": "PIR-001", "cti-suite:assessment": "nightjar-vs-saltwind", "cti-suite:hunt": "HUNT-001"}
-          if refs != expected:
+          if ids != expected:
               sys.exit(f"trace mismatch: {refs}")
+          if not all("@" in value for value in refs.values()):
+              sys.exit(f"trace without content hash: {refs}")
+          verdict = json.load(open("demo/out/verdict.json"))
+          import hashlib
+          digest = hashlib.sha256(json.dumps(verdict, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()[:12]
+          if refs["cti-suite:assessment"].split("@")[1] != digest:
+              sys.exit(f"assessment hash mismatch: {refs['cti-suite:assessment']} != {digest}")
           print("trace ok:", refs)
           PY
       - name: El ledger verifica
