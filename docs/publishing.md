@@ -1,5 +1,9 @@
 # Publishing to PyPI
 
+> **Not part of the current scope.** Since 2026-10-26 this repository is a test bench and PyPI is out of
+> scope: nothing is published and no name is reserved. This file stays as the runbook for the day that
+> changes, and `publish.yml` stays because its `dry_run` mode is a useful build check.
+
 The repository side is done: the `pypi` environment exists, restricted to `main`, and
 `.github/workflows/publish.yml` publishes one package per run with OIDC. What is left needs
 a PyPI account, because PyPI has **no API** for this part: pending publishers are created in

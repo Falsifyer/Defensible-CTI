@@ -91,8 +91,8 @@ would change it, and whether it may leave.*
 - [x] CI on 3.11/3.12/3.13, demo, evaluation, external STIX validation, build + wheel smoke.
 - [x] README scoped: mechanism tested, accuracy not claimed.
 - [ ] Repository public, description and topics set.
-- [ ] First green CI run on `main`.
-- [ ] PyPI names reserved and trusted publishing configured (`publish.yml`).
+- [x] First green CI run on `main` (`9cbc380`).
+- [x] PyPI publication ruled out: this repository is a test bench, so `publish.yml` stays a manual tool and no name is reserved (2026-10-26).
 - [ ] One external user runs the gate; their bug list becomes the first issues.
 - [ ] Article: "A grade is a claim about evidence — enforcing a ceiling in code".
 - [ ] The old `ME0094/huntplan` gets the banner in `deprecation-huntplan.md`.
