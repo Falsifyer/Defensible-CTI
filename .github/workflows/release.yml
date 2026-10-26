@@ -36,7 +36,7 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         # The tag -> package mapping is code with tests, not a `case` in YAML.
-        run: uv run --no-project python -m cti_suite.release --tag "$TAG" --check --github-output
+        run: uv run --package cti-suite python -m cti_suite.release --tag "$TAG" --check --github-output
 
       - run: uv sync --all-packages --all-extras
 
