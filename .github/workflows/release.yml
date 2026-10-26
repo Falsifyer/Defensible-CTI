@@ -57,7 +57,7 @@ jobs:
           output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
 
       - name: Sign the artifacts (sigstore, keyless)
-        uses: sigstore/gh-action-sigstore-python@v3
+        uses: sigstore/gh-action-sigstore-python@v3.5.0
         with:
           inputs: dist/*.whl dist/*.tar.gz
 
