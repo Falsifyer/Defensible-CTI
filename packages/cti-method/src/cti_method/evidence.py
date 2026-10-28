@@ -70,6 +70,7 @@ class Evidence:
     consistency: dict[str, Consistency] = field(default_factory=dict)
     source_id: str = ""
     reliability: str = ""
+    direct: bool = False
 
     @property
     def diagnostic(self) -> bool:

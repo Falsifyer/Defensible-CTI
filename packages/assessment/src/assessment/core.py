@@ -41,14 +41,19 @@ def _evidence(items: list[dict[str, Any]]) -> list[cti_method.Evidence]:
             },
             source_id=item.get("source_id", ""),
             reliability=item.get("reliability", ""),
+            direct=bool(item.get("direct", False)),
         )
         for item in items
     ]
 
 
-def ceiling_for(evidence: list[dict[str, Any]]) -> dict[str, Any]:
-    """The ceiling the evidence sets on a declared confidence, with its reasons."""
-    return derived_grade(_evidence(evidence))
+def ceiling_for(evidence: list[dict[str, Any]], mode: str = "ach") -> dict[str, Any]:
+    """The ceiling the evidence sets on a declared confidence, with its reasons.
+
+    ``mode="claim"`` grades a claim with no competing hypotheses: what matters is whether
+    an item bears directly on the claim, not whether it distinguishes actors.
+    """
+    return derived_grade(_evidence(evidence), mode=mode)
 
 
 def grade(confidence: str, probability: str | None = None) -> dict[str, Any]:
@@ -97,30 +102,38 @@ def filter_truth(adjudication: dict[str, Any]) -> dict[str, Any]:
 def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> dict[str, Any]:
     """Grade a full claim: evidence, competing hypotheses, a two-axis grade and findings.
 
-    A claim is a question, a body of evidence, competing hypotheses and a declared grade.
-    The evidence sets the ceiling; the declaration must not exceed it. If the claim
-    carries an ``adjudication``, the external-truth filter decides whether the declared
-    truth is admissible.
+    A claim is a question, a body of evidence and a declared grade. It carries either one
+    hypothesis — the claim itself — or two or more competing ones for an ACH. The evidence
+    sets the ceiling; the declaration must not exceed it. If the claim carries an
+    ``adjudication``, the external-truth filter decides whether the declared truth is
+    admissible.
     """
     evidence_items = _evidence(document.get("evidence") or [])
     sources = list(document.get("sources") or [])
     labels = [str(item) for item in document.get("hypotheses") or [] if str(item).strip()]
     findings: list[dict[str, str]] = []
 
-    if len(labels) < 2:
+    if len(labels) == 0:
         findings.append(
-            finding("no-hypotheses", HIGH, "state at least two competing hypotheses: one option is not analysis")
+            finding(
+                "no-claim",
+                HIGH,
+                "state the claim the evidence supports: one hypothesis, or two competing ones for an ACH",
+            )
         )
-        weighed: dict[str, Any] = {
+
+    mode = "ach" if len(labels) >= 2 else "claim"
+    if mode == "ach":
+        weighed: dict[str, Any] = weigh(document.get("evidence") or [], labels)
+    else:
+        weighed = {
             "ranking": [],
             "inconsistencies": {},
             "inconsistency_scores": {},
             "discriminating": [],
             "consistent_with_everything": [],
         }
-    else:
-        weighed = weigh(document.get("evidence") or [], labels)
-    favoured = weighed["ranking"][0] if weighed["ranking"] else None
+    favoured = weighed["ranking"][0] if weighed["ranking"] else (labels[0] if labels else None)
 
     judgement = document.get("judgement") or {}
     declared_raw = judgement.get("confidence")
@@ -128,8 +141,8 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
     probability = judgement.get("probability")
     parsed_probability = cti_method.parse_probability(probability) if probability else None
 
-    findings.extend(check_declared(declared, evidence_items, sources, favoured))
-    derived = derived_grade(evidence_items, sources, favoured)
+    findings.extend(check_declared(declared, evidence_items, sources, favoured, mode=mode))
+    derived = derived_grade(evidence_items, sources, favoured, mode=mode)
 
     if document.get("requirement_id") and register is not None:
         findings.extend(link_requirement(document, register)["findings"])
@@ -140,6 +153,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         "id": document.get("id"),
         "requirement_id": document.get("requirement_id"),
         "question": document.get("question"),
+        "mode": mode,
         "ranking": weighed["ranking"],
         "favoured": favoured,
         "inconsistencies": weighed["inconsistencies"],
@@ -157,7 +171,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         },
         "ceiling": derived["ceiling"],
         "grade_supported": declared is not None
-        and not has_high(check_declared(declared, evidence_items, sources, favoured)),
+        and not has_high(check_declared(declared, evidence_items, sources, favoured, mode=mode)),
         "evidence_profile": derived["profile"],
         "grade_reasons": derived["reasons"],
         "review_by": document.get("review_by"),

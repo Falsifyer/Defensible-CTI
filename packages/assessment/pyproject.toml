@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "assessment-mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "A ledger of graded judgements: two-axis confidence, ACH and external truth, built on cti-method"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -15,7 +15,7 @@ Import from here, not from the submodules: this surface is the stable contract.
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from cti_method.ach import (
     consistency_matrix,
@@ -62,7 +62,7 @@ from cti_method.contract import (
     severity_counts,
 )
 from cti_method.evidence import DIAGNOSTIC_TYPES, Consistency, Evidence, EvidenceType
-from cti_method.grading import EvidenceProfile, ceiling, check_declared, derived_grade, profile
+from cti_method.grading import EvidenceProfile, ceiling, check_declared, derived_grade, policy, profile
 from cti_method.metrics import (
     PROBABILITY_POINTS,
     SPLITS,

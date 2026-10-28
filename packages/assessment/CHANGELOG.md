@@ -2,6 +2,17 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.3.0 — 2026-10-28
+
+### Changed
+
+- **A claim may have one hypothesis.** `assess` now grades a factual claim (one hypothesis,
+  mode `claim`) instead of refusing it; `weigh` still requires two, because ranking a
+  single option is not analysis. A claim with **no** hypothesis is refused (`no-claim`).
+- `assess` reports the `mode` it applied, and `ceiling_for` accepts `mode`.
+- Evidence items accept `direct`, which the claim mode uses to decide whether an item bears
+  on the claim.
+
 ## 0.2.0 — 2026-10-22
 
 ### Changed

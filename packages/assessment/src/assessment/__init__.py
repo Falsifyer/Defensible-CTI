@@ -10,4 +10,4 @@ This is the real consumer of the shared core: the core owns grading, adjudicatio
 evaluation; this package owns the general workflow and the ledger.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"

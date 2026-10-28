@@ -2,6 +2,26 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.2.0 — 2026-10-28
+
+### Added
+
+- **Claim mode for the ceiling.** `ceiling(..., mode="claim")` grades a statement that has
+  no competing hypotheses — a factual claim — by whether an item bears **directly** on it
+  (`Evidence.direct`), with the same structural independence rule and no contradiction
+  step. Without it, every factual claim was capped at `low` because
+  `is_discriminating()` is false when there is no hypothesis to differ from.
+- **`policy()`**: the grading policy as data — both modes, their thresholds and the
+  independence rule — so a consumer renders the standard instead of restating it.
+- `EvidenceProfile.mode` and `.direct`, so a result says which mode produced it.
+
+### Changed
+
+- `profile`, `ceiling`, `derived_grade` and `check_declared` take `mode` (default `ach`,
+  behaviour unchanged).
+- The ACH mode is untouched: `direct` defaults to `false` and is ignored unless the mode
+  asks for it.
+
 ## 0.1.0 — 2026-10-22
 
 - First version. The shared core extracted from `cryptonym`: two-axis grading, the

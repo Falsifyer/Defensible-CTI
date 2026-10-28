@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cti-method"
-version = "0.1.0"
+version = "0.2.0"
 description = "The shared core of cti-suite: graded confidence, ACH, external truth, one STIX validator and one exit-code contract"
 readme = "README.md"
 requires-python = ">=3.11"

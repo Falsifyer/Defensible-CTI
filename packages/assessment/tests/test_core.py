@@ -135,16 +135,39 @@ def test_a_claim_without_a_grade_is_refused_not_defaulted() -> None:
     assert verdict["findings"][0]["code"] == "no-grade"
 
 
-def test_a_claim_with_one_hypothesis_is_refused() -> None:
+def test_a_claim_with_no_hypothesis_is_refused() -> None:
     verdict = assess(
         {
             "question": "same actor?",
-            "hypotheses": ["a"],
+            "hypotheses": [],
             "evidence": [_evidence("E1", "s", "code", "C", "I")],
             "judgement": {"confidence": "low"},
         }
     )
-    assert "no-hypotheses" in [item["code"] for item in verdict["findings"]]
+    assert "no-claim" in [item["code"] for item in verdict["findings"]]
+    assert verdict["mode"] == "claim"
+
+
+def test_a_claim_with_one_hypothesis_is_graded_as_a_claim() -> None:
+    verdict = assess(
+        {
+            "question": "does the actor target utilities?",
+            "hypotheses": ["it does"],
+            "evidence": [
+                {
+                    "id": "E1",
+                    "statement": "one documentary source",
+                    "source": "cisa",
+                    "type": "open_source",
+                    "direct": True,
+                }
+            ],
+            "judgement": {"confidence": "moderate"},
+        }
+    )
+    assert verdict["mode"] == "claim"
+    assert verdict["ceiling"] == "moderate"
+    assert verdict["grade_supported"] is True
 
 
 def test_check_against_detects_a_changed_dossier() -> None:
