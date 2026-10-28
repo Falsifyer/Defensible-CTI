@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from assessment.core import assess, ceiling_for
 
-
 SOURCES = [
     {"id": "S1", "publisher": "CISA"},
     {"id": "S2", "publisher": "DOJ"},

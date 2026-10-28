@@ -125,6 +125,7 @@ __all__ = [
     "ceiling",
     "derived_grade",
     "check_declared",
+    "policy",
     # ACH
     "consistency_matrix",
     "inconsistency_counts",
