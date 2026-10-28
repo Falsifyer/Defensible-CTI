@@ -7,10 +7,10 @@ what is **not** done, why, and what would close it.
 
 | Gap | Why it is not done here | What closes it |
 |---|---|---|
-| **PyPI publication** | needs a PyPI account: pending publishers are web-UI only and do not reserve a name until the first upload | environment `pypi` created and workflow ready; follow [`publishing.md`](publishing.md) |
-| **The release workflow has never run against a real tag** | running it means creating a public tag | `workflow_dispatch` with `dry_run: true` (the default) and then a first real tag |
-| **`ME0094/huntplan` stays public and obsolete** | it is a separate repository, kept for a while on purpose | apply the banner in [`deprecation-huntplan.md`](deprecation-huntplan.md), freeze the code, stop syncing it |
-| **Artefact signing** | configured in the release workflow, never executed | the first release; verify with `cosign verify-blob` |
+| ~~**PyPI publication**~~ | **Out of scope since 2026-10-26**: this repository is a test bench, and publishing eight names to PyPI would turn a bench into a product to maintain. `publish.yml` stays as a manual tool, exercised in `dry_run` mode; no name is reserved. | nothing: it is a decision, not a gap |
+| ~~**The release workflow has never run against a real tag**~~ | **Closed on 2026-10-26**: eight tags produced eight releases, each with wheel, sdist, CycloneDX SBOM and a sigstore bundle | — |
+| ~~**`ME0094/huntplan` stays public and obsolete**~~ | **Closed on 2026-10-27**: the banner points at `packages/huntplan` in this suite and the repository is archived (read-only). Nothing pushes to it. | — |
+| ~~**Artefact signing**~~ | **Closed on 2026-10-26**: every release carries `<file>.sigstore.json` for the wheel and the sdist, produced keyless through the runner's OIDC token | verify with `sigstore verify identity --bundle <file>.sigstore.json <file>` |
 
 ## Method gaps
 

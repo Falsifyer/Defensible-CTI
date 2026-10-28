@@ -57,9 +57,12 @@ jobs:
           output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
 
       - name: Sign the artifacts (sigstore, keyless)
-        uses: sigstore/gh-action-sigstore-python@v3.5.0
-        with:
-          inputs: dist/*.whl dist/*.tar.gz
+        # Not the action: `sigstore/gh-action-sigstore-python` has no floating `v3` tag, and
+        # pinning v3.5.0 moves the failure into its own environment, which pins pyjwt==2.13.0
+        # while its resolver asks for >=2.15.0 ("no solution found"). The CLI resolves cleanly
+        # and picks the runner's OIDC token up on its own, which the job authorises with
+        # `id-token: write`.
+        run: uvx --from sigstore sigstore sign dist/*.whl dist/*.tar.gz
 
       - name: Publish the release
         if: ${{ !inputs.dry_run }}
