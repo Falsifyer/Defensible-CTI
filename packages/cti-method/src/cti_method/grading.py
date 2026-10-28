@@ -303,12 +303,13 @@ def check_declared(
         )
         return findings
     if _RANK[declared] > _RANK[top]:
+        hint = "direct evidence" if mode == "claim" else "diagnostic evidence"
         findings.append(
             finding(
                 "grade-exceeds-evidence",
                 HIGH,
                 f"declared confidence {declared.value} exceeds what the evidence supports "
-                f"({top.value}): add diagnostic evidence or lower the grade",
+                f"({top.value}): add {hint} or lower the grade",
             )
         )
     return findings

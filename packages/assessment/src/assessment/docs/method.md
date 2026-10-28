@@ -67,6 +67,23 @@ Independence is by source string, normalised. That is a coarse proxy — a dossi
 finer independence should model its sources as sources — but it is checkable and it fails
 closed.
 
+## Two modes, one independence rule
+
+The table above grades an ACH. Not every claim is a dispute between alternatives: "MITRE
+records C0029 as a campaign" has no competing hypothesis, and grading it by what
+distinguishes actors caps it at `low` for the wrong reason. The same function therefore has
+two modes:
+
+| Mode | Hypotheses | What counts | Ceiling |
+|---|---|---|---|
+| `ach` | two or more | diagnostic items that discriminate | `low` / `moderate` / `high` as above |
+| `claim` | one — the claim itself | items that bear **directly** on the claim (`direct`), whatever their evidence type | no direct item `low`; one independent source `moderate`; two `high` |
+
+In both modes independence is structural and contradiction lowers the ceiling — in `claim`
+mode there is no alternative to weigh, so only the first applies. A claim with **no**
+hypothesis is refused (`no-claim`). The policy is exported by
+`cti_method.grading.policy()` so a consumer renders it instead of restating it.
+
 ## The chain
 
 `assessment assess` can be run three ways that matter:
