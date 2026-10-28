@@ -18,7 +18,7 @@ commands below; the issue templates pre-fill `bug` and `enhancement`.
 
 ```console
 $ for l in bug enhancement contract method docs ci p0 p1 p2 p3; do
-    gh label create "$l" --repo ME0094/cti-suite 2>/dev/null || true
+    gh label create "$l" --repo Falsifyer/Defensible-CTI 2>/dev/null || true
   done
 ```
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/ME0094/cti-suite/schemas/pir.schema.json",
+  "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/pir.schema.json",
   "schema_version": "1.0",
   "id": "PIR-2026-Q4",
   "version": "1.0",

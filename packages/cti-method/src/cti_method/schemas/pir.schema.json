@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ME0094/cti-suite/schemas/pir.schema.json",
+  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/pir.schema.json",
   "title": "PIR register",
   "description": "A register of requirements. A requirement that does not name the decision it informs is not a PIR; the schema requires the field, and `pir validate` checks that it is usable.",
   "type": "object",

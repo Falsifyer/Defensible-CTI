@@ -9,7 +9,7 @@ what is **not** done, why, and what would close it.
 |---|---|---|
 | ~~**PyPI publication**~~ | **Out of scope since 2026-10-26**: this repository is a test bench, and publishing eight names to PyPI would turn a bench into a product to maintain. `publish.yml` stays as a manual tool, exercised in `dry_run` mode; no name is reserved. | nothing: it is a decision, not a gap |
 | ~~**The release workflow has never run against a real tag**~~ | **Closed on 2026-10-26**: eight tags produced eight releases, each with wheel, sdist, CycloneDX SBOM and a sigstore bundle | — |
-| ~~**`ME0094/huntplan` stays public and obsolete**~~ | **Closed on 2026-10-27**: the banner points at `packages/huntplan` in this suite and the repository is archived (read-only). Nothing pushes to it. | — |
+| ~~**`Falsifyer/huntplan` stays public and obsolete**~~ | **Closed on 2026-10-27**: the banner points at `packages/huntplan` in this suite and the repository is archived (read-only). Nothing pushes to it. | — |
 | ~~**Artefact signing**~~ | **Closed on 2026-10-26**: every release carries `<file>.sigstore.json` for the wheel and the sdist, produced keyless through the runner's OIDC token | verify with `sigstore verify identity --bundle <file>.sigstore.json <file>` |
 
 ## Method gaps

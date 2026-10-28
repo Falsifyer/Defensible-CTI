@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ME0094/cryptonym/evaluation/adjudicated/schema.json",
+  "$id": "https://github.com/Falsifyer/cryptonym/evaluation/adjudicated/schema.json",
   "title": "Cryptonym adjudicated corpus",
   "description": "Cases whose truth is an external adjudication, filtered for admissibility. See docs/adjudication.md.",
   "type": "object",

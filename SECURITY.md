@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Open a private advisory at <https://github.com/ME0094/cti-suite/security/advisories/new>.
+Open a private advisory at <https://github.com/Falsifyer/Defensible-CTI/security/advisories/new>.
 Please do not open a public issue for an unfixed flaw.
 
 ## Scope

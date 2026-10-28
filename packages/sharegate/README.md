@@ -66,9 +66,9 @@ src/sharegate/
 
 ## License
 
-MIT — see [LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
+MIT — see [LICENSE](https://github.com/Falsifyer/Defensible-CTI/blob/main/LICENSE).
 
 ---
 
 **Martín Eliseo** — cyber threat intelligence.
-[GitHub](https://github.com/ME0094) · [me0094.github.io](https://me0094.github.io)
+[GitHub](https://github.com/Falsifyer) · [falsifyer.github.io](https://falsifyer.github.io)

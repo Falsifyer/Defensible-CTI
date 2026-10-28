@@ -36,7 +36,7 @@
 
 - **Renamed Concord → Cryptonym.** A cryptonym is the cover name given to an actor; the
   tool decides whether two of them are the same actor. Package, CLI, STIX custom objects,
-  docs and tests renamed; repository renamed to `ME0094/cryptonym`.
+  docs and tests renamed; repository renamed to `Falsifyer/cryptonym`.
 - **`cryptonym.method`:** the shared, stable assessment core, extracted as a public
   surface every family tool imports instead of reimplementing. See `docs/method-api.md`.
 

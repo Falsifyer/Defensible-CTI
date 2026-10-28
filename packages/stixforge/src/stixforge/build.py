@@ -18,7 +18,7 @@ from cti_method.stix import marking_object
 from cti_method.trace import external_references
 
 # Namespace of this tool: identifiers are derived from it, never invented by hand.
-NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/ME0094/cti-suite")
+NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/Falsifyer/Defensible-CTI")
 
 SCO_TYPES = {
     "domain-name": "value",

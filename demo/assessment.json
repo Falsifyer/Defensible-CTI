@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/ME0094/cti-suite/schemas/assessment.schema.json",
+  "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/assessment.schema.json",
   "schema_version": "1.0",
   "id": "nightjar-vs-saltwind",
   "version": "1.0",

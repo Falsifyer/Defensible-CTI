@@ -66,7 +66,7 @@ def test_every_input_declares_its_schema_and_version() -> None:
 
 def test_a_judgement_validates_against_the_judgement_schema() -> None:
     judgement = {
-        "$schema": "https://github.com/ME0094/cti-suite/schemas/judgement.schema.json",
+        "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
         "schema_version": "1.0",
         "question": "same?",
         "ranking": ["same_actor", "distinct"],

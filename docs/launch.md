@@ -75,7 +75,7 @@ would change it, and whether it may leave.*
 > Two things I would value most: someone running the pre-share gate on a real bundle, and
 > someone telling me where the ceiling rule is wrong.
 >
-> https://github.com/ME0094/cti-suite
+> https://github.com/Falsifyer/Defensible-CTI
 
 ## Do not claim
 
@@ -95,7 +95,7 @@ would change it, and whether it may leave.*
 - [x] PyPI publication ruled out: this repository is a test bench, so `publish.yml` stays a manual tool and no name is reserved (2026-10-26).
 - [ ] One external user runs the gate; their bug list becomes the first issues.
 - [ ] Article: "A grade is a claim about evidence — enforcing a ceiling in code".
-- [ ] The old `ME0094/huntplan` gets the banner in `deprecation-huntplan.md`.
+- [ ] The old `Falsifyer/huntplan` gets the banner in `deprecation-huntplan.md`.
 
 ## After publishing
 

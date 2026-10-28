@@ -126,8 +126,8 @@ evaluation/     golden-pair corpus (development + held-out) + adjudicated corpus
 
 ## Contributing & license
 
-See [CONTRIBUTING](https://github.com/ME0094/cti-suite/blob/main/CONTRIBUTING.md) and [SECURITY](https://github.com/ME0094/cti-suite/blob/main/SECURITY.md). MIT — see
-[LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
+See [CONTRIBUTING](https://github.com/Falsifyer/Defensible-CTI/blob/main/CONTRIBUTING.md) and [SECURITY](https://github.com/Falsifyer/Defensible-CTI/blob/main/SECURITY.md). MIT — see
+[LICENSE](https://github.com/Falsifyer/Defensible-CTI/blob/main/LICENSE).
 
 ## Use as an MCP server
 
@@ -155,9 +155,9 @@ from cti_method import Assessment, Confidence, Judgement, filter_adjudication
 
 The cycle runs from the repository root: `make demo` executes the seven steps over a
 fictional case (NIGHTJAR and SALTWIND do not exist) and each step consumes what the previous
-one produced. See the [suite README](https://github.com/ME0094/cti-suite/blob/main/README.md#use).
+one produced. See the [suite README](https://github.com/Falsifyer/Defensible-CTI/blob/main/README.md#use).
 
 ---
 
 **Martín Eliseo** — cyber threat intelligence.
-[GitHub](https://github.com/ME0094) · [me0094.github.io](https://me0094.github.io)
+[GitHub](https://github.com/Falsifyer) · [falsifyer.github.io](https://falsifyer.github.io)

@@ -59,4 +59,4 @@ $ ctisuite --version
 
 ## Licence
 
-MIT. See [`../../LICENSE`](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
+MIT. See [`../../LICENSE`](https://github.com/Falsifyer/Defensible-CTI/blob/main/LICENSE).

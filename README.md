@@ -16,7 +16,7 @@ The cycle is the argument; the gate is the door. Two commands answer the questio
 team gets wrong at least once:
 
 ```console
-$ git clone https://github.com/ME0094/cti-suite && cd cti-suite
+$ git clone https://github.com/Falsifyer/Defensible-CTI && cd cti-suite
 $ uv sync --all-packages
 $ uv run stixforge build demo/product.json -o /tmp/bundle.json
 $ uv run sharegate check /tmp/bundle.json          # exit 1 if it may not travel
@@ -130,4 +130,4 @@ MIT. See [`LICENSE`](LICENSE).
 ---
 
 **Martín Eliseo** — cyber threat intelligence.
-[GitHub](https://github.com/ME0094) · [me0094.github.io](https://me0094.github.io)
+[GitHub](https://github.com/Falsifyer) · [falsifyer.github.io](https://falsifyer.github.io)

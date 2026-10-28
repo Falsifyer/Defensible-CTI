@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ME0094/cti-suite/schemas/ledger-entry.schema.json",
+  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/ledger-entry.schema.json",
   "title": "Ledger entry",
   "description": "One line of the assessment ledger. The hash covers the entry without itself; prev_hash chains it to the line before.",
   "type": "object",

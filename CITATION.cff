@@ -10,9 +10,9 @@ type: software
 authors:
   - family-names: "Eliseo"
     given-names: "Martín"
-    alias: "ME0094"
-    website: "https://me0094.github.io"
-repository-code: "https://github.com/ME0094/cti-suite"
+    alias: "Falsifyer"
+    website: "https://falsifyer.github.io"
+repository-code: "https://github.com/Falsifyer/Defensible-CTI"
 license: MIT
 keywords:
   - cyber threat intelligence

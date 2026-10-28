@@ -148,7 +148,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         findings.extend(link_requirement(document, register)["findings"])
 
     verdict: dict[str, Any] = {
-        "$schema": "https://github.com/ME0094/cti-suite/schemas/judgement.schema.json",
+        "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
         "schema_version": document.get("schema_version", SCHEMA_VERSION),
         "id": document.get("id"),
         "requirement_id": document.get("requirement_id"),

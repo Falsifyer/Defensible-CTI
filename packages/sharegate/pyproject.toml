@@ -9,7 +9,7 @@ description = "Pre-share compliance gate for CTI: TLP 2.0 and STIX 2.1, judged a
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "Martín Eliseo", email = "124847072+ME0094@users.noreply.github.com" }]
+authors = [{ name = "Martín Eliseo", email = "124847072+Falsifyer@users.noreply.github.com" }]
 keywords = ["cti", "tlp", "stix", "threat-intelligence", "compliance"]
 classifiers = [
   "Development Status :: 3 - Alpha",

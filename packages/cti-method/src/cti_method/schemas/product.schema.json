@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ME0094/cti-suite/schemas/product.schema.json",
+  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/product.schema.json",
   "title": "Intelligence product",
   "description": "What `stixforge build` turns into a STIX 2.1 bundle. `created` is required: without it the same identifiers would be stamped with a new timestamp on every build.",
   "type": "object",

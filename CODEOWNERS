@@ -1,8 +1,8 @@
 # One maintainer: the whole repository.
-* @ME0094
+* @Falsifyer
 
 # The shared rules and the schemas are a contract: any change here needs the maintainer's
 # explicit review.
-/packages/cti-method/ @ME0094
-/schemas/ @ME0094
-/.github/workflows/ @ME0094
+/packages/cti-method/ @Falsifyer
+/schemas/ @Falsifyer
+/.github/workflows/ @Falsifyer

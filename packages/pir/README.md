@@ -59,7 +59,7 @@ The first step of the cycle is reachable by an agent like the other six.
 
 ## Method
 
-The register format is pinned by [`schemas/pir.schema.json`](https://github.com/ME0094/cti-suite/blob/main/schemas/pir.schema.json)
+The register format is pinned by [`schemas/pir.schema.json`](https://github.com/Falsifyer/Defensible-CTI/blob/main/schemas/pir.schema.json)
 and described in [`docs/register.md`](docs/register.md). Three rules, and the validator
 checks them:
 
@@ -74,9 +74,9 @@ with no answer (`stale`), a duplicate identifier (high) and an EEI without indic
 
 ## Licence
 
-MIT — see [LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
+MIT — see [LICENSE](https://github.com/Falsifyer/Defensible-CTI/blob/main/LICENSE).
 
 ---
 
 **Martín Eliseo** — cyber threat intelligence.
-[GitHub](https://github.com/ME0094) · [me0094.github.io](https://me0094.github.io)
+[GitHub](https://github.com/Falsifyer) · [falsifyer.github.io](https://falsifyer.github.io)

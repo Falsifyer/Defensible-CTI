@@ -92,4 +92,4 @@ No runtime dependencies: Python 3.11 or newer and the standard library.
 
 ## Licence
 
-MIT. See [LICENSE](https://github.com/ME0094/cti-suite/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/Falsifyer/Defensible-CTI/blob/main/LICENSE).
