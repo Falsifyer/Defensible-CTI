@@ -17,6 +17,7 @@
     "requirement_id": { "type": ["string", "null"] },
     "question": { "type": ["string", "null"] },
     "favoured": { "type": ["string", "null"] },
+    "tied": { "type": "array", "items": { "type": "string" } },
     "ranking": { "type": "array", "items": { "type": "string" } },
     "hypotheses_favoured": { "type": "array", "items": { "type": "string" } },
     "inconsistencies": {

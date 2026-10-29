@@ -51,9 +51,9 @@ honest about what it cannot test.
   calibration *mechanism* is tested directly in `tests/test_evaluate.py`.
 
 The defensible claim is narrow: *given a body of evidence and a declared standard,
-Cryptonym re-derives a graded, falsifiable judgement, reproducibly, exposes what would break
-the tie, and reports its own false-merge rate.* The claim it does **not** make is that it
-will tell you who an actor is.
+Cryptonym re-derives a graded, falsifiable judgement, reproducibly, exposes the hypotheses
+the evidence does not separate (`tied`), and reports its own false-merge rate.* The claim it
+does **not** make is that it will tell you who an actor is.
 
 ## Calibration is measured on the derived ceiling
 

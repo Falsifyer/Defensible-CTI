@@ -25,6 +25,7 @@ from cti_method.ach import (
     inconsistency_counts,
     inconsistency_scores,
     least_inconsistent,
+    tied_at_top,
 )
 from cti_method.adjudication import (
     Adjudication,
@@ -131,6 +132,7 @@ __all__ = [
     "inconsistency_counts",
     "inconsistency_scores",
     "least_inconsistent",
+    "tied_at_top",
     "discriminating_evidence",
     "identity_supporting_evidence",
     "consistent_with_everything",

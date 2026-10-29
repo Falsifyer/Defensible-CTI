@@ -2,6 +2,15 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **`--out` no longer deletes an arbitrary directory.** A target that contains the inputs,
+  the working directory or the home directory is refused; a non-empty explicit target needs
+  `--force`.
+- **The report renders a tie** instead of choosing the first hypothesis as the winner.
+
 ## 0.1.0 — 2026-10-22
 
 - First version. `ctisuite report` renders requirement, judgement, evidence, hunt plan and

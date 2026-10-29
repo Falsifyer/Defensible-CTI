@@ -103,7 +103,7 @@ wheels = [
 
 [[package]]
 name = "assessment-mcp"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/assessment" }
 dependencies = [
     { name = "cti-method" },
@@ -804,7 +804,7 @@ provides-extras = ["cti", "opencti", "misp", "mcp", "dev"]
 
 [[package]]
 name = "cti-method"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "packages/cti-method" }
 
 [package.optional-dependencies]

@@ -63,6 +63,20 @@ def test_a_missing_marking_is_flagged() -> None:
     assert _codes(result) == ["tlp-missing"]
 
 
+def test_a_corrupt_bundle_is_not_checked_and_not_shareable() -> None:
+    """C2: a truncated bundle must not fall back to the text rule and pass."""
+    result = pre_share('{"type": "bundle", "objects": [ {', require_json=True)
+    assert result["shareable"] is False
+    assert result["checked"] is False
+    assert "input-unparseable" in _codes(result)
+
+
+def test_text_that_is_not_json_still_uses_the_text_rule() -> None:
+    result = pre_share("TLP:AMBER\nvictim infrastructure", require_json=False)
+    assert result["shareable"] is True
+    assert result["tlp"]["effective"] == "TLP:AMBER"
+
+
 def test_deprecated_white_is_flagged() -> None:
     result = check_tlp("TLP:WHITE")
     assert "tlp-deprecated" in _codes(result)

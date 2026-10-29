@@ -2,6 +2,18 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **ACH counts voices, not items.** `inconsistency_scores` groups by publisher (or
+  normalised source string), so restating one source cannot flip the ranking.
+- **Ties are surfaced, not broken by input order.** `tied_at_top` names the hypotheses the
+  evidence does not separate; the raw count is display only.
+- **Shared tradecraft cannot undo a contradiction downgrade.** Only discriminating items
+  count as support in the ceiling's contradiction step.
+- **A document too deep for the JSON parser is `CannotCheck`**, not a `RecursionError`.
+
 ## 0.2.0 — 2026-10-28
 
 ### Added

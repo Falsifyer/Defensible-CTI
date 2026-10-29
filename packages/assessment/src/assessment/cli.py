@@ -70,7 +70,12 @@ def _run_assess(args: argparse.Namespace) -> int:
     if register is not None and not isinstance(register, dict):
         raise CannotCheck(f"{args.register} is not a JSON object")
 
-    verdict = assess(document, register=register)
+    try:
+        verdict = assess(document, register=register)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise CannotCheck(
+            f"the claim is not a usable document: {type(exc).__name__}: {exc}"
+        ) from exc
     if args.strict:
         try:
             schema_module.validate(verdict, "judgement")

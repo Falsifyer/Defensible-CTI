@@ -44,6 +44,9 @@ A claim is a **question**, a body of **evidence**, competing **hypotheses** and 
 
 - The **favoured hypothesis** is the one with the least inconsistent evidence, not the
   loudest. Hypotheses may be any labels, but there must be **at least two**.
+- The ranking counts **independent voices**, not items: restating one source does not move
+  it. When the best score is shared, `tied` names the hypotheses and `favoured` is `null`;
+  the ceiling is the most restrictive across them.
 - **Confidence** and **probability** are separate; a claim can be *very likely* at *low*
   confidence or *roughly even* at *high* confidence.
 - Add an **`adjudication`** and the external-truth filter decides whether the declared

@@ -2,6 +2,16 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **`--strict` accepts the verdict the tool emits**: the verdict now carries
+  `grade_findings`, which the published schema requires.
+- **A malformed claim is exit 2**, not a traceback with exit 1.
+- **Ties are reported** as `tied` and `favoured: null`; the ceiling is the most restrictive
+  across the tied hypotheses.
+
 ## 0.3.0 — 2026-10-28
 
 ### Changed

@@ -91,7 +91,12 @@ def build(
     if not stamp.endswith("Z"):
         raise ValueError("created must be an ISO 8601 UTC timestamp (ending in Z)")
 
-    marking = marking_object(product.get("tlp") or "clear")
+    raw_marking = product.get("tlp")
+    if not isinstance(raw_marking, str) or not raw_marking.strip():
+        raise ValueError(
+            "the product needs tlp: a product with no marking must not default to TLP:CLEAR"
+        )
+    marking = marking_object(raw_marking)
     author_id = _id("identity", author_name)
     objects: list[dict[str, Any]] = [
         marking,

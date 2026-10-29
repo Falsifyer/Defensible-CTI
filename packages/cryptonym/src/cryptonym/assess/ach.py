@@ -23,6 +23,9 @@ from cti_method.ach import (
 from cti_method.ach import (
     least_inconsistent as _least_inconsistent,
 )
+from cti_method.ach import (
+    tied_at_top as _tied_at_top,
+)
 from cti_method.evidence import Consistency, Evidence
 
 from cryptonym.model.assessment import Hypothesis
@@ -46,9 +49,19 @@ def inconsistency_counts(
 
 
 def least_inconsistent(
-    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
 ) -> list[str]:
-    return _least_inconsistent(evidence, _labels(hypotheses))
+    return _least_inconsistent(evidence, _labels(hypotheses), sources)
+
+
+def tied_at_top(
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
+) -> list[str]:
+    return _tied_at_top(evidence, _labels(hypotheses), sources)
 
 
 __all__ = [
@@ -58,4 +71,5 @@ __all__ = [
     "identity_supporting_evidence",
     "inconsistency_counts",
     "least_inconsistent",
+    "tied_at_top",
 ]

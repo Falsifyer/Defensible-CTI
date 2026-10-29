@@ -52,6 +52,43 @@ def test_weigh_accepts_arbitrary_hypothesis_labels() -> None:
     assert result["matrix"]["E1"]["compromise"] == "C"
 
 
+def test_a_tie_is_not_resolved_by_hypothesis_order() -> None:
+    """A2: the same evidence must not change its bottom line when the labels are reordered."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "I", "C"),
+            _evidence("E2", "source B", "infrastructure", "C", "I"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    first = assess(document)
+    second = assess({**document, "hypotheses": ["b", "a"]})
+    assert first["favoured"] is None
+    assert set(first["tied"]) == {"a", "b"}
+    assert second["favoured"] is None
+    assert set(second["tied"]) == {"a", "b"}
+    assert first["ceiling"] == second["ceiling"]
+
+
+def test_restating_one_source_does_not_flip_the_ranking() -> None:
+    """A3: the ACH ranking counts voices, not items."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "I", "C"),
+            _evidence("E2", "source B", "infrastructure", "C", "I"),
+            _evidence("E1b", "source A", "infrastructure", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert set(verdict["tied"]) == {"a", "b"}
+    assert verdict["inconsistency_scores"] == {"a": 1.0, "b": 1.0}
+
+
 def test_weigh_needs_at_least_two_hypotheses() -> None:
     import pytest
 

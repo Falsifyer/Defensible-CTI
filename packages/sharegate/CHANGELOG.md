@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **A corrupt `.json` bundle is `checked: false` and exit 2**, not a text product with
+  `shareable: true`. The text rule still applies to files that are not JSON.
+
 ## 0.2.0 — 2026-10-22
 
 ### Changed

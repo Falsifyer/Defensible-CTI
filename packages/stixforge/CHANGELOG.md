@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **`tlp` is required.** A product with no marking is refused instead of being built as
+  `TLP:CLEAR`; a missing marking is not a public product.
+
 ## 0.2.0 — 2026-10-22
 
 ### Changed

@@ -55,6 +55,35 @@ def test_a_diagnostic_item_that_does_not_discriminate_does_not_raise_the_ceiling
     assert ceiling(evidence) == "low"
 
 
+def test_shared_tradecraft_cannot_undo_the_contradiction_downgrade() -> None:
+    """A4: an item consistent with every hypothesis is not support for the favoured one.
+
+    Without this guard a shared-tradecraft item raises the ceiling by blocking the
+    contradiction step instead of leaving the grade where the evidence put it.
+    """
+    sources = [{"id": "a", "publisher": "A"}, {"id": "b", "publisher": "B"}, {"id": "c", "publisher": "C"}]
+    base = [
+        Evidence(id="E1", statement="s", source="A", type=EvidenceType.INFRASTRUCTURE,
+                 consistency={"H1": Consistency.INCONSISTENT, "H2": Consistency.INCONSISTENT},
+                 source_id="a", reliability="A"),
+        Evidence(id="E2", statement="s", source="B", type=EvidenceType.INFRASTRUCTURE,
+                 consistency={"H1": Consistency.INCONSISTENT, "H2": Consistency.CONSISTENT},
+                 source_id="b", reliability="D"),
+    ]
+    shared = Evidence(id="E3", statement="s", source="C", type=EvidenceType.INFRASTRUCTURE,
+                      consistency={"H1": Consistency.CONSISTENT, "H2": Consistency.CONSISTENT},
+                      source_id="c", reliability="C")
+    assert derived_grade(base, sources, "H2")["ceiling"] == "moderate"
+    assert derived_grade([*base, shared], sources, "H2")["ceiling"] == "moderate"
+
+
+def test_a_document_too_deep_for_the_parser_is_cannot_check(tmp_path) -> None:
+    path = tmp_path / "deep.json"
+    path.write_text("[" * 100_000 + "]" * 100_000, encoding="utf-8")
+    with pytest.raises(CannotCheck):
+        read_json(path)
+
+
 def test_the_same_source_twice_is_not_independence() -> None:
     evidence = [
         _item("E1", "Vendor A", EvidenceType.INFRASTRUCTURE, a=Consistency.CONSISTENT, b=Consistency.INCONSISTENT),

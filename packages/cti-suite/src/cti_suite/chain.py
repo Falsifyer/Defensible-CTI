@@ -21,6 +21,7 @@ from typing import Any
 
 from assessment.cli import main as assessment_main
 from cryptonym.cli import main as cryptonym_main
+from cti_method.contract import CannotCheck
 from huntplan.cli import main as huntplan_main
 from pir_ledger.cli import main as pir_main
 from sharegate.cli import main as sharegate_main
@@ -57,9 +58,12 @@ def _summary(document: Any) -> dict[str, Any]:
             picked[key] = document[key]
     if "grade" in document and isinstance(document["grade"], dict):
         picked["declared"] = document["grade"].get("confidence")
-    if "hypotheses_favoured" in document:
+    tied = document.get("tied") or []
+    if len(tied) > 1:
+        picked["favoured"] = f"{' / '.join(tied)} (tied)"
+    elif "hypotheses_favoured" in document:
         picked["favoured"] = (document["hypotheses_favoured"] or [None])[0]
-    if "ranking" in document:
+    if "ranking" in document and len(tied) <= 1:
         picked["favoured"] = (document["ranking"] or [None])[0]
     if "ids" in document:
         picked["requirements"] = document["ids"]
@@ -87,14 +91,45 @@ def _trace_from_bundle(path: Path) -> dict[str, str]:
     return {item["source_name"]: item["external_id"] for item in report.get("external_references", [])}
 
 
-def run_chain(directory: str | Path, out: str | Path | None = None, *, clean: bool = True) -> dict[str, Any]:
-    """Run the seven steps over ``directory`` and return a machine-readable summary."""
+def run_chain(
+    directory: str | Path,
+    out: str | Path | None = None,
+    *,
+    clean: bool = True,
+    force: bool = False,
+) -> dict[str, Any]:
+    """Run the seven steps over ``directory`` and return a machine-readable summary.
+
+    ``--out`` is a destructive boundary: the target is removed before the chain runs. A
+    target that is the input directory, its ancestor, the working directory, the home
+    directory or the filesystem root is refused, and so is a non-empty explicit ``--out``
+    without ``--force``. The implicit ``<dir>/out`` keeps its old clean-on-every-run
+    behaviour.
+    """
     root = Path(directory).resolve()
     missing = [name for name in INPUTS if not (root / name).is_file()]
     if missing:
         raise FileNotFoundError(f"{root} is missing: {', '.join(missing)}")
     target = Path(out).resolve() if out else root / "out"
-    if clean and target.exists():
+    protected = (root, Path.cwd(), Path.home(), Path(target.anchor))
+    for guarded in protected:
+        if target == guarded or target in guarded.parents:
+            raise CannotCheck(
+                f"refusing to use {target} as --out: it contains {guarded.name or guarded}"
+            )
+    if target.exists() and not target.is_dir():
+        raise CannotCheck(f"refusing to use {target} as --out: it is not a directory")
+    if (
+        clean
+        and out is not None
+        and target.is_dir()
+        and any(target.iterdir())
+        and not force
+    ):
+        raise CannotCheck(
+            f"refusing to delete the non-empty {target}: pass --force to replace it"
+        )
+    if clean and target.is_dir():
         shutil.rmtree(target)
     target.mkdir(parents=True, exist_ok=True)
 

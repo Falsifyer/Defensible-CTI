@@ -47,7 +47,8 @@ def _bottom_line(assessment: dict[str, Any] | None, marking: str | None) -> list
         return []
     question = assessment.get("question") or "Judgement"
     ranking = assessment.get("hypotheses_favoured") or assessment.get("ranking") or []
-    favoured = ranking[0] if ranking else None
+    tied = assessment.get("tied") or []
+    favoured = None if len(tied) > 1 else (ranking[0] if ranking else None)
     grade = assessment.get("grade") or {}
     confidence = grade.get("confidence", assessment.get("confidence"))
     ceiling = assessment.get("ceiling")
@@ -56,7 +57,9 @@ def _bottom_line(assessment: dict[str, Any] | None, marking: str | None) -> list
     refused = any(item.get("code") == "grade-exceeds-evidence" for item in findings)
 
     lines = ["## Bottom line", "", f"**{question}**", ""]
-    if favoured:
+    if len(tied) > 1:
+        lines.append(f"The evidence does not separate **{'**, **'.join(tied)}**.")
+    elif favoured:
         lines.append(f"The evidence favours **{favoured}**.")
     else:
         lines.append("The evidence favours none of the stated hypotheses.")
@@ -109,13 +112,19 @@ def _judgement(assessment: dict[str, Any] | None) -> list[str]:
     if not assessment:
         return []
     ranking = assessment.get("hypotheses_favoured") or assessment.get("ranking") or []
+    tied = assessment.get("tied") or []
     grade = assessment.get("grade") or {}
     confidence = grade.get("confidence", assessment.get("confidence"))
     ceiling = assessment.get("ceiling")
+    favourite_label = (
+        f"{' / '.join(tied)} (tied)"
+        if len(tied) > 1
+        else (ranking[0] if ranking else "—")
+    )
     lines = [
         "## Judgement",
         "",
-        f"**Favoured: {ranking[0] if ranking else '—'}** — declared confidence: "
+        f"**Favoured: {favourite_label}** — declared confidence: "
         f"{_LABEL.get(str(confidence), confidence) if confidence else 'none'}; "
         f"the evidence supports at most **{ceiling or '—'}**.",
         "",

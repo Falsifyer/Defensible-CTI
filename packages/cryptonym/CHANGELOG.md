@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Ties are surfaced** in `assess` and `render` (`tied`, `favoured: null`) instead of
+  being resolved by the order of the hypothesis list.
+- **The ACH ranking counts voices**, so a source restated twice cannot flip it.
+
 ## 0.7.0 — 2026-10-22
 
 ### Changed

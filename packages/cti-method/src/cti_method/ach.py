@@ -19,8 +19,10 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Sequence
+from typing import Any
 
 from cti_method.evidence import Consistency, Evidence
+from cti_method.sources import attribute, registry
 
 
 def _labels(hypotheses: Sequence[str] | None) -> list[str]:
@@ -59,35 +61,84 @@ def inconsistency_counts(
     return {label: counts[label] for label in labels}
 
 
+def _voice_key(item: Evidence, known: dict[str, Any]) -> str:
+    """The voice one item represents, for ranking: a publisher, not a repeat.
+
+    The registry is the same one the ceiling uses. Without it, the normalised source
+    string is the voice. Two items from one voice contribute at most their strongest
+    inconsistency, so restating a claim does not move the ranking.
+    """
+    key = attribute(item.source, item.source_id, known)
+    if key.registered:
+        entry = known.get(key.key)
+        publisher = (entry.publisher if entry else "").strip().lower()
+        return publisher or key.key
+    return key.key
+
+
 def inconsistency_scores(
-    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
 ) -> dict[str, float]:
-    """Weighted contradiction score per hypothesis: the sum of the weights of the items
-    that contradict it. This is what ranks hypotheses; the raw count is for display."""
+    """Weighted contradiction score per hypothesis, counting independent voices.
+
+    The sum is over voices, not items: if one source restates a contradiction, it counts
+    once (at its strongest weight). This is what ranks hypotheses; the raw count is for
+    display. It mirrors :func:`cti_method.sources.independent_ids`, which the ceiling
+    already uses.
+    """
     labels = _labels(hypotheses)
     matrix = consistency_matrix(evidence, labels)
+    known = registry(list(sources) if sources is not None else None)
+    voices = {item.id: _voice_key(item, known) for item in evidence}
     weights = {item.id: item.weight for item in evidence}
     scores: dict[str, float] = {label: 0.0 for label in labels}
-    for evidence_id, row in matrix.items():
-        for label in labels:
+    for label in labels:
+        per_voice: dict[str, float] = {}
+        for evidence_id, row in matrix.items():
             if row[label] is Consistency.INCONSISTENT:
-                scores[label] += weights.get(evidence_id, 1.0)
+                voice = voices.get(evidence_id, evidence_id)
+                per_voice[voice] = max(per_voice.get(voice, 0.0), weights.get(evidence_id, 1.0))
+        scores[label] = sum(per_voice.values())
     return {label: round(score, 4) for label, score in scores.items()}
 
 
 def least_inconsistent(
-    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
 ) -> list[str]:
     """Rank hypotheses by least weighted inconsistency, most favoured first.
 
-    Ties are broken by the raw count and then by hypothesis order, for determinism and
-    not by strength of support.
+    The order is deterministic, but the first item is not a tie-breaker: use
+    :func:`tied_at_top` before presenting one hypothesis as *the* favoured one.
     """
     labels = _labels(hypotheses)
-    scores = inconsistency_scores(evidence, labels)
-    counts = inconsistency_counts(evidence, labels)
+    scores = inconsistency_scores(evidence, labels, sources)
     order = list(labels)
-    return sorted(order, key=lambda label: (scores[label], counts[label], order.index(label)))
+    # The raw count is display only: using it here would let a source that restates a
+    # claim break a weighted tie, which is the manipulation the voice rule removes.
+    return sorted(order, key=lambda label: (scores[label], order.index(label)))
+
+
+def tied_at_top(
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
+) -> list[str]:
+    """The hypotheses that share the best weighted score: the evidence does not separate them.
+
+    A single-element list means there is a unique favourite; an empty list means there are
+    no hypotheses. Never resolve a tie by the order in which the analyst wrote the labels.
+    """
+    labels = _labels(hypotheses)
+    ranking = least_inconsistent(evidence, labels, sources)
+    if not ranking:
+        return []
+    scores = inconsistency_scores(evidence, labels, sources)
+    best = scores[ranking[0]]
+    return [label for label in ranking if scores[label] == best]
 
 
 def discriminating_evidence(evidence: list[Evidence]) -> list[str]:

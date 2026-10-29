@@ -86,6 +86,15 @@ def test_without_an_author_it_fails():
         build({**PRODUCTO, "author": ""})
 
 
+def test_without_a_tlp_it_fails_instead_of_defaulting_to_clear():
+    """C1: a forgotten marking is not a public product."""
+    sin_tlp = {k: v for k, v in PRODUCTO.items() if k != "tlp"}
+    with pytest.raises(ValueError, match="tlp"):
+        build(sin_tlp)
+    with pytest.raises(ValueError, match="tlp"):
+        build({**PRODUCTO, "tlp": "   "})
+
+
 def test_with_nothing_to_share_it_fails():
     vacio = {k: v for k, v in PRODUCTO.items() if k not in ("observables", "indicators", "malware")}
     with pytest.raises(ValueError, match="nothing to share"):

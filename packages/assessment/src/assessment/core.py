@@ -27,6 +27,7 @@ from cti_method.trace import link_requirement
 
 GENESIS = "0" * 64
 SCHEMA_VERSION = "1.0"
+_CEILING_RANK = {"low": 0, "moderate": 1, "high": 2}
 
 
 def _evidence(items: list[dict[str, Any]]) -> list[cti_method.Evidence]:
@@ -70,11 +71,16 @@ def grade(confidence: str, probability: str | None = None) -> dict[str, Any]:
     }
 
 
-def weigh(evidence: list[dict[str, Any]], hypotheses: list[str] | None = None) -> dict[str, Any]:
+def weigh(
+    evidence: list[dict[str, Any]],
+    hypotheses: list[str] | None = None,
+    sources: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Compare competing hypotheses against a body of evidence (ACH).
 
     Hypotheses may be any labels, but there must be at least two: ranking one hypothesis
-    is not analysis.
+    is not analysis. The ranking counts independent voices, and ``tied`` names the
+    hypotheses the evidence does not separate.
     """
     labels = [str(item) for item in hypotheses or [] if str(item).strip()]
     if len(labels) < 2:
@@ -82,9 +88,10 @@ def weigh(evidence: list[dict[str, Any]], hypotheses: list[str] | None = None) -
     items = _evidence(evidence)
     matrix = cti_method.consistency_matrix(items, labels)
     return {
-        "ranking": cti_method.least_inconsistent(items, labels),
+        "ranking": cti_method.least_inconsistent(items, labels, sources),
+        "tied": cti_method.tied_at_top(items, labels, sources),
         "inconsistencies": cti_method.inconsistency_counts(items, labels),
-        "inconsistency_scores": cti_method.inconsistency_scores(items, labels),
+        "inconsistency_scores": cti_method.inconsistency_scores(items, labels, sources),
         "discriminating": cti_method.discriminating_evidence(items),
         "consistent_with_everything": cti_method.consistent_with_everything(items),
         "matrix": {
@@ -124,16 +131,22 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
 
     mode = "ach" if len(labels) >= 2 else "claim"
     if mode == "ach":
-        weighed: dict[str, Any] = weigh(document.get("evidence") or [], labels)
+        weighed: dict[str, Any] = weigh(document.get("evidence") or [], labels, sources)
     else:
         weighed = {
             "ranking": [],
+            "tied": [],
             "inconsistencies": {},
             "inconsistency_scores": {},
             "discriminating": [],
             "consistent_with_everything": [],
         }
-    favoured = weighed["ranking"][0] if weighed["ranking"] else (labels[0] if labels else None)
+    tied = weighed.get("tied") or []
+    favoured = (
+        None
+        if len(tied) > 1
+        else (weighed["ranking"][0] if weighed["ranking"] else (labels[0] if labels else None))
+    )
 
     judgement = document.get("judgement") or {}
     declared_raw = judgement.get("confidence")
@@ -141,8 +154,33 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
     probability = judgement.get("probability")
     parsed_probability = cti_method.parse_probability(probability) if probability else None
 
-    findings.extend(check_declared(declared, evidence_items, sources, favoured, mode=mode))
-    derived = derived_grade(evidence_items, sources, favoured, mode=mode)
+    candidates = tied if len(tied) > 1 else ([favoured] if favoured else [])
+    derived_candidates = [
+        derived_grade(evidence_items, sources, label, mode=mode) for label in candidates
+    ]
+    if derived_candidates:
+        derived = min(derived_candidates, key=lambda item: _CEILING_RANK[item["ceiling"]])
+    else:
+        derived = derived_grade(evidence_items, sources, favoured, mode=mode)
+    if len(tied) > 1:
+        derived = dict(derived)
+        derived["reasons"] = [
+            f"tied at the top: {', '.join(tied)}; the ceiling is the most restrictive of the "
+            "tied hypotheses",
+            *derived["reasons"],
+        ]
+
+    grade_findings: list[dict[str, str]] = []
+    for label in candidates or [favoured]:
+        grade_findings.extend(
+            check_declared(declared, evidence_items, sources, label, mode=mode)
+        )
+    seen_findings: set[tuple[str, str]] = set()
+    for item in grade_findings:
+        key = (item["code"], item["message"])
+        if key not in seen_findings:
+            seen_findings.add(key)
+            findings.append(item)
 
     if document.get("requirement_id") and register is not None:
         findings.extend(link_requirement(document, register)["findings"])
@@ -156,6 +194,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         "mode": mode,
         "ranking": weighed["ranking"],
         "favoured": favoured,
+        "tied": tied,
         "inconsistencies": weighed["inconsistencies"],
         "inconsistency_scores": weighed["inconsistency_scores"],
         "discriminating": weighed["discriminating"],
@@ -170,12 +209,12 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
             + (f"; probability: {parsed_probability.value}" if parsed_probability is not None else ""),
         },
         "ceiling": derived["ceiling"],
-        "grade_supported": declared is not None
-        and not has_high(check_declared(declared, evidence_items, sources, favoured, mode=mode)),
+        "grade_supported": declared is not None and not has_high(grade_findings),
         "evidence_profile": derived["profile"],
         "grade_reasons": derived["reasons"],
         "review_by": document.get("review_by"),
         "findings": findings,
+        "grade_findings": grade_findings,
     }
     if "adjudication" in document:
         verdict["truth"] = filter_truth(document["adjudication"])
@@ -191,13 +230,15 @@ def check_against(verdict: dict[str, Any], previous: dict[str, Any]) -> list[dic
     """
     findings: list[dict[str, str]] = []
     previous_ranking = previous.get("hypotheses_favoured") or previous.get("ranking") or []
-    if verdict["ranking"] and previous_ranking and verdict["ranking"][0] != previous_ranking[0]:
+    current_top = set(verdict.get("tied") or ([verdict["ranking"][0]] if verdict["ranking"] else []))
+    previous_top = set(previous.get("tied") or ([previous_ranking[0]] if previous_ranking else []))
+    if current_top and previous_top and current_top != previous_top:
         findings.append(
             finding(
                 "judgement-mismatch",
                 HIGH,
-                f"this run favours {verdict['ranking'][0]!r} but the supplied judgement favours "
-                f"{previous_ranking[0]!r}: the dossier changed after the judgement was produced",
+                f"this run favours {sorted(current_top)!r} but the supplied judgement favours "
+                f"{sorted(previous_top)!r}: the dossier changed after the judgement was produced",
             )
         )
     previous_ceiling = previous.get("ceiling")

@@ -13,6 +13,7 @@ from cryptonym.assess.ach import (
     discriminating_evidence,
     identity_supporting_evidence,
     least_inconsistent,
+    tied_at_top,
 )
 from cryptonym.model.assessment import Assessment
 
@@ -33,14 +34,21 @@ def render_assessment(assessment: Assessment) -> str:
     lines.append(f"| **Review trigger** | {assessment.review_trigger or 'n/a'} |")
     lines.append("")
 
-    ranking = least_inconsistent(assessment.evidence, hypotheses)
-    favoured = ranking[0] if ranking else "n/a"
+    ranking = least_inconsistent(assessment.evidence, hypotheses, assessment.sources)
+    tied = tied_at_top(assessment.evidence, hypotheses, assessment.sources)
     lines.append("## Bottom line")
     lines.append("")
-    lines.append(
-        f"Favoured hypothesis (least inconsistent evidence): **{favoured}** — "
-        f"{assessment.judgement.label()}."
-    )
+    if len(tied) > 1:
+        lines.append(
+            f"The evidence does not separate **{'**, **'.join(tied)}** — no single "
+            f"favoured hypothesis — {assessment.judgement.label()}."
+        )
+    else:
+        favoured = ranking[0] if ranking else "n/a"
+        lines.append(
+            f"Favoured hypothesis (least inconsistent evidence): **{favoured}** — "
+            f"{assessment.judgement.label()}."
+        )
     lines.append("")
 
     lines.append("## Evidence")
