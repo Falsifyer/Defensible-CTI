@@ -20,6 +20,9 @@ def _document(*, direct: bool, sources: list[dict], grade: str = "high") -> dict
     return {
         "id": "claim-1",
         "question": "Does MITRE record C0029 as a campaign?",
+        "mode": "claim",
+        "claim_type": "documentary",
+        "why_no_alternatives": "a documentary fact, not a dispute between actors",
         "hypotheses": ["C0029 is a campaign"],
         "evidence": [
             {
@@ -68,3 +71,31 @@ def test_no_hypothesis_is_refused() -> None:
 def test_ceiling_for_accepts_the_claim_mode() -> None:
     result = ceiling_for(_document(direct=True, sources=SOURCES)["evidence"], mode="claim")
     assert result["ceiling"] == "high"
+
+
+def _codes(verdict: dict) -> set[str]:
+    return {item["code"] for item in verdict["findings"]}
+
+
+def test_a_one_hypothesis_claim_must_declare_its_mode() -> None:
+    document = _document(direct=True, sources=SOURCES)
+    document.pop("mode")
+    assert "claim-mode-unstated" in _codes(assess(document))
+
+
+def test_an_identity_question_cannot_use_claim_mode() -> None:
+    document = _document(direct=True, sources=SOURCES)
+    document["claim_type"] = "identity"
+    assert "identity-in-claim-mode" in _codes(assess(document))
+
+
+def test_direct_evidence_is_only_for_documentary_claims() -> None:
+    document = _document(direct=True, sources=SOURCES)
+    document["claim_type"] = "estimative"
+    assert "direct-not-documentary" in _codes(assess(document))
+
+
+def test_claim_mode_refuses_competing_hypotheses() -> None:
+    document = _document(direct=True, sources=SOURCES)
+    document["hypotheses"] = ["A", "B"]
+    assert "claim-mode-alternatives" in _codes(assess(document))

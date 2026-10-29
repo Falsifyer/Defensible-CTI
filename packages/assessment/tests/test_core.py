@@ -80,6 +80,51 @@ def test_a_tie_is_not_resolved_by_hypothesis_order() -> None:
     assert first["ceiling"] == second["ceiling"]
 
 
+def test_a_linguistic_only_hypothesis_cannot_be_favoured() -> None:
+    """Phase 1: diagnostic support beats linguistic consistency."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] == "a"
+    assert "b" in verdict["consistent_but_unsupported"]
+
+
+def test_pure_shared_tradecraft_abstains() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "source A", "tactics", "C", "C")],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] is None
+    assert set(verdict["consistent_but_unsupported"]) == {"a", "b"}
+
+
+def test_reordering_does_not_change_a_supported_favourite() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    first = assess(document)
+    second = assess({**document, "hypotheses": ["b", "a"]})
+    assert first["favoured"] == second["favoured"] == "a"
+    assert first["tied"] == second["tied"] == []
+    assert first["ceiling"] == second["ceiling"]
+
+
 def test_restating_one_source_does_not_flip_the_ranking() -> None:
     """A3: the ACH ranking counts voices, not items."""
     document = {
@@ -197,6 +242,9 @@ def test_a_claim_with_one_hypothesis_is_graded_as_a_claim() -> None:
     verdict = assess(
         {
             "question": "does the actor target utilities?",
+            "mode": "claim",
+            "claim_type": "documentary",
+            "why_no_alternatives": "a single documentary claim",
             "hypotheses": ["it does"],
             "evidence": [
                 {

@@ -10,6 +10,8 @@
 - **`brokered_shared_access` is opt-in.** The default is `same_actor` vs
   `distinct_but_overlapping`; a third hypothesis no evidence addresses would otherwise tie
   every case at zero inconsistency. Declare it when the evidence suggests a broker.
+- **A hypothesis needs diagnostic support.** Linguistic/structural consistency is reported
+  as `consistent_but_unsupported` and cannot make a hypothesis the favourite.
 - **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
   a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
   baselines were regenerated.

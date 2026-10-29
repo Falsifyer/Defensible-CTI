@@ -9,10 +9,12 @@ than trust the conclusion.
 from __future__ import annotations
 
 from cryptonym.assess.ach import (
+    addressed_hypotheses,
     consistency_matrix,
     discriminating_evidence,
     identity_supporting_evidence,
     least_inconsistent,
+    supported_hypotheses,
     tied_at_top,
 )
 from cryptonym.model.assessment import Assessment
@@ -36,6 +38,8 @@ def render_assessment(assessment: Assessment) -> str:
 
     ranking = least_inconsistent(assessment.evidence, hypotheses, assessment.sources)
     tied = tied_at_top(assessment.evidence, hypotheses, assessment.sources)
+    supported = supported_hypotheses(assessment.evidence, hypotheses)
+    addressed = addressed_hypotheses(assessment.evidence, hypotheses)
     lines.append("## Bottom line")
     lines.append("")
     if len(tied) > 1:
@@ -43,12 +47,36 @@ def render_assessment(assessment: Assessment) -> str:
             f"The evidence does not separate **{'**, **'.join(tied)}** — no single "
             f"favoured hypothesis — {assessment.judgement.label()}."
         )
-    else:
-        favoured = ranking[0] if ranking else "n/a"
+    elif ranking and ranking[0] in supported:
+        favoured = ranking[0]
         lines.append(
             f"Favoured hypothesis (least inconsistent evidence): **{favoured}** — "
             f"{assessment.judgement.label()}."
         )
+    else:
+        labels = [str(item) for item in hypotheses]
+        unsupported = [label for label in labels if label in addressed and label not in supported]
+        shown = ", ".join(unsupported) or "none"
+        lines.append(
+            f"No hypothesis has diagnostic support ({shown}): the evidence is consistent "
+            f"but unsupported — {assessment.judgement.label()}."
+        )
+    if len(tied) > 1:
+        lines.append(f"**Tied:** {', '.join(tied)}.")
+        lines.append("**Abstained:** the evidence does not make a binary call.")
+    elif not supported:
+        lines.append("**Abstained:** no hypothesis has diagnostic support.")
+    if supported:
+        lines.append(f"**Supported:** {', '.join(sorted(supported))}.")
+    if addressed:
+        unsupported = sorted(
+            label for label in addressed if label not in supported
+        )
+        if unsupported:
+            lines.append(
+                f"**Addressed but unsupported:** {', '.join(unsupported)} "
+                "(linguistic/structural only)."
+            )
     lines.append("")
 
     lines.append("## Evidence")

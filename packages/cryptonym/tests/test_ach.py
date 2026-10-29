@@ -54,7 +54,9 @@ def test_missing_hypothesis_is_neutral_not_consistent() -> None:
 
 def test_least_inconsistent_prefers_fewest_contradictions() -> None:
     ranking = least_inconsistent(_evidence())
-    assert ranking[0] is Hypothesis.OVERLAPPING.value
+    # E3 is the only diagnostic item, and it is consistent with the brokered hypothesis;
+    # linguistic/structural consistency alone is not enough (Phase 1).
+    assert ranking[0] is Hypothesis.BROKERED.value
     # E1 and E3 share the "vendor" source: one voice, one contradiction.
     assert inconsistency_counts(_evidence())[Hypothesis.SAME.value] == 1
 

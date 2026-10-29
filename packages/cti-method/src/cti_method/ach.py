@@ -134,6 +134,26 @@ def addressed_hypotheses(
     }
 
 
+def supported_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+) -> set[str]:
+    """Hypotheses with at least one **diagnostic** item consistent with them.
+
+    ``addressed`` says the evidence mentions the hypothesis; ``supported`` says something
+    that can bear on identity actually points at it. A hypothesis with only linguistic or
+    structural consistency is addressed but unsupported, and cannot be the favourite of an
+    identity question.
+    """
+    labels = set(_labels(hypotheses))
+    return {
+        label
+        for item in evidence
+        if item.diagnostic
+        for label, value in item.consistency.items()
+        if label in labels and value is Consistency.CONSISTENT
+    }
+
+
 def least_inconsistent(
     evidence: list[Evidence],
     hypotheses: Sequence[str] | None = None,
@@ -149,11 +169,19 @@ def least_inconsistent(
     scores = inconsistency_scores(evidence, labels, sources)
     counts = inconsistency_counts(evidence, labels, sources)
     addressed = addressed_hypotheses(evidence, labels)
+    supported = supported_hypotheses(evidence, labels)
     order = list(labels)
-    # Both keys count voices: a source restated twice cannot break a tie either.
+    # Addressed first, then actually supported; both keys count voices, so a source
+    # restated twice cannot break a tie either.
     return sorted(
         order,
-        key=lambda label: (label not in addressed, scores[label], counts[label], order.index(label)),
+        key=lambda label: (
+            label not in addressed,
+            label not in supported,
+            scores[label],
+            counts[label],
+            order.index(label),
+        ),
     )
 
 
@@ -174,11 +202,17 @@ def tied_at_top(
     scores = inconsistency_scores(evidence, labels, sources)
     counts = inconsistency_counts(evidence, labels, sources)
     addressed = addressed_hypotheses(evidence, labels)
-    best = (ranking[0] in addressed, scores[ranking[0]], counts[ranking[0]])
+    supported = supported_hypotheses(evidence, labels)
+    best = (
+        ranking[0] in addressed,
+        ranking[0] in supported,
+        scores[ranking[0]],
+        counts[ranking[0]],
+    )
     return [
         label
         for label in ranking
-        if (label in addressed, scores[label], counts[label]) == best
+        if (label in addressed, label in supported, scores[label], counts[label]) == best
     ]
 
 

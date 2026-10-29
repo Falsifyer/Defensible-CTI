@@ -29,6 +29,7 @@ from cti_method.trace import link_requirement
 GENESIS = "0" * 64
 SCHEMA_VERSION = "1.0"
 _CEILING_RANK = {"low": 0, "moderate": 1, "high": 2}
+CLAIM_TYPES = ("documentary", "estimative", "identity")
 
 
 def _evidence(items: list[dict[str, Any]]) -> list[cti_method.Evidence]:
@@ -96,9 +97,17 @@ def weigh(
         raise ValueError("weighing needs at least two competing hypotheses")
     items = _evidence(evidence)
     matrix = cti_method.consistency_matrix(items, labels)
+    supported = cti_method.supported_hypotheses(items, labels)
+    addressed = cti_method.addressed_hypotheses(items, labels)
     return {
         "ranking": cti_method.least_inconsistent(items, labels, sources),
         "tied": cti_method.tied_at_top(items, labels, sources),
+        "addressed": sorted(addressed),
+        "supported": sorted(supported),
+        "unsupported": [label for label in labels if label not in supported],
+        "consistent_but_unsupported": [
+            label for label in labels if label in addressed and label not in supported
+        ],
         "inconsistencies": cti_method.inconsistency_counts(items, labels, sources),
         "inconsistency_scores": cti_method.inconsistency_scores(items, labels, sources),
         "discriminating": cti_method.discriminating_evidence(items),
@@ -138,24 +147,109 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
             )
         )
 
-    mode = "ach" if len(labels) >= 2 else "claim"
+    declared_mode = str(document.get("mode") or "").strip().lower() or None
+    if declared_mode is not None and declared_mode not in {"ach", "claim"}:
+        findings.append(
+            finding(
+                "bad-mode",
+                HIGH,
+                f"mode {declared_mode!r}: expected 'ach' or 'claim'",
+            )
+        )
+        declared_mode = None
+    mode = declared_mode or ("ach" if len(labels) >= 2 else "claim")
+    claim_type = str(document.get("claim_type") or "").strip().lower() or None
+    why_no_alternatives = str(document.get("why_no_alternatives") or "").strip() or None
+    if mode == "claim":
+        if declared_mode is None:
+            findings.append(
+                finding(
+                    "claim-mode-unstated",
+                    HIGH,
+                    "a one-hypothesis claim must declare mode='claim' explicitly, not by count",
+                )
+            )
+        if len(labels) != 1:
+            findings.append(
+                finding(
+                    "claim-mode-alternatives",
+                    HIGH,
+                    f"mode='claim' needs exactly one hypothesis; found {len(labels)}",
+                )
+            )
+        if claim_type not in CLAIM_TYPES:
+            findings.append(
+                finding(
+                    "claim-type",
+                    HIGH,
+                    f"claim_type {claim_type!r}: expected one of {', '.join(CLAIM_TYPES)}",
+                )
+            )
+        if why_no_alternatives is None:
+            findings.append(
+                finding(
+                    "no-why-no-alternatives",
+                    HIGH,
+                    "claim mode needs why_no_alternatives: why competing hypotheses do not apply",
+                )
+            )
+        if claim_type == "identity":
+            findings.append(
+                finding(
+                    "identity-in-claim-mode",
+                    HIGH,
+                    "an identity or attribution question is not a documentary claim; use ACH",
+                )
+            )
+        direct_ids = [
+            str(item.get("id") or "?")
+            for item in document.get("evidence") or []
+            if isinstance(item, dict) and item.get("direct")
+        ]
+        if direct_ids and claim_type != "documentary":
+            findings.append(
+                finding(
+                    "direct-not-documentary",
+                    HIGH,
+                    f"direct evidence ({', '.join(direct_ids)}) is only admissible for a "
+                    "documentary claim",
+                )
+            )
+    elif len(labels) < 2:
+        findings.append(
+            finding(
+                "ach-needs-alternatives",
+                HIGH,
+                f"mode='ach' needs at least two hypotheses; found {len(labels)}",
+            )
+        )
+
     if mode == "ach":
         weighed: dict[str, Any] = weigh(document.get("evidence") or [], labels, sources)
     else:
         weighed = {
             "ranking": [],
             "tied": [],
+            "addressed": list(labels),
+            "supported": list(labels),
+            "unsupported": [],
+            "consistent_but_unsupported": [],
             "inconsistencies": {},
             "inconsistency_scores": {},
             "discriminating": [],
             "consistent_with_everything": [],
         }
     tied = weighed.get("tied") or []
-    favoured = (
-        None
-        if len(tied) > 1
-        else (weighed["ranking"][0] if weighed["ranking"] else (labels[0] if labels else None))
-    )
+    tied = tied if len(tied) > 1 else []
+    supported = set(weighed.get("supported") or [])
+    if len(tied) > 1:
+        favoured = None
+    elif mode == "claim":
+        favoured = labels[0] if labels else None
+    elif weighed["ranking"] and weighed["ranking"][0] in supported:
+        favoured = weighed["ranking"][0]
+    else:
+        favoured = None
 
     judgement = document.get("judgement") or {}
     declared_raw = judgement.get("confidence")
@@ -207,9 +301,15 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         "requirement_id": document.get("requirement_id"),
         "question": document.get("question"),
         "mode": mode,
+        "claim_type": claim_type,
+        "why_no_alternatives": why_no_alternatives,
         "ranking": weighed["ranking"],
         "favoured": favoured,
         "tied": tied,
+        "addressed": weighed["addressed"],
+        "supported": weighed["supported"],
+        "unsupported": weighed["unsupported"],
+        "consistent_but_unsupported": weighed["consistent_but_unsupported"],
         "inconsistencies": weighed["inconsistencies"],
         "inconsistency_scores": weighed["inconsistency_scores"],
         "discriminating": weighed["discriminating"],

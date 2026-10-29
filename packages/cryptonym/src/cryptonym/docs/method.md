@@ -59,8 +59,11 @@ five of ten cases, and the harness prints that count instead of hiding it.
 Evidence is tested against the competing hypotheses at once — *same actor* and *distinct
 but overlapping* by default; *brokered / shared access* is opt-in, because a hypothesis no
 evidence addresses would otherwise win every tie by silence. The favoured hypothesis is the
-one with the **least inconsistent** evidence, not the one with the most supporters. A tie is
-reported (`tied`, `favoured: null`), never broken by the order of the list.
+one with the **least inconsistent** evidence, not the one with the most supporters. It also
+needs **diagnostic support** (`infrastructure`, `code`, `operator`); linguistic/structural
+consistency is reported as `consistent_but_unsupported` and cannot make a hypothesis the
+favourite. A tie is reported (`tied`, `favoured: null`), never broken by the order of the
+list.
 
 ## Two-axis grading
 

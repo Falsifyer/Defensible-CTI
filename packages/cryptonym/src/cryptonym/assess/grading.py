@@ -15,12 +15,14 @@ from __future__ import annotations
 from typing import Any
 
 from cti_method.ach import (
+    addressed_hypotheses,
     consistent_with_everything,
     discriminating_evidence,
     identity_supporting_evidence,
     inconsistency_counts,
     inconsistency_scores,
     least_inconsistent,
+    supported_hypotheses,
     tied_at_top,
 )
 from cti_method.grading import check_declared, derived_grade
@@ -39,7 +41,15 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
     """
     ranking = least_inconsistent(assessment.evidence, assessment.hypotheses, assessment.sources)
     tied = tied_at_top(assessment.evidence, assessment.hypotheses, assessment.sources)
-    favoured = None if len(tied) > 1 else (ranking[0] if ranking else None)
+    tied = tied if len(tied) > 1 else []
+    supported = supported_hypotheses(assessment.evidence, assessment.hypotheses)
+    addressed = addressed_hypotheses(assessment.evidence, assessment.hypotheses)
+    labels = [str(item) for item in assessment.hypotheses]
+    favoured = (
+        None
+        if len(tied) > 1
+        else (ranking[0] if ranking and ranking[0] in supported else None)
+    )
     if len(tied) > 1:
         candidates = list(tied)
     elif favoured is not None:
@@ -83,6 +93,12 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
         "hypotheses_favoured": ranking,
         "favoured": favoured,
         "tied": tied,
+        "addressed": sorted(addressed),
+        "supported": sorted(supported),
+        "unsupported": [label for label in labels if label not in supported],
+        "consistent_but_unsupported": [
+            label for label in labels if label in addressed and label not in supported
+        ],
         "inconsistencies": inconsistency_counts(
             assessment.evidence, assessment.hypotheses, assessment.sources
         ),

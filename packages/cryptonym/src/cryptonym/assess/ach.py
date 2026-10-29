@@ -10,6 +10,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from cti_method.ach import (
+    addressed_hypotheses as _addressed_hypotheses,
+)
+from cti_method.ach import (
     consistency_matrix as _consistency_matrix,
 )
 from cti_method.ach import (
@@ -22,6 +25,9 @@ from cti_method.ach import (
 )
 from cti_method.ach import (
     least_inconsistent as _least_inconsistent,
+)
+from cti_method.ach import (
+    supported_hypotheses as _supported_hypotheses,
 )
 from cti_method.ach import (
     tied_at_top as _tied_at_top,
@@ -66,12 +72,26 @@ def tied_at_top(
     return _tied_at_top(evidence, _labels(hypotheses), sources)
 
 
+def addressed_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+) -> set[str]:
+    return _addressed_hypotheses(evidence, _labels(hypotheses))
+
+
+def supported_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+) -> set[str]:
+    return _supported_hypotheses(evidence, _labels(hypotheses))
+
+
 __all__ = [
+    "addressed_hypotheses",
     "consistency_matrix",
     "consistent_with_everything",
     "discriminating_evidence",
     "identity_supporting_evidence",
     "inconsistency_counts",
     "least_inconsistent",
+    "supported_hypotheses",
     "tied_at_top",
 ]

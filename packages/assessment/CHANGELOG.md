@@ -14,6 +14,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **The ledger can be anchored.** `--head-out` writes the head and length; `ledger --verify
   --head-file` (or `--expect-head`/`--expect-count`) detects a truncated tail, which the
   bare chain cannot see.
+- **Claim mode is explicit.** `mode="claim"` requires `claim_type` and
+  `why_no_alternatives`; `direct` is documentary-only; an `identity` claim is refused with
+  `identity-in-claim-mode`; a one-hypothesis claim without `mode` is refused.
 
 ## 0.3.0 — 2026-10-28
 

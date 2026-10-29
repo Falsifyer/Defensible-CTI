@@ -12,6 +12,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   evidence does not separate; the count also counts voices, not restated items.
 - **An unaddressed hypothesis does not win by silence.** A hypothesis no item addresses is
   ranked after the tested ones instead of tying them at zero inconsistency.
+- **Positive diagnostic support is required.** `supported_hypotheses` names the hypotheses
+  with at least one `infrastructure`/`code`/`operator` item consistent with them; a
+  hypothesis with only linguistic/structural consistency is `consistent_but_unsupported`.
 - **Shared tradecraft cannot undo a contradiction downgrade.** Only discriminating items
   count as support in the ceiling's contradiction step.
 - **A document too deep for the JSON parser is `CannotCheck`**, not a `RecursionError`.

@@ -48,6 +48,10 @@ A claim is a **question**, a body of **evidence**, competing **hypotheses** and 
 
 - The **favoured hypothesis** is the one with the least inconsistent evidence, not the
   loudest. Hypotheses may be any labels, but there must be **at least two**.
+- A hypothesis also needs **diagnostic support**: at least one `infrastructure`, `code` or
+  `operator` item consistent with it. Linguistic or structural consistency is reported as
+  `consistent_but_unsupported`, and cannot make a hypothesis `favoured` for an identity
+  question.
 - The ranking counts **independent voices**, not items: restating one source does not move
   it. When the best score is shared, `tied` names the hypotheses and `favoured` is `null`;
   the ceiling is the most restrictive across them.
@@ -88,8 +92,13 @@ two modes:
 
 In both modes independence is structural and contradiction lowers the ceiling — in `claim`
 mode there is no alternative to weigh, so only the first applies. A claim with **no**
-hypothesis is refused (`no-claim`). The policy is exported by
-`cti_method.grading.policy()` so a consumer renders it instead of restating it.
+hypothesis is refused (`no-claim`).
+
+Claim mode is **explicit**: the document says `"mode": "claim"`, a `claim_type`
+(`documentary`, `estimative` or `identity`) and `why_no_alternatives`. `direct` evidence is
+only admissible for `documentary`; an `identity` claim is refused with
+`identity-in-claim-mode`, because attribution is not a documentary fact. The policy is
+exported by `cti_method.grading.policy()` so a consumer renders it instead of restating it.
 
 ## The chain
 
