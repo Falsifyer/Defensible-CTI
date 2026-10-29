@@ -80,6 +80,36 @@ def test_a_tie_is_not_resolved_by_hypothesis_order() -> None:
     assert first["ceiling"] == second["ceiling"]
 
 
+def test_context_contradiction_cannot_outweigh_identity_evidence() -> None:
+    """Phase 2: identity inconsistency ranks before context inconsistency."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] == "a"
+    basis = verdict["ranking_basis"]
+    assert basis["hypotheses"]["a"]["identity_inconsistency"] == 0.0
+    assert basis["hypotheses"]["b"]["identity_inconsistency"] == 0.5
+    assert basis["hypotheses"]["a"]["context_inconsistency"] == 0.5
+
+
+def test_ranking_basis_explains_the_order() -> None:
+    evidence = [
+        _evidence("E1", "source A", "infrastructure", "C", "I"),
+        _evidence("E2", "source B", "linguistic", "I", "C"),
+    ]
+    result = weigh(evidence, ["a", "b"])
+    assert result["ranking_basis"]["rule"].startswith("addressed > supported")
+    assert result["ranking_basis"]["ranking"] == ["a", "b"]
+    assert set(result["ranking_basis"]["hypotheses"]) == {"a", "b"}
+
+
 def test_a_linguistic_only_hypothesis_cannot_be_favoured() -> None:
     """Phase 1: diagnostic support beats linguistic consistency."""
     document = {

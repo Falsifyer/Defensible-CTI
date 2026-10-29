@@ -7,8 +7,9 @@ a hypothesis that cannot be refuted, a product with no marking, a bundle that ma
 
 > **Status: 0.1, reference implementation of an analytic method.** The mechanism is tested
 > (300+ tests, CI, one STIX validator, published schemas); real-world accuracy is **not**
-> claimed, and the corpus is illustrative — it says so. There is no support SLA: issues are
-> read, not promised.
+> claimed, and the corpus is illustrative — it says so. It reports calls, abstentions and
+> unsupported cases separately (currently 23 / 1 / 1); none of those is an accuracy
+> claim. There is no support SLA: issues are read, not promised.
 
 ## Start with the door
 

@@ -26,6 +26,7 @@ from cti_method.ach import (
     inconsistency_counts,
     inconsistency_scores,
     least_inconsistent,
+    ranking_basis,
     supported_hypotheses,
     tied_at_top,
 )
@@ -135,6 +136,7 @@ __all__ = [
     "inconsistency_counts",
     "inconsistency_scores",
     "least_inconsistent",
+    "ranking_basis",
     "supported_hypotheses",
     "tied_at_top",
     "discriminating_evidence",

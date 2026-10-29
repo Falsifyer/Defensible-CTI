@@ -22,6 +22,7 @@ from cti_method.ach import (
     inconsistency_counts,
     inconsistency_scores,
     least_inconsistent,
+    ranking_basis,
     supported_hypotheses,
     tied_at_top,
 )
@@ -103,6 +104,15 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
             assessment.evidence, assessment.hypotheses, assessment.sources
         ),
         "inconsistency_scores": inconsistency_scores(
+            assessment.evidence, assessment.hypotheses, assessment.sources
+        ),
+        "identity_inconsistency_scores": inconsistency_scores(
+            assessment.evidence, assessment.hypotheses, assessment.sources, scope="identity"
+        ),
+        "context_inconsistency_scores": inconsistency_scores(
+            assessment.evidence, assessment.hypotheses, assessment.sources, scope="context"
+        ),
+        "ranking_basis": ranking_basis(
             assessment.evidence, assessment.hypotheses, assessment.sources
         ),
         "discriminating_evidence": discriminating_evidence(assessment.evidence),

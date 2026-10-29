@@ -35,6 +35,15 @@
       "type": "object",
       "additionalProperties": { "type": "number", "minimum": 0 }
     },
+    "identity_inconsistency_scores": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "context_inconsistency_scores": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "ranking_basis": { "type": "object" },
     "discriminating": { "type": "array", "items": { "type": "string" } },
     "discriminating_evidence": { "type": "array", "items": { "type": "string" } },
     "consistent_with_everything": { "type": "array", "items": { "type": "string" } },

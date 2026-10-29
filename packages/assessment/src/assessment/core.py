@@ -110,6 +110,13 @@ def weigh(
         ],
         "inconsistencies": cti_method.inconsistency_counts(items, labels, sources),
         "inconsistency_scores": cti_method.inconsistency_scores(items, labels, sources),
+        "identity_inconsistency_scores": cti_method.inconsistency_scores(
+            items, labels, sources, scope="identity"
+        ),
+        "context_inconsistency_scores": cti_method.inconsistency_scores(
+            items, labels, sources, scope="context"
+        ),
+        "ranking_basis": cti_method.ranking_basis(items, labels, sources),
         "discriminating": cti_method.discriminating_evidence(items),
         "consistent_with_everything": cti_method.consistent_with_everything(items),
         "matrix": {
@@ -236,6 +243,9 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
             "consistent_but_unsupported": [],
             "inconsistencies": {},
             "inconsistency_scores": {},
+            "identity_inconsistency_scores": {},
+            "context_inconsistency_scores": {},
+            "ranking_basis": {"rule": "claim mode (one hypothesis)", "ranking": [], "hypotheses": {}},
             "discriminating": [],
             "consistent_with_everything": [],
         }
@@ -312,6 +322,9 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         "consistent_but_unsupported": weighed["consistent_but_unsupported"],
         "inconsistencies": weighed["inconsistencies"],
         "inconsistency_scores": weighed["inconsistency_scores"],
+        "identity_inconsistency_scores": weighed["identity_inconsistency_scores"],
+        "context_inconsistency_scores": weighed["context_inconsistency_scores"],
+        "ranking_basis": weighed["ranking_basis"],
         "discriminating": weighed["discriminating"],
         "consistent_with_everything": weighed["consistent_with_everything"],
         "grade": {

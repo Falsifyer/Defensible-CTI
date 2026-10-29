@@ -8,6 +8,7 @@ else is the shared implementation.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 from cti_method.ach import (
     addressed_hypotheses as _addressed_hypotheses,
@@ -25,6 +26,9 @@ from cti_method.ach import (
 )
 from cti_method.ach import (
     least_inconsistent as _least_inconsistent,
+)
+from cti_method.ach import (
+    ranking_basis as _ranking_basis,
 )
 from cti_method.ach import (
     supported_hypotheses as _supported_hypotheses,
@@ -72,6 +76,14 @@ def tied_at_top(
     return _tied_at_top(evidence, _labels(hypotheses), sources)
 
 
+def ranking_basis(
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
+) -> dict[str, Any]:
+    return _ranking_basis(evidence, _labels(hypotheses), sources)
+
+
 def addressed_hypotheses(
     evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
 ) -> set[str]:
@@ -92,6 +104,7 @@ __all__ = [
     "identity_supporting_evidence",
     "inconsistency_counts",
     "least_inconsistent",
+    "ranking_basis",
     "supported_hypotheses",
     "tied_at_top",
 ]

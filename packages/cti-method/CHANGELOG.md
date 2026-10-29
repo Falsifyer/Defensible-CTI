@@ -15,6 +15,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Positive diagnostic support is required.** `supported_hypotheses` names the hypotheses
   with at least one `infrastructure`/`code`/`operator` item consistent with them; a
   hypothesis with only linguistic/structural consistency is `consistent_but_unsupported`.
+- **Identity contradictions outrank context.** The ranking is
+  `addressed > supported > identity inconsistency > context inconsistency > voices`;
+  `ranking_basis` exposes the data behind that order.
 - **Shared tradecraft cannot undo a contradiction downgrade.** Only discriminating items
   count as support in the ceiling's contradiction step.
 - **A document too deep for the JSON parser is `CannotCheck`**, not a `RecursionError`.

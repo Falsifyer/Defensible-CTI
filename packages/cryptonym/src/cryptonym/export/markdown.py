@@ -14,6 +14,7 @@ from cryptonym.assess.ach import (
     discriminating_evidence,
     identity_supporting_evidence,
     least_inconsistent,
+    ranking_basis,
     supported_hypotheses,
     tied_at_top,
 )
@@ -77,6 +78,22 @@ def render_assessment(assessment: Assessment) -> str:
                 f"**Addressed but unsupported:** {', '.join(unsupported)} "
                 "(linguistic/structural only)."
             )
+    lines.append("")
+
+    basis = ranking_basis(assessment.evidence, hypotheses, assessment.sources)
+    lines.append("## Ranking basis")
+    lines.append("")
+    lines.append(f"Rule: {basis['rule']}.")
+    lines.append("")
+    lines.append("| Hypothesis | Addressed | Supported | Identity I | Context I | Voices |")
+    lines.append("|---|---|---|---|---|---|")
+    for label, data in basis["hypotheses"].items():
+        lines.append(
+            f"| {label} | {'yes' if data['addressed'] else 'no'} "
+            f"| {'yes' if data['supported'] else 'no'} "
+            f"| {data['identity_inconsistency']} | {data['context_inconsistency']} "
+            f"| {data['voices']} |"
+        )
     lines.append("")
 
     lines.append("## Evidence")

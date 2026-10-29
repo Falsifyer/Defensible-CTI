@@ -1683,6 +1683,110 @@
         "confidence": "moderate",
         "probability": "unlikely"
       }
+    },
+    {
+      "id": "heldout-brokered-supported",
+      "split": "held-out",
+      "question": "Do the two clusters share access through a broker?",
+      "truth": "distinct_but_overlapping",
+      "hypotheses": [
+        "same_actor",
+        "distinct_but_overlapping",
+        "brokered_shared_access"
+      ],
+      "evidence": [
+        {
+          "id": "E1",
+          "statement": "The two codebases never overlap; an access broker is observed handing a foothold from one to the other",
+          "source": "Vendor A",
+          "source_id": "s1",
+          "reliability": "B",
+          "type": "code",
+          "consistency": {
+            "same_actor": "I",
+            "distinct_but_overlapping": "I",
+            "brokered_shared_access": "C"
+          }
+        },
+        {
+          "id": "E2",
+          "statement": "Infrastructure is dedicated to each cluster; the broker's relay is the only shared hop",
+          "source": "Vendor B",
+          "source_id": "s2",
+          "reliability": "B",
+          "type": "infrastructure",
+          "consistency": {
+            "same_actor": "I",
+            "distinct_but_overlapping": "I",
+            "brokered_shared_access": "C"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "id": "s1",
+          "publisher": "Vendor A"
+        },
+        {
+          "id": "s2",
+          "publisher": "Vendor B"
+        }
+      ],
+      "judgement": {
+        "confidence": "moderate"
+      }
+    },
+    {
+      "id": "heldout-brokered-discarded",
+      "split": "held-out",
+      "question": "Is the shared tooling a broker relationship?",
+      "truth": "same_actor",
+      "hypotheses": [
+        "same_actor",
+        "distinct_but_overlapping",
+        "brokered_shared_access"
+      ],
+      "evidence": [
+        {
+          "id": "E1",
+          "statement": "One unique loader with a single build history",
+          "source": "Vendor A",
+          "source_id": "s1",
+          "reliability": "B",
+          "type": "code",
+          "consistency": {
+            "same_actor": "C",
+            "distinct_but_overlapping": "I",
+            "brokered_shared_access": "I"
+          }
+        },
+        {
+          "id": "E2",
+          "statement": "The same dedicated infrastructure is used end to end, with no hand-off",
+          "source": "Vendor B",
+          "source_id": "s2",
+          "reliability": "B",
+          "type": "infrastructure",
+          "consistency": {
+            "same_actor": "C",
+            "distinct_but_overlapping": "I",
+            "brokered_shared_access": "I"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "id": "s1",
+          "publisher": "Vendor A"
+        },
+        {
+          "id": "s2",
+          "publisher": "Vendor B"
+        }
+      ],
+      "judgement": {
+        "confidence": "moderate"
+      }
     }
   ]
 }

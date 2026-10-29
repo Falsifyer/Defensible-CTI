@@ -66,19 +66,20 @@ Two consequences, both visible in the output:
 - **`declared above the evidence ceiling`** counts the cases that claim more than their
   evidence supports. The suite refuses those dossiers, so a corpus that reports a non-zero
   count is a corpus with a data problem, not a method problem. The current corpus reports
-  **0 of 22**.
+  **0 of 24**.
 - **`ceilings:`** prints the band distribution, because calibration on a single band says
-  nothing. The current held-out split has **10 `high` cases**, and the development split
+  nothing. The current held-out split has **12 `high` cases**, and the development split
   tops out at `moderate` — the split that counts is the one with the strong band.
-- **`tied` / `abstained`** report the cases the evidence does not decide. A tie between two
-  non-same hypotheses is still a binary "not same" call; a tie that includes `same_actor`
-  is an abstention and is never scored as if the first label had won.
+- **`calls` / `abstentions` / `unsupported`** report what the evidence decided. A tie
+  between two non-same hypotheses is still a binary "not same" call; a tie that includes
+  `same_actor` is an abstention and is never scored as if the first label had won. A case
+  with no diagnostic support is unsupported, not a call.
 
 The **probability axis** is scored separately with a Brier score over the WEP bands
 (`probability_calibration`): `0` is a perfect forecast, `0.25` is what always saying
-"50/50" scores. The current corpus scores **0.0775** over the 21 cases that make a binary
-call; 1 abstains because the top tie includes `same_actor`, and an abstention is not a
-call. The adjudicated corpus scores **0.04** over its 2 admissible cases. These are
+"50/50" scores. The current corpus scores **0.0775** over the 23 cases that make a binary
+call; 1 abstains because the top tie includes `same_actor`, and 1 is unsupported; neither is
+a call. The adjudicated corpus scores **0.04** over its 2 admissible calls. These are
 mechanism checks, not calibration estimates.
 
 The `heldout-*` cases are **synthetic**: they were generated to exercise independence

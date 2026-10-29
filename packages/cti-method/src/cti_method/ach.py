@@ -92,19 +92,30 @@ def inconsistency_scores(
     evidence: list[Evidence],
     hypotheses: Sequence[str] | None = None,
     sources: Sequence[Any] | None = None,
+    *,
+    scope: str = "all",
 ) -> dict[str, float]:
     """Weighted contradiction score per hypothesis, counting independent voices.
 
     The sum is over voices, not items: if one source restates a contradiction, it counts
-    once (at its strongest weight). This is what ranks hypotheses; the raw count is for
-    display. It mirrors :func:`cti_method.sources.independent_ids`, which the ceiling
-    already uses.
+    once (at its strongest weight). ``scope`` selects the evidence that can move an
+    identity ranking: ``identity`` is infrastructure/code/operator, ``context`` is the
+    rest. The default keeps the historical total for display.
     """
+    if scope not in {"all", "identity", "context"}:
+        raise ValueError(f"unknown scope {scope!r}; expected all, identity or context")
     labels = _labels(hypotheses)
-    matrix = consistency_matrix(evidence, labels)
+    selected = [
+        item
+        for item in evidence
+        if scope == "all"
+        or (scope == "identity" and item.diagnostic)
+        or (scope == "context" and not item.diagnostic)
+    ]
+    matrix = consistency_matrix(selected, labels)
     known = registry(list(sources) if sources is not None else None)
-    voices = {item.id: _voice_key(item, known) for item in evidence}
-    weights = {item.id: item.weight for item in evidence}
+    voices = {item.id: _voice_key(item, known) for item in selected}
+    weights = {item.id: item.weight for item in selected}
     scores: dict[str, float] = {label: 0.0 for label in labels}
     for label in labels:
         per_voice: dict[str, float] = {}
@@ -166,19 +177,21 @@ def least_inconsistent(
     hypothesis as *the* favoured one.
     """
     labels = _labels(hypotheses)
-    scores = inconsistency_scores(evidence, labels, sources)
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
     counts = inconsistency_counts(evidence, labels, sources)
     addressed = addressed_hypotheses(evidence, labels)
     supported = supported_hypotheses(evidence, labels)
     order = list(labels)
-    # Addressed first, then actually supported; both keys count voices, so a source
-    # restated twice cannot break a tie either.
+    # Addressed first, then actually supported. Identity contradictions outrank context:
+    # a linguistic disagreement cannot outweigh a piece of infrastructure evidence.
     return sorted(
         order,
         key=lambda label: (
             label not in addressed,
             label not in supported,
-            scores[label],
+            identity[label],
+            context[label],
             counts[label],
             order.index(label),
         ),
@@ -199,21 +212,67 @@ def tied_at_top(
     ranking = least_inconsistent(evidence, labels, sources)
     if not ranking:
         return []
-    scores = inconsistency_scores(evidence, labels, sources)
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
     counts = inconsistency_counts(evidence, labels, sources)
     addressed = addressed_hypotheses(evidence, labels)
     supported = supported_hypotheses(evidence, labels)
     best = (
         ranking[0] in addressed,
         ranking[0] in supported,
-        scores[ranking[0]],
+        identity[ranking[0]],
+        context[ranking[0]],
         counts[ranking[0]],
     )
     return [
         label
         for label in ranking
-        if (label in addressed, label in supported, scores[label], counts[label]) == best
+        if (
+            label in addressed,
+            label in supported,
+            identity[label],
+            context[label],
+            counts[label],
+        )
+        == best
     ]
+
+
+def ranking_basis(
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
+) -> dict[str, Any]:
+    """Explain the ranking: what each hypothesis has, and in which order it is judged.
+
+    The order is ``addressed`` → ``supported`` → identity inconsistency → context
+    inconsistency → independent voices. The output is deliberately data, not prose, so a
+    renderer can show the basis without reimplementing the rule.
+    """
+    labels = _labels(hypotheses)
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
+    counts = inconsistency_counts(evidence, labels, sources)
+    addressed = addressed_hypotheses(evidence, labels)
+    supported = supported_hypotheses(evidence, labels)
+    ranking = least_inconsistent(evidence, labels, sources)
+    return {
+        "rule": (
+            "addressed > supported > identity inconsistency > context inconsistency "
+            "> independent voices"
+        ),
+        "ranking": ranking,
+        "hypotheses": {
+            label: {
+                "addressed": label in addressed,
+                "supported": label in supported,
+                "identity_inconsistency": identity[label],
+                "context_inconsistency": context[label],
+                "voices": counts[label],
+            }
+            for label in labels
+        },
+    }
 
 
 def discriminating_evidence(evidence: list[Evidence]) -> list[str]:

@@ -67,16 +67,22 @@ def _projection(summary: dict) -> dict:
     return {
         "overall": {
             "metrics": summary["overall"]["metrics"],
+            "calls": summary["overall"]["calls"],
+            "abstentions": summary["overall"]["abstentions"],
             "tied": summary["overall"]["tied"],
             "abstained": summary["overall"]["abstained"],
+            "unsupported": summary["overall"]["unsupported"],
             "calibration": summary["overall"]["calibration"],
             "probability_calibration": summary["overall"]["probability_calibration"],
         },
         "splits": {
             name: {
                 "metrics": data["metrics"],
+                "calls": data["calls"],
+                "abstentions": data["abstentions"],
                 "tied": data["tied"],
                 "abstained": data["abstained"],
+                "unsupported": data["unsupported"],
                 "calibration": data["calibration"],
                 "probability_calibration": data["probability_calibration"],
             }
@@ -89,8 +95,11 @@ def _adjudicated_projection(summary: dict) -> dict:
     """The parts of an adjudicated summary that are committed as a baseline."""
     return {
         "metrics": summary["metrics"],
+        "calls": summary["calls"],
+        "abstentions": summary["abstentions"],
         "tied": summary["tied"],
         "abstained": summary["abstained"],
+        "unsupported": summary["unsupported"],
         "calibration": summary["calibration"],
         "probability_calibration": summary["probability_calibration"],
         "coverage": summary["coverage"],
@@ -121,8 +130,10 @@ def _summarise(corpus: str, expected: str | None, check: bool, output: str | Non
     refused = sum(1 for row in rows if _above_ceiling(row))
     print(f"# declared above the evidence ceiling: {refused} of {len(rows)}", file=sys.stderr)
     print(
-        f"# tied: {sum(1 for row in rows if row.get('tied'))} "
-        f"(abstained, not scored: {sum(1 for row in rows if row.get('abstained'))})",
+        f"# calls={projection['overall']['calls']} "
+        f"abstentions={projection['overall']['abstentions']} "
+        f"unsupported={projection['overall']['unsupported']} "
+        f"tied={projection['overall']['tied']}",
         file=sys.stderr,
     )
     bands: dict[str, int] = {}
@@ -167,7 +178,8 @@ def _adjudicated(path: str, expected: str | None, check: bool, strict: bool, out
     refused = sum(1 for row in summary["results"] if _above_ceiling(row))
     print(f"# declared above the evidence ceiling: {refused} of {len(summary['results'])}", file=sys.stderr)
     print(
-        f"# tied: {summary['tied']} (abstained, not scored: {summary['abstained']})",
+        f"# calls={summary['calls']} abstentions={summary['abstentions']} "
+        f"unsupported={summary['unsupported']} tied={summary['tied']}",
         file=sys.stderr,
     )
 

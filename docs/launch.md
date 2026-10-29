@@ -80,7 +80,9 @@ would change it, and whether it may leave.*
 ## Do not claim
 
 - that it attributes, or that it improves attribution accuracy;
-- that the corpus proves the method;
+- that the corpus proves the method, or that “23 calls, 1 abstention, 1 unsupported” is an
+  accuracy claim: it is a mechanism check with a published denominator;
+- that a tie is a failure: an abstention is a result, and the harness reports it separately;
 - that it replaces OpenCTI, MISP or a SIEM;
 - that it is production-supported.
 

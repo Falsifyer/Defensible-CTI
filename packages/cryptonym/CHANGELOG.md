@@ -12,6 +12,9 @@
   every case at zero inconsistency. Declare it when the evidence suggests a broker.
 - **A hypothesis needs diagnostic support.** Linguistic/structural consistency is reported
   as `consistent_but_unsupported` and cannot make a hypothesis the favourite.
+- **The ranking separates identity from context** and reports `ranking_basis`; the corpus
+  has two brokered cases (supported and discarded) and reports `calls`, `abstentions` and
+  `unsupported` beside the metrics.
 - **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
   a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
   baselines were regenerated.

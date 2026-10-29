@@ -75,6 +75,8 @@ def evaluate_cases(cases: list[dict]) -> dict:
                 "tied": len(tied) > 1,
                 "tied_hypotheses": tied,
                 "abstained": abstained,
+                "supported": list(verdict.get("supported") or []),
+                "unsupported": list(verdict.get("unsupported") or []),
                 "called_same": called_same,
                 "correct": correct,
                 "confidence": verdict["confidence"],
@@ -90,8 +92,11 @@ def evaluate_cases(cases: list[dict]) -> dict:
     probabilities = probability_calibration([(row["probability"], row["truth_same"]) for row in scored])
     return {
         "results": results,
+        "calls": len(scored),
+        "abstentions": sum(1 for row in results if row["abstained"]),
         "tied": sum(1 for row in results if row["tied"]),
         "abstained": sum(1 for row in results if row["abstained"]),
+        "unsupported": sum(1 for row in results if not row["supported"]),
         "metrics": confusion.as_dict(),
         "calibration": calibration,
         "probability_calibration": probabilities,
@@ -102,8 +107,11 @@ def _summarise(cases: list[dict]) -> dict[str, dict]:
     result = evaluate_cases(cases)
     return {
         "metrics": result["metrics"],
+        "calls": result["calls"],
+        "abstentions": result["abstentions"],
         "tied": result["tied"],
         "abstained": result["abstained"],
+        "unsupported": result["unsupported"],
         "calibration": result["calibration"],
         "probability_calibration": result["probability_calibration"],
     }
@@ -185,6 +193,8 @@ def evaluate_adjudicated(document: dict) -> dict:
                 "tied": len(tied) > 1,
                 "tied_hypotheses": tied,
                 "abstained": abstained,
+                "supported": list(engine.get("supported") or []),
+                "unsupported": list(engine.get("unsupported") or []),
                 "called_same": called_same,
                 "correct": correct,
                 "declared": engine["confidence"],
@@ -195,8 +205,11 @@ def evaluate_adjudicated(document: dict) -> dict:
 
     return {
         "metrics": confusion_from_calls(calls).as_dict(),
+        "calls": len(calls),
+        "abstentions": abstained_count,
         "tied": tied_count,
         "abstained": abstained_count,
+        "unsupported": sum(1 for row in results if not row["supported"]),
         "calibration": calibration_table(calibration_records),
         "probability_calibration": probability_calibration(probability_records),
         "coverage": coverage,

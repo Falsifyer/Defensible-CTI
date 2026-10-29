@@ -1,24 +1,26 @@
 {
   "overall": {
     "abstained": 1,
+    "abstentions": 1,
     "calibration": {
       "high": {
         "accuracy": 1.0,
-        "n": 10
+        "n": 12
       },
       "moderate": {
         "accuracy": 1.0,
         "n": 11
       }
     },
+    "calls": 23,
     "metrics": {
       "false_merge_rate": 0.0,
       "false_negative": 0,
       "false_positive": 0,
       "false_split_rate": 0.0,
-      "total": 21,
-      "true_negative": 11,
-      "true_positive": 10
+      "total": 23,
+      "true_negative": 12,
+      "true_positive": 11
     },
     "probability_calibration": {
       "brier_score": 0.0775,
@@ -59,17 +61,20 @@
         "very_unlikely": 0.2
       }
     },
-    "tied": 1
+    "tied": 1,
+    "unsupported": 1
   },
   "splits": {
     "development": {
       "abstained": 1,
+      "abstentions": 1,
       "calibration": {
         "moderate": {
           "accuracy": 1.0,
           "n": 5
         }
       },
+      "calls": 5,
       "metrics": {
         "false_merge_rate": 0.0,
         "false_negative": 0,
@@ -113,28 +118,31 @@
           "very_unlikely": 0.2
         }
       },
-      "tied": 1
+      "tied": 1,
+      "unsupported": 1
     },
     "held-out": {
       "abstained": 0,
+      "abstentions": 0,
       "calibration": {
         "high": {
           "accuracy": 1.0,
-          "n": 10
+          "n": 12
         },
         "moderate": {
           "accuracy": 1.0,
           "n": 6
         }
       },
+      "calls": 18,
       "metrics": {
         "false_merge_rate": 0.0,
         "false_negative": 0,
         "false_positive": 0,
         "false_split_rate": 0.0,
-        "total": 16,
-        "true_negative": 8,
-        "true_positive": 8
+        "total": 18,
+        "true_negative": 9,
+        "true_positive": 9
       },
       "probability_calibration": {
         "brier_score": 0.0812,
@@ -170,7 +178,8 @@
           "very_unlikely": 0.2
         }
       },
-      "tied": 0
+      "tied": 0,
+      "unsupported": 0
     }
   }
 }
