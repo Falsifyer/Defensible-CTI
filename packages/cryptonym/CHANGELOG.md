@@ -15,9 +15,9 @@
 - **The ranking separates identity from context** and reports `ranking_basis`; the corpus
   has two brokered cases (supported and discarded) and reports `calls`, `abstentions` and
   `unsupported` beside the metrics.
-- **External corpus scaffold**: `evaluation/external/` ships the protocol, JSON Schema and
-  case template. It deliberately contains **no real cases**; a binary truth requires two
-  independent adjudicators and two independent sources, or it is `contested`.
+- **External corpus scaffold**: `evaluation/external/` ships the protocol, JSON Schema, case
+  template and `validate_external.py` (schema, placeholders, two adjudicators, two sources,
+  adjudication filter). It deliberately contains **no real cases**.
 - **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
   a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
   baselines were regenerated.

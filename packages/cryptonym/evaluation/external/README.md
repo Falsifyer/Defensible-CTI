@@ -8,6 +8,8 @@ first external case is collected under a protocol, not improvised alongside the 
 - [`schema.json`](schema.json) — the JSON Schema every case must satisfy.
 - [`case.template.json`](case.template.json) — a placeholder case. It is **not** a case and
   must not be added to a corpus as one.
+- [`validate_external.py`](validate_external.py) — the executable checklist: schema,
+  placeholders, two adjudicators, two independent sources and the adjudication filter.
 
 ## Files a real corpus will have
 
@@ -16,6 +18,7 @@ external/
   PROTOCOL.md
   schema.json
   case.template.json
+  validate_external.py
   corpus.json          # created from real, adjudicated cases
   expected.json        # generated once the split is frozen and the engine is run
 ```
@@ -40,11 +43,16 @@ print("schema and template are valid")
 PY
 ```
 
-Once `corpus.json` exists, run it through the same evaluator as the adjudicated seed:
+Once `corpus.json` exists, run the executable checklist, then the evaluator:
 
 ```console
+$ python evaluation/external/validate_external.py evaluation/external/corpus.json
 $ python evaluation/run_evaluation.py --adjudicated evaluation/external/corpus.json --check --strict
 ```
+
+`validate_external.py` exits 2 if it cannot read the corpus or the schema, 1 on a high
+finding (placeholder, one adjudicator, one source, unearned truth), and 0 only when the
+checklist is clean.
 
 `--strict` fails if a binary truth was not earned from independent sources. `--check`
 compares the projection with `expected.json`; generate that file only after the held-out
