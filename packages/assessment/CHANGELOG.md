@@ -11,6 +11,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **A malformed claim is exit 2**, not a traceback with exit 1.
 - **Ties are reported** as `tied` and `favoured: null`; the ceiling is the most restrictive
   across the tied hypotheses.
+- **The ledger can be anchored.** `--head-out` writes the head and length; `ledger --verify
+  --head-file` (or `--expect-head`/`--expect-count`) detects a truncated tail, which the
+  bare chain cannot see.
 
 ## 0.3.0 — 2026-10-28
 

@@ -10,6 +10,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the working directory or the home directory is refused; a non-empty explicit target needs
   `--force`.
 - **The report renders a tie** instead of choosing the first hypothesis as the winner.
+- **The chain anchors its ledger**: the append writes `ledger.head` and the verify step
+  checks it, so a truncated tail fails the demo.
 
 ## 0.1.0 — 2026-10-22
 

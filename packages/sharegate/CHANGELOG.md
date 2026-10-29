@@ -8,6 +8,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **A corrupt `.json` bundle is `checked: false` and exit 2**, not a text product with
   `shareable: true`. The text rule still applies to files that are not JSON.
+- **Unmarked content SDOs are refused**: `infrastructure`, `note`, `attack-pattern` and
+  `relationship` no longer slip through the old whitelist.
 
 ## 0.2.0 — 2026-10-22
 

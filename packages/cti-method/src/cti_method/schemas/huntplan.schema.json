@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/huntplan.schema.json",
+  "$id": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/huntplan.schema.json",
   "title": "Hunt plan",
   "description": "A hunt starts from a falsifiable hypothesis. The schema requires a hypothesis, at least one technique, a closure criterion, and the assessment it answers.",
   "type": "object",

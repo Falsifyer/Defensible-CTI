@@ -11,6 +11,8 @@ schemas.validate(document, "assessment")  # needs the 'schemas' extra
 
 They live in
 [`packages/cti-method/src/cti_method/schemas/`](../packages/cti-method/src/cti_method/schemas).
+There is no second copy under `/schemas`: each schema's `$id` is the `raw.githubusercontent.com`
+URL of that file, so a consumer can fetch what the document cites.
 
 | File | Schema | Produced by | Consumed by |
 |---|---|---|---|

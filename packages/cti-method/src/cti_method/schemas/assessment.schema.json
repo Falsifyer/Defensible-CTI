@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/assessment.schema.json",
+  "$id": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/assessment.schema.json",
   "title": "Graded assessment (dossier or claim)",
   "description": "One body of evidence, at least two competing hypotheses and a declared grade. `judgement.confidence` is required on purpose: there is no silent default, and `assessment assess` refuses a claim that declares no grade.",
   "type": "object",

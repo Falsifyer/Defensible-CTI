@@ -13,6 +13,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Shared tradecraft cannot undo a contradiction downgrade.** Only discriminating items
   count as support in the ceiling's contradiction step.
 - **A document too deep for the JSON parser is `CannotCheck`**, not a `RecursionError`.
+- **Every content SDO needs a marking.** The whitelist exempted `infrastructure`, `note`,
+  `attack-pattern` and `relationship`; only SCOs and structural definitions are exempt now.
+- **Schema `$id`/`$schema` resolve** to the raw URL of the shipped file (the old `/schemas/`
+  path returned 404).
 
 ## 0.2.0 — 2026-10-28
 

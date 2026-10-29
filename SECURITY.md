@@ -21,7 +21,9 @@ executes anything from its input. What matters:
 - A bundle from `stixforge` that claims a marking it does not carry, identifiers that
   collide and silently merge two objects, or a trace that points at an assessment it did
   not come from.
-- A ledger entry that can be edited without `assessment ledger --verify` noticing.
+- A ledger entry that can be edited, or a tail truncated, without `assessment ledger
+  --verify` noticing. An anchored `--head-file`/`--expect-head` run is the check that closes
+  the tail; a bare `--verify` is documented as not seeing it.
 - Input that exhausts memory, or a path the user passes by mistake.
 
 ## Dependency advisories

@@ -67,10 +67,14 @@ def grade_ceiling(evidence: list[dict[str, Any]]) -> dict[str, Any]:
 
 @server.tool()
 def append_claim_to_ledger(
-    path: str, claim: dict[str, Any], tool: str = "assessment", now: str | None = None
+    path: str,
+    claim: dict[str, Any],
+    tool: str = "assessment",
+    now: str | None = None,
+    head_out: str | None = None,
 ) -> dict[str, Any]:
     """Append a graded claim to a hash-chained ledger, creating it if needed."""
-    return append_claim(path, claim, tool=tool, now=now)
+    return append_claim(path, claim, tool=tool, now=now, head_out=head_out)
 
 
 @server.tool()
@@ -80,9 +84,19 @@ def read_ledger_file(path: str) -> dict[str, Any]:
 
 
 @server.tool()
-def verify_ledger_file(path: str) -> dict[str, Any]:
-    """Verify the ledger's hash chain; a silent edit is reported with its line."""
-    return verify_ledger(path)
+def verify_ledger_file(
+    path: str,
+    expected_head: str | None = None,
+    expected_count: int | None = None,
+    head_file: str | None = None,
+) -> dict[str, Any]:
+    """Verify the chain, and its head/length when an anchor is supplied."""
+    return verify_ledger(
+        path,
+        expected_head=expected_head,
+        expected_count=expected_count,
+        head_file=head_file,
+    )
 
 
 @server.tool()

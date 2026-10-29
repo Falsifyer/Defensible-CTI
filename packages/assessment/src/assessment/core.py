@@ -23,6 +23,7 @@ from typing import Any
 import cti_method
 from cti_method.contract import HIGH, finding, has_high
 from cti_method.grading import check_declared, derived_grade
+from cti_method.schema import url as schema_url
 from cti_method.trace import link_requirement
 
 GENESIS = "0" * 64
@@ -186,7 +187,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         findings.extend(link_requirement(document, register)["findings"])
 
     verdict: dict[str, Any] = {
-        "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
+        "$schema": schema_url("judgement"),
         "schema_version": document.get("schema_version", SCHEMA_VERSION),
         "id": document.get("id"),
         "requirement_id": document.get("requirement_id"),
@@ -283,17 +284,66 @@ def _entries(path: str | Path) -> list[dict[str, Any]]:
     return entries
 
 
+def _head_manifest(target: Path, entries: int, head: str) -> dict[str, Any]:
+    return {
+        "schema_version": "1",
+        "algorithm": "sha256",
+        "ledger": str(target),
+        "entries": entries,
+        "head": head,
+    }
+
+
+def _write_head(head_out: str | Path, target: Path, entries: int, head: str) -> None:
+    destination = Path(head_out)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(
+        json.dumps(_head_manifest(target, entries, head), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def ledger_head(path: str | Path) -> dict[str, Any]:
+    """The current head and length, to publish or compare against a later verification.
+
+    A hash chain proves that an entry is internally consistent, not that the last entry is
+    still there: deleting the tail leaves a valid prefix. Record this head somewhere you
+    do not control (or pass it to ``verify_ledger``) and a later truncation is detectable.
+    """
+    target = Path(path)
+    entries = _entries(path)
+    head = entries[-1]["hash"] if entries else GENESIS
+    return {
+        "path": str(target),
+        "exists": target.exists(),
+        "entries": len(entries),
+        "head": head,
+        "algorithm": "sha256",
+    }
+
+
+def write_head(path: str | Path, head_out: str | Path) -> dict[str, Any]:
+    """Write a head manifest for an existing ledger, and return the current head."""
+    target = Path(path)
+    head = ledger_head(target)
+    _write_head(head_out, target, int(head["entries"]), str(head["head"]))
+    return head
+
+
 def append_claim(
     path: str | Path,
     claim: dict[str, Any],
     *,
     tool: str = "assessment",
     now: str | None = None,
+    head_out: str | Path | None = None,
 ) -> dict[str, Any]:
     """Append a graded claim to the ledger, chained to the previous entry.
 
     Each entry records when it was written, what tool wrote it, the hash of the claim, the
-    hash of the previous entry and its own hash. A silent edit breaks the chain.
+    hash of the previous entry and its own hash. A silent edit breaks the chain. With
+    ``head_out`` a small manifest records the new head and length, so a later
+    ``verify_ledger(head_file=...)`` can detect a tail truncation.
     """
     entries = _entries(path)
     previous = entries[-1]["hash"] if entries else GENESIS
@@ -302,7 +352,7 @@ def append_claim(
         dt.datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError as exc:
         raise ValueError("now must be an ISO 8601 UTC timestamp ending in Z") from exc
-    entry = {
+    entry: dict[str, Any] = {
         "seq": len(entries) + 1,
         "created_at": stamp,
         "tool": tool,
@@ -316,7 +366,14 @@ def append_claim(
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    return {"path": str(target), "seq": entry["seq"], "hash": entry["hash"], "appended": True}
+    if head_out is not None:
+        _write_head(head_out, target, entry["seq"], entry["hash"])
+    return {
+        "path": str(target),
+        "seq": entry["seq"],
+        "hash": entry["hash"],
+        "appended": True,
+    }
 
 
 def read_ledger(path: str | Path) -> dict[str, Any]:
@@ -333,9 +390,33 @@ def read_ledger(path: str | Path) -> dict[str, Any]:
     }
 
 
-def verify_ledger(path: str | Path) -> dict[str, Any]:
-    """Verify the hash chain: sequence, previous hash and own hash, entry by entry."""
+def verify_ledger(
+    path: str | Path,
+    *,
+    expected_head: str | None = None,
+    expected_count: int | None = None,
+    head_file: str | Path | None = None,
+) -> dict[str, Any]:
+    """Verify the hash chain, and optionally its head and length.
+
+    Without an anchor a truncated tail is not detectable: the remaining prefix is a valid
+    chain. Pass ``expected_head``/``expected_count`` (or a manifest written by
+    ``append_claim(head_out=...)`` as ``head_file``) to close that gap.
+    """
     target = Path(path)
+    if head_file is not None:
+        try:
+            manifest = json.loads(Path(head_file).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            return {
+                "path": str(target),
+                "valid": False,
+                "entries": 0,
+                "broken_at": None,
+                "reason": f"cannot read the head manifest: {type(exc).__name__}",
+            }
+        expected_head = manifest.get("head", expected_head)
+        expected_count = manifest.get("entries", expected_count)
     if not target.exists():
         return {"path": str(target), "valid": False, "entries": 0, "broken_at": None,
                 "reason": "the ledger does not exist"}
@@ -357,7 +438,32 @@ def verify_ledger(path: str | Path) -> dict[str, Any]:
             return {"path": str(target), "valid": False, "entries": len(entries), "broken_at": index,
                     "reason": "the entry hash does not match its content"}
         previous = entry["hash"]
-    return {"path": str(target), "valid": True, "entries": len(entries), "broken_at": None, "reason": "chain intact"}
+    if expected_count is not None and len(entries) != int(expected_count):
+        return {
+            "path": str(target),
+            "valid": False,
+            "entries": len(entries),
+            "broken_at": None,
+            "reason": f"the ledger has {len(entries)} entries, the anchor says {int(expected_count)}",
+            "head": previous,
+        }
+    if expected_head is not None and previous.lower() != str(expected_head).strip().lower():
+        return {
+            "path": str(target),
+            "valid": False,
+            "entries": len(entries),
+            "broken_at": None,
+            "reason": "the head does not match the anchor: the ledger was truncated or rewritten",
+            "head": previous,
+        }
+    return {
+        "path": str(target),
+        "valid": True,
+        "entries": len(entries),
+        "broken_at": None,
+        "reason": "chain intact",
+        "head": previous,
+    }
 
 
 def calibrate(cases: list[dict[str, Any]]) -> dict[str, Any]:

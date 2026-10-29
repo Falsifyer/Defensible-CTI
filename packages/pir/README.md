@@ -59,7 +59,7 @@ The first step of the cycle is reachable by an agent like the other six.
 
 ## Method
 
-The register format is pinned by [`schemas/pir.schema.json`](https://github.com/Falsifyer/Defensible-CTI/blob/main/schemas/pir.schema.json)
+The register format is pinned by [`pir.schema.json`](https://github.com/Falsifyer/Defensible-CTI/blob/main/packages/cti-method/src/cti_method/schemas/pir.schema.json)
 and described in [`docs/register.md`](docs/register.md). Three rules, and the validator
 checks them:
 

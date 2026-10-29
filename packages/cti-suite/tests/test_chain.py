@@ -39,7 +39,7 @@ def test_the_chain_runs_all_eight_steps(chain: dict) -> None:
 def test_the_chain_writes_the_files_the_next_step_reads(chain: dict) -> None:
     out = Path(chain["out"])
     files = (
-        "pir.json", "judgement.json", "verdict.json", "ledger.jsonl",
+        "pir.json", "judgement.json", "verdict.json", "ledger.jsonl", "ledger.head",
         "hunt.json", "bundle.json", "gate.json", "product.md",
     )
     for name in files:

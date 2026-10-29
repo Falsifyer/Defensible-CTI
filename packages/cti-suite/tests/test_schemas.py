@@ -16,6 +16,17 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@pytest.mark.parametrize("name", schemas.NAMES)
+def test_every_schema_id_is_the_dereferenceable_url(name: str) -> None:
+    assert schemas.document(name)["$id"] == schemas.url(name)
+
+
+@pytest.mark.parametrize("name", schemas.NAMES)
+def test_the_schema_url_maps_to_the_shipped_file(name: str) -> None:
+    relative = schemas.url(name).split("/main/", 1)[1]
+    assert (ROOT / relative).is_file(), relative
+
+
 @pytest.mark.parametrize(
     "document,schema",
     [
@@ -66,7 +77,7 @@ def test_every_input_declares_its_schema_and_version() -> None:
 
 def test_a_judgement_validates_against_the_judgement_schema() -> None:
     judgement = {
-        "$schema": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
+        "$schema": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/judgement.schema.json",
         "schema_version": "1.0",
         "question": "same?",
         "ranking": ["same_actor", "distinct"],

@@ -102,10 +102,13 @@ hypothesis is refused (`no-claim`). The policy is exported by
 Each line is an entry with `seq`, `created_at`, `tool`, `claim_id`, `claim_hash`, the
 `claim` itself, `prev_hash` and `hash`. The hash covers the entry without itself, and
 `prev_hash` chains to the line before. `ledger --verify` walks the chain and reports the
-first line where it breaks: editing a claim, dropping a line or reordering two lines is
-detected.
+first line where it breaks: editing a claim, dropping a line in the middle or reordering two
+lines is detected.
 
-It is tamper-evident, not tamper-proof: whoever can rewrite the whole file can recompute the
+A **tail truncation** leaves a valid prefix, so the chain alone cannot see it. `--head-out`
+writes a manifest with the head and length, and `ledger --verify --head-file` (or
+`--expect-head`/`--expect-count`) fails when the file is shorter or ends somewhere else. It
+is tamper-evident, not tamper-proof: whoever can rewrite the whole file can recompute the
 chain. To prove *when*, publish the head hash somewhere you do not control.
 
 ## What it does not do

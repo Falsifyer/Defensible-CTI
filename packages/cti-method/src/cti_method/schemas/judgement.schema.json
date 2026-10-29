@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
+  "$id": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/judgement.schema.json",
   "title": "Machine-readable judgement",
   "description": "What `assessment assess` and `cryptonym assess` print: the ranking, the consistency, the derived ceiling and the declared grade with its findings. `ranking` and `hypotheses_favoured` are the same list under the two tools' names.",
   "type": "object",

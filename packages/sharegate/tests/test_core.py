@@ -97,6 +97,23 @@ def test_permissive_marking_on_sensitive_text_is_flagged_but_does_not_block() ->
     assert pre_share("TLP:CLEAR\nvictim@example.com and 192.168.1.5")["shareable"] is True
 
 
+def test_an_unmarked_infrastructure_is_not_shareable() -> None:
+    """M5: content SDOs outside the old whitelist still need their own marking."""
+    infrastructure = {
+        "type": "infrastructure",
+        "spec_version": "2.1",
+        "id": "infrastructure--44444444-4444-4444-8444-444444444444",
+        "created": "2026-10-09T00:00:00Z",
+        "modified": "2026-10-09T00:00:00Z",
+        "name": "victim credentials",
+        "description": "compromised credentials and victim host",
+    }
+    bundle = {**VALID_BUNDLE, "objects": [MARKING, infrastructure, VALID_BUNDLE["objects"][1]]}
+    result = pre_share(bundle)
+    assert result["shareable"] is False
+    assert "stix-no-marking" in _codes(result)
+
+
 def test_a_clear_bundle_of_iocs_is_not_blocked() -> None:
     """Regression: an IP inside a cyber-observable is an indicator, not a leak.
 

@@ -24,6 +24,7 @@ from assessment.core import (
     grade,
     read_ledger,
     verify_ledger,
+    write_head,
 )
 
 
@@ -55,10 +56,36 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="AAAA-MM-DDTHH:MM:SSZ",
         help="Fixed timestamp for the ledger entry (reproducible runs).",
     )
+    assess_cmd.add_argument(
+        "--head-out",
+        metavar="PATH",
+        help="Write a head/length manifest after appending, to anchor a later --verify.",
+    )
 
     ledger = sub.add_parser("ledger", help="Read a ledger of graded claims.")
     ledger.add_argument("path")
     ledger.add_argument("--verify", action="store_true", help="Verify the hash chain.")
+    ledger.add_argument(
+        "--expect-head",
+        metavar="HASH",
+        help="Fail unless the ledger's final hash matches this anchor.",
+    )
+    ledger.add_argument(
+        "--expect-count",
+        type=int,
+        metavar="N",
+        help="Fail unless the ledger has exactly N entries.",
+    )
+    ledger.add_argument(
+        "--head-file",
+        metavar="PATH",
+        help="Read the expected head and length from a manifest written by --head-out.",
+    )
+    ledger.add_argument(
+        "--write-head",
+        metavar="PATH",
+        help="Write the current head/length manifest here and print it.",
+    )
     return parser
 
 
@@ -94,7 +121,7 @@ def _run_assess(args: argparse.Namespace) -> int:
     emit(verdict)
     if args.append and not has_high(verdict["findings"]):
         # The ledger is written but not printed: the output of `assess` is one document.
-        append_claim(args.append, verdict, now=args.now)
+        append_claim(args.append, verdict, now=args.now, head_out=args.head_out)
     return exit_code(verdict["findings"])
 
 
@@ -107,8 +134,16 @@ def main(argv: list[str] | None = None) -> int:
     def body() -> int:
         if args.command == "assess":
             return _run_assess(args)
+        if args.write_head:
+            emit(write_head(args.path, args.write_head))
+            return OK
         if args.verify:
-            result = verify_ledger(args.path)
+            result = verify_ledger(
+                args.path,
+                expected_head=args.expect_head,
+                expected_count=args.expect_count,
+                head_file=args.head_file,
+            )
             emit(result)
             return OK if result["valid"] else FINDING
         emit(read_ledger(args.path))

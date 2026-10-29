@@ -12,10 +12,12 @@ from assessment.core import (
     check_against,
     filter_truth,
     grade,
+    ledger_head,
     method_documentation,
     read_ledger,
     verify_ledger,
     weigh,
+    write_head,
 )
 
 
@@ -259,6 +261,38 @@ def test_a_tampered_ledger_line_is_detected(tmp_path: Path) -> None:
     result = verify_ledger(str(path))
     assert result["valid"] is False
     assert result["broken_at"] == 1
+
+
+def test_tail_truncation_needs_an_anchor(tmp_path: Path) -> None:
+    """A5: the prefix is a valid chain; only a head/length anchor sees the missing tail."""
+    path = tmp_path / "claims.jsonl"
+    manifest = tmp_path / "claims.head"
+    append_claim(str(path), {"id": "c1"}, head_out=str(manifest))
+    append_claim(str(path), {"id": "c2"}, head_out=str(manifest))
+    anchor = ledger_head(str(path))
+    assert anchor["entries"] == 2
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text(lines[0] + "\n", encoding="utf-8")
+
+    # Without an anchor the remaining prefix is indistinguishable from a complete ledger.
+    assert verify_ledger(str(path))["valid"] is True
+    anchored = verify_ledger(
+        str(path), expected_head=anchor["head"], expected_count=anchor["entries"]
+    )
+    assert anchored["valid"] is False
+    assert "anchor" in anchored["reason"] or "entries" in anchored["reason"]
+    from_manifest = verify_ledger(str(path), head_file=str(manifest))
+    assert from_manifest["valid"] is False
+
+
+def test_write_head_records_the_current_head(tmp_path: Path) -> None:
+    path = tmp_path / "claims.jsonl"
+    append_claim(str(path), {"id": "c1"})
+    manifest = tmp_path / "claims.head"
+    head = write_head(str(path), str(manifest))
+    assert json.loads(manifest.read_text(encoding="utf-8"))["head"] == head["head"]
+    assert head["entries"] == 1
 
 
 def test_reading_a_missing_ledger_is_empty(tmp_path: Path) -> None:

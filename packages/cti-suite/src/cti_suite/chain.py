@@ -156,12 +156,21 @@ def run_chain(
                 str(target / "judgement.json"),
                 "--append",
                 str(target / "ledger.jsonl"),
+                "--head-out",
+                str(target / "ledger.head"),
             ],
             str(target / "verdict.json"),
         ),
         Step(
             "assessment ledger --verify",
-            ["assessment", "ledger", str(target / "ledger.jsonl"), "--verify"],
+            [
+                "assessment",
+                "ledger",
+                str(target / "ledger.jsonl"),
+                "--verify",
+                "--head-file",
+                str(target / "ledger.head"),
+            ],
             str(target / "ledger-check.json"),
         ),
         Step(
