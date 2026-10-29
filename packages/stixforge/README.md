@@ -52,12 +52,13 @@ $ stixforge validate bundle.json --today 2027-01-01   # report expired indicator
 Exit codes follow the house contract: `0` valid, `1` a high finding, `2` it could not check
 (file unreadable, or no external checker installed). *Not checked is not clean.*
 
-With `--external`, two checkers are used when available:
+`--external` requires **`stix2-validator`** and its schema cache; a path without it exits 2,
+even when the `stix2` library parsed the bundle. The two checks are reported separately:
 
 - **`stix2`** (the OASIS library) parses the bundle against its object model. Needs no network.
 - **`stix2-validator`** validates against the JSON schemas. It needs its schema cache, which it
-  downloads; without that cache it cannot say anything, and the run reports
-  `external-not-checked` instead of inventing a verdict.
+  downloads; without that cache it cannot say anything, and `--external` is **not checked**
+  (exit 2) rather than green on a weaker check.
 
 ## Method
 

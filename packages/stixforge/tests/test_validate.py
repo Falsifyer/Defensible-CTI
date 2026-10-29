@@ -69,7 +69,45 @@ def test_cli_without_an_external_validator_exits_two(tmp_path, capsys):
     codigo = main(["validate", str(output), "--external"])
     assert codigo in (0, 1, 2)
     if codigo == 2:
-        assert "NOT run" in capsys.readouterr().err or "not installed" in capsys.readouterr().out
+        captured = capsys.readouterr()
+        assert "NOT checked" in captured.err or "NOT run" in captured.err or "not installed" in captured.out
+
+
+def test_external_requires_the_schema_check_not_just_the_library(tmp_path, capsys, monkeypatch):
+    """M7: a library parse is not the external schema validation the flag promises."""
+    from stixforge import cli
+
+    output = tmp_path / "bundle.json"
+    main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
+    capsys.readouterr()
+    monkeypatch.setattr(
+        cli,
+        "external",
+        lambda bundle, path: {
+            "available": True,
+            "library": {"tool": "stix2", "ok": True},
+            "validator": None,
+        },
+    )
+    assert cli.main(["validate", str(output), "--external"]) == 2
+    assert "NOT checked" in capsys.readouterr().err
+
+
+def test_external_passes_when_the_schema_validator_ran(tmp_path, monkeypatch):
+    from stixforge import cli
+
+    output = tmp_path / "bundle.json"
+    main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
+    monkeypatch.setattr(
+        cli,
+        "external",
+        lambda bundle, path: {
+            "available": True,
+            "library": {"tool": "stix2", "ok": True},
+            "validator": {"tool": "stix2-validator", "code": 0, "output": ""},
+        },
+    )
+    assert cli.main(["validate", str(output), "--external"]) == 0
 
 
 def test_the_oasis_library_accepts_the_bundle(tmp_path):

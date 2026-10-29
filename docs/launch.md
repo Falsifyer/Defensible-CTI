@@ -88,7 +88,7 @@ would change it, and whether it may leave.*
 
 - [x] No credentials, no absolute paths, no internal references (`git grep` audit).
 - [x] MIT, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CITATION.cff`.
-- [x] CI on 3.11/3.12/3.13, demo, evaluation, external STIX validation, build + wheel smoke.
+- [x] CI on 3.11/3.12/3.13, demo, evaluation, OASIS library parse, build + wheel smoke.
 - [x] README scoped: mechanism tested, accuracy not claimed.
 - [ ] Repository public, description and topics set.
 - [x] First green CI run on `main` (`9cbc380`).

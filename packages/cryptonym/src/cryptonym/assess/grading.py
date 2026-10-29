@@ -83,7 +83,9 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
         "hypotheses_favoured": ranking,
         "favoured": favoured,
         "tied": tied,
-        "inconsistencies": inconsistency_counts(assessment.evidence, assessment.hypotheses),
+        "inconsistencies": inconsistency_counts(
+            assessment.evidence, assessment.hypotheses, assessment.sources
+        ),
         "inconsistency_scores": inconsistency_scores(
             assessment.evidence, assessment.hypotheses, assessment.sources
         ),

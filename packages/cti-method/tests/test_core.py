@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cti_method.ach import inconsistency_scores, least_inconsistent
+from cti_method.ach import inconsistency_scores, least_inconsistent, tied_at_top
 from cti_method.contract import CannotCheck, exit_code, finding, read_json, severity_counts
 from cti_method.evidence import Consistency, Evidence, EvidenceType
 from cti_method.grading import ceiling, check_declared, derived_grade, profile
@@ -75,6 +75,22 @@ def test_shared_tradecraft_cannot_undo_the_contradiction_downgrade() -> None:
                       source_id="c", reliability="C")
     assert derived_grade(base, sources, "H2")["ceiling"] == "moderate"
     assert derived_grade([*base, shared], sources, "H2")["ceiling"] == "moderate"
+
+
+def test_a_hypothesis_no_item_addresses_does_not_win_by_silence() -> None:
+    """ACH must test the alternatives; an unmentioned hypothesis is not the favourite."""
+    evidence = [
+        Evidence(
+            id="E1",
+            statement="s",
+            source="A",
+            type=EvidenceType.CODE,
+            consistency={"X": Consistency.CONSISTENT, "Y": Consistency.INCONSISTENT},
+        )
+    ]
+    ranking = least_inconsistent(evidence, ["X", "Y", "Z"])
+    assert ranking[0] == "X"
+    assert tied_at_top(evidence, ["X", "Y", "Z"]) == ["X"]
 
 
 def test_a_document_too_deep_for_the_parser_is_cannot_check(tmp_path) -> None:

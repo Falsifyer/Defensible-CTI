@@ -16,11 +16,11 @@ The cycle is the argument; the gate is the door. Two commands answer the questio
 team gets wrong at least once:
 
 ```console
-$ git clone https://github.com/Falsifyer/Defensible-CTI && cd cti-suite
+$ git clone https://github.com/Falsifyer/Defensible-CTI && cd Defensible-CTI
 $ uv sync --all-packages
 $ uv run stixforge build demo/product.json -o /tmp/bundle.json
 $ uv run sharegate check /tmp/bundle.json          # exit 1 if it may not travel
-$ uv run stixforge validate /tmp/bundle.json --external
+$ uv run stixforge validate /tmp/bundle.json          # add --external for the schema validator
 ```
 
 The rest — requirements, the evidence ceiling, the hunt plan, the ledger — is what makes that

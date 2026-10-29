@@ -81,8 +81,17 @@ jobs:
       - name: The bundle the demo produces is valid and shareable
         run: |
           uv run stixforge validate demo/out/bundle.json
-          uv run stixforge validate demo/out/bundle.json --external
           uv run sharegate check demo/out/bundle.json
+      - name: The OASIS library parses the bundle
+        # `--external` is stricter: it requires the schema validator. That validator
+        # downloads its cache, so this job runs the library parse it can reproduce.
+        run: |
+          uv run python - <<'PY'
+          import json
+          from stix2 import parse
+          parse(json.load(open("demo/out/bundle.json")), allow_custom=False, version="2.1")
+          print("the OASIS library parses the bundle")
+          PY
       - name: The chain reaches the bundle
         run: |
           python - <<'PY'

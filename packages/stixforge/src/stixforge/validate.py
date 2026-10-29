@@ -4,7 +4,9 @@ The structural check is **not** implemented here: it is :func:`cti_method.stix.v
 the same one the gate calls, so the factory and the gate cannot disagree about what a
 valid bundle is. What lives here is the optional external check.
 
-With ``--external`` the file is handed to the OASIS tooling. If none is installed, the
+With ``--external`` the file is handed to the OASIS tooling. The ``stix2`` parse and the
+``stix2-validator`` schema check are reported separately; ``--external`` is only clean when
+the schema check ran. If neither is installed, or the schema validator has no cache, the
 exit code is 2: not checked is not clean.
 """
 

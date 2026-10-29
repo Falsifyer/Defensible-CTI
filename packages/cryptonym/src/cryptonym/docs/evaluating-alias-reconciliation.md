@@ -70,12 +70,16 @@ Two consequences, both visible in the output:
 - **`ceilings:`** prints the band distribution, because calibration on a single band says
   nothing. The current held-out split has **11 `high` cases**, and the development split
   tops out at `moderate` — the split that counts is the one with the strong band.
+- **`tied` / `abstained`** report the cases the evidence does not decide. A tie between two
+  non-same hypotheses is still a binary "not same" call; a tie that includes `same_actor`
+  is an abstention and is never scored as if the first label had won.
 
 The **probability axis** is scored separately with a Brier score over the WEP bands
 (`probability_calibration`): `0` is a perfect forecast, `0.25` is what always saying
-"50/50" scores. The current corpus scores **0.0853** overall; the adjudicated corpus, on
-the two admissible cases, **0.04**. Two cases are not a calibration estimate, and the
-number is printed as a mechanism check, not as a result.
+"50/50" scores. The current corpus scores **0.1075** over the 11 cases that make a binary
+call; the other 11 abstain because the top tie includes `same_actor`, and an abstention is
+not a call. The adjudicated corpus scores **0.04** over 1 of its 2 admissible cases (the
+other abstains). These are mechanism checks, not calibration estimates.
 
 The `heldout-*` cases are **synthetic**: they were generated to exercise independence
 (registered sources, a derived source, a contradiction that outweighs the support), not to

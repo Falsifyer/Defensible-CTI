@@ -79,6 +79,40 @@ def test_evaluate_cases_derives_the_favourite_from_evidence() -> None:
     assert "high" not in summary["calibration"]
 
 
+def test_a_tie_is_not_scored_as_a_call() -> None:
+    """A2: the harness must not score hypotheses_favoured[0] when the engine reports a tie."""
+    case = {
+        "id": "tied",
+        "question": "same?",
+        "truth": "same_actor",
+        "hypotheses": ["same_actor", "distinct_but_overlapping"],
+        "judgement": {"confidence": "low"},
+        "evidence": [
+            {
+                "id": "E1",
+                "statement": "one source points one way",
+                "source": "A",
+                "type": "infrastructure",
+                "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"},
+            },
+            {
+                "id": "E2",
+                "statement": "another source points the other way",
+                "source": "B",
+                "type": "infrastructure",
+                "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"},
+            },
+        ],
+    }
+    summary = evaluate_cases([case])
+    assert summary["tied"] == 1
+    assert summary["metrics"]["total"] == 0
+    row = summary["results"][0]
+    assert row["favourite"] is None
+    assert row["correct"] is None
+    assert row["tied"] is True
+
+
 def test_evaluate_corpus_reports_each_split_separately() -> None:
     case = {
         "id": "x",

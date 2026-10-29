@@ -5,9 +5,9 @@ own tag:
 
 | Package | Version | Changelog |
 |---|---|---|
-| `cti-method` | 0.1.0 | [packages/cti-method/CHANGELOG.md](packages/cti-method/CHANGELOG.md) |
+| `cti-method` | 0.2.0 | [packages/cti-method/CHANGELOG.md](packages/cti-method/CHANGELOG.md) |
 | `cryptonym` | 0.7.0 | [packages/cryptonym/CHANGELOG.md](packages/cryptonym/CHANGELOG.md) |
-| `assessment-mcp` | 0.2.0 | [packages/assessment/CHANGELOG.md](packages/assessment/CHANGELOG.md) |
+| `assessment-mcp` | 0.3.0 | [packages/assessment/CHANGELOG.md](packages/assessment/CHANGELOG.md) |
 | `sharegate` | 0.2.0 | [packages/sharegate/CHANGELOG.md](packages/sharegate/CHANGELOG.md) |
 | `stix-forge` | 0.2.0 | [packages/stixforge/CHANGELOG.md](packages/stixforge/CHANGELOG.md) |
 | `pir-ledger` | 0.2.0 | [packages/pir/CHANGELOG.md](packages/pir/CHANGELOG.md) |

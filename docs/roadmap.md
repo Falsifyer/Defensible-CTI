@@ -17,7 +17,7 @@ what is **not** done, why, and what would close it.
 | Gap | State | What would close it |
 |---|---|---|
 | **External corpus** | the corpus is illustrative; the `heldout-*` cases are synthetic and exist to exercise the ceiling | a corpus adjudicated by someone other than the author, with real disagreements |
-| **Probability calibration at scale** | the Brier score is computed, but on 22 illustrative cases (`0.0853`) and 2 admissible ones (`0.04`) | the external corpus above, with estimative claims |
+| **Probability calibration at scale** | the Brier score is computed, but on 11 scored of 22 illustrative cases (`0.1075`; 11 abstain on a tie) and 1 scored of 2 admissible (`0.04`) | the external corpus above, with estimative claims |
 | **Source independence** | structural (registry + `derived_from`), but still declared by the author | ingest the source graph from the CTI platform instead of the dossier |
 | **Contradiction rule** | one step down when contradiction outweighs support; weights are a hand-set table | calibrate the step and the weights against outcomes |
 | **ACH weights** | Admiralty band → weight is a fixed table | derive it from the evaluation once there is an external corpus |

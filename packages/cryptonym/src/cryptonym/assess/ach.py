@@ -43,9 +43,11 @@ def consistency_matrix(
 
 
 def inconsistency_counts(
-    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
 ) -> dict[str, int]:
-    return _inconsistency_counts(evidence, _labels(hypotheses))
+    return _inconsistency_counts(evidence, _labels(hypotheses), sources)
 
 
 def least_inconsistent(

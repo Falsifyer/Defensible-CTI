@@ -1,55 +1,32 @@
 {
   "overall": {
+    "abstained": 11,
     "calibration": {
       "high": {
         "accuracy": 1.0,
-        "n": 11
-      },
-      "low": {
-        "accuracy": 1.0,
-        "n": 1
+        "n": 6
       },
       "moderate": {
         "accuracy": 1.0,
-        "n": 10
+        "n": 5
       }
     },
     "metrics": {
       "false_merge_rate": 0.0,
       "false_negative": 0,
       "false_positive": 0,
-      "false_split_rate": 0.0,
-      "total": 22,
+      "false_split_rate": null,
+      "total": 11,
       "true_negative": 11,
-      "true_positive": 11
+      "true_positive": 0
     },
     "probability_calibration": {
-      "brier_score": 0.0853,
+      "brier_score": 0.1075,
       "buckets": {
-        "likely": {
-          "mean_forecast": 0.65,
-          "n": 1,
-          "observed_rate": 1.0
-        },
-        "nearly_certain": {
-          "mean_forecast": 0.95,
-          "n": 1,
-          "observed_rate": 1.0
-        },
-        "roughly_even_chance": {
-          "mean_forecast": 0.5,
-          "n": 1,
-          "observed_rate": 1.0
-        },
         "unlikely": {
           "mean_forecast": 0.35,
           "n": 9,
           "observed_rate": 0.0
-        },
-        "very_likely": {
-          "mean_forecast": 0.8,
-          "n": 8,
-          "observed_rate": 1.0
         },
         "very_unlikely": {
           "mean_forecast": 0.2,
@@ -57,7 +34,7 @@
           "observed_rate": 0.0
         }
       },
-      "n": 22,
+      "n": 11,
       "points": {
         "likely": 0.65,
         "nearly_certain": 0.95,
@@ -66,59 +43,42 @@
         "very_likely": 0.8,
         "very_unlikely": 0.2
       }
-    }
+    },
+    "tied": 22
   },
   "splits": {
     "development": {
+      "abstained": 3,
       "calibration": {
-        "low": {
-          "accuracy": 1.0,
-          "n": 1
-        },
         "moderate": {
           "accuracy": 1.0,
-          "n": 5
+          "n": 3
         }
       },
       "metrics": {
         "false_merge_rate": 0.0,
         "false_negative": 0,
         "false_positive": 0,
-        "false_split_rate": 0.0,
-        "total": 6,
+        "false_split_rate": null,
+        "total": 3,
         "true_negative": 3,
-        "true_positive": 3
+        "true_positive": 0
       },
       "probability_calibration": {
-        "brier_score": 0.0963,
+        "brier_score": 0.095,
         "buckets": {
-          "nearly_certain": {
-            "mean_forecast": 0.95,
-            "n": 1,
-            "observed_rate": 1.0
-          },
-          "roughly_even_chance": {
-            "mean_forecast": 0.5,
-            "n": 1,
-            "observed_rate": 1.0
-          },
           "unlikely": {
             "mean_forecast": 0.35,
             "n": 2,
             "observed_rate": 0.0
           },
-          "very_likely": {
-            "mean_forecast": 0.8,
-            "n": 1,
-            "observed_rate": 1.0
-          },
           "very_unlikely": {
             "mean_forecast": 0.2,
             "n": 1,
             "observed_rate": 0.0
           }
         },
-        "n": 6,
+        "n": 3,
         "points": {
           "likely": 0.65,
           "nearly_certain": 0.95,
@@ -127,45 +87,37 @@
           "very_likely": 0.8,
           "very_unlikely": 0.2
         }
-      }
+      },
+      "tied": 6
     },
     "held-out": {
+      "abstained": 8,
       "calibration": {
         "high": {
           "accuracy": 1.0,
-          "n": 11
+          "n": 6
         },
         "moderate": {
           "accuracy": 1.0,
-          "n": 5
+          "n": 2
         }
       },
       "metrics": {
         "false_merge_rate": 0.0,
         "false_negative": 0,
         "false_positive": 0,
-        "false_split_rate": 0.0,
-        "total": 16,
+        "false_split_rate": null,
+        "total": 8,
         "true_negative": 8,
-        "true_positive": 8
+        "true_positive": 0
       },
       "probability_calibration": {
-        "brier_score": 0.0812,
+        "brier_score": 0.1122,
         "buckets": {
-          "likely": {
-            "mean_forecast": 0.65,
-            "n": 1,
-            "observed_rate": 1.0
-          },
           "unlikely": {
             "mean_forecast": 0.35,
             "n": 7,
             "observed_rate": 0.0
-          },
-          "very_likely": {
-            "mean_forecast": 0.8,
-            "n": 7,
-            "observed_rate": 1.0
           },
           "very_unlikely": {
             "mean_forecast": 0.2,
@@ -173,7 +125,7 @@
             "observed_rate": 0.0
           }
         },
-        "n": 16,
+        "n": 8,
         "points": {
           "likely": 0.65,
           "nearly_certain": 0.95,
@@ -182,7 +134,8 @@
           "very_likely": 0.8,
           "very_unlikely": 0.2
         }
-      }
+      },
+      "tied": 16
     }
   }
 }

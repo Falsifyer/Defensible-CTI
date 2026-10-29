@@ -91,7 +91,7 @@ def weigh(
     return {
         "ranking": cti_method.least_inconsistent(items, labels, sources),
         "tied": cti_method.tied_at_top(items, labels, sources),
-        "inconsistencies": cti_method.inconsistency_counts(items, labels),
+        "inconsistencies": cti_method.inconsistency_counts(items, labels, sources),
         "inconsistency_scores": cti_method.inconsistency_scores(items, labels, sources),
         "discriminating": cti_method.discriminating_evidence(items),
         "consistent_with_everything": cti_method.consistent_with_everything(items),

@@ -1,4 +1,5 @@
 {
+  "abstained": 2,
   "by_standard": {
     "government-statement": 1,
     "independent-corroboration": 1
@@ -6,7 +7,7 @@
   "calibration": {
     "moderate": {
       "accuracy": 1.0,
-      "n": 2
+      "n": 1
     }
   },
   "coverage": {
@@ -18,26 +19,21 @@
     "false_merge_rate": 0.0,
     "false_negative": 0,
     "false_positive": 0,
-    "false_split_rate": 0.0,
-    "total": 2,
+    "false_split_rate": null,
+    "total": 1,
     "true_negative": 1,
-    "true_positive": 1
+    "true_positive": 0
   },
   "probability_calibration": {
     "brier_score": 0.04,
     "buckets": {
-      "very_likely": {
-        "mean_forecast": 0.8,
-        "n": 1,
-        "observed_rate": 1.0
-      },
       "very_unlikely": {
         "mean_forecast": 0.2,
         "n": 1,
         "observed_rate": 0.0
       }
     },
-    "n": 2,
+    "n": 1,
     "points": {
       "likely": 0.65,
       "nearly_certain": 0.95,
@@ -46,5 +42,6 @@
       "very_likely": 0.8,
       "very_unlikely": 0.2
     }
-  }
+  },
+  "tied": 3
 }

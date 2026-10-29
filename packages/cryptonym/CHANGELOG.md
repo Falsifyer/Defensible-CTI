@@ -7,6 +7,11 @@
 - **Ties are surfaced** in `assess` and `render` (`tied`, `favoured: null`) instead of
   being resolved by the order of the hypothesis list.
 - **The ACH ranking counts voices**, so a source restated twice cannot flip it.
+- **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
+  a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
+  baselines were regenerated.
+- **The MCP `snapshot_source` tool cannot be told to reach a private address**: the
+  `allow_private` opt-out is CLI-only, not an agent argument.
 
 ## 0.7.0 — 2026-10-22
 

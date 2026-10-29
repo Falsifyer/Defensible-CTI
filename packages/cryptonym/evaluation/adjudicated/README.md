@@ -19,9 +19,10 @@ cryptonym adjudicate evaluation/adjudicated/corpus.json --strict
 ## What this corpus is seed material
 
 It is deliberately small. The point of the filter is to make the weak cases **visible**:
-this seed contains 2 admissible binary cases, 2 `contested`, and 0 `unadjudicated`, and
-the coverage table is printed with the metrics precisely so that "false-merge rate 0.0
-over 2 cases" reads as what it is.
+this seed contains 2 admissible binary cases, 2 `contested`, and 0 `unadjudicated`; one of
+the admissible cases abstains because its top tie includes `same_actor`, so the metrics are
+over 1 scored case, and the coverage/tied table is printed with them precisely so that
+"false-merge rate 0.0 over 1 case" reads as what it is.
 
 The value is not the number. It is that the number cannot be inflated: a new case only
 enters the error rates if independent sources assert its truth, disagreement is recorded
