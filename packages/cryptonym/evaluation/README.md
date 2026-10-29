@@ -15,10 +15,18 @@ python evaluation/run_evaluation.py --corpus --check
 - a **confusion matrix** over the corpus (positive class: "same actor"), reported **per
   split** — `development` and `held-out` — and overall;
 - the **false-merge rate** (the costly error) and the **false-split rate**, separately;
-- a **calibration table** — accuracy per confidence level, per split.
+- a **calibration table** — accuracy per confidence level, per split;
+- **calls, abstentions and unsupported** cases, so the denominator is never hidden.
 
 Held-out results are never averaged into the development ones: a method graded on the
 cases it was tuned against proves nothing.
+
+## External corpus
+
+[`external/`](external/) contains the **protocol, schema and case template** for a corpus
+adjudicated by two independent people. It deliberately contains no cases yet. See
+[`external/PROTOCOL.md`](external/PROTOCOL.md) for the gates: blindness, source
+independence, pre-registration, frozen split and the published denominator.
 
 ## Structure
 

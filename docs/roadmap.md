@@ -16,7 +16,7 @@ what is **not** done, why, and what would close it.
 
 | Gap | State | What would close it |
 |---|---|---|
-| **External corpus** | the corpus is illustrative; the `heldout-*` cases are synthetic and exist to exercise the ceiling | a corpus adjudicated by someone other than the author, with real disagreements |
+| **External corpus** | the corpus is illustrative; `packages/cryptonym/evaluation/external/` has the protocol, schema and case template, but **no real cases** | two independent adjudicators accept the protocol, then cases with a frozen split and published denominator |
 | **Probability calibration at scale** | the Brier score is computed, but on 23 scored of 24 illustrative cases (`0.0775`; 1 abstains, 1 unsupported) and 2 admissible ones (`0.04`) | the external corpus above, with estimative claims |
 | **Source independence** | structural (registry + `derived_from`), but still declared by the author | ingest the source graph from the CTI platform instead of the dossier |
 | **Contradiction rule** | one step down when contradiction outweighs support; weights are a hand-set table | calibrate the step and the weights against outcomes |
