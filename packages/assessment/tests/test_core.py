@@ -38,6 +38,12 @@ def test_grade_carries_two_independent_axes() -> None:
     assert result["probability"] == "very_likely"
 
 
+def test_a_probability_can_name_its_proposition() -> None:
+    result = grade("low", "very_likely", "the actor is the same")
+    assert result["probability_of"] == "the actor is the same"
+    assert "that the actor is the same is true" in result["label"]
+
+
 def test_weigh_accepts_arbitrary_hypothesis_labels() -> None:
     evidence = [
         {
@@ -88,7 +94,7 @@ def test_restating_one_source_does_not_flip_the_ranking() -> None:
     }
     verdict = assess(document)
     assert set(verdict["tied"]) == {"a", "b"}
-    assert verdict["inconsistency_scores"] == {"a": 1.0, "b": 1.0}
+    assert verdict["inconsistency_scores"] == {"a": 0.5, "b": 0.5}
 
 
 def test_weigh_needs_at_least_two_hypotheses() -> None:

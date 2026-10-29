@@ -96,6 +96,7 @@ def assess_actor_pair(assessment: Assessment) -> dict[str, Any]:
         "probability": assessment.judgement.probability.value
         if assessment.declared and assessment.judgement.probability is not None
         else None,
+        "probability_of": assessment.judgement.probability_of,
         "ceiling": derived["ceiling"],
         "grade_supported": not findings,
         "grade_findings": findings,

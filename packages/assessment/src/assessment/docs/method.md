@@ -38,7 +38,11 @@ A claim is a **question**, a body of **evidence**, competing **hypotheses** and 
     {"id": "E2", "statement": "the C2 certificate matches a known cluster", "source": "telemetry B",
      "type": "infrastructure", "consistency": {"compromise": "C", "benign": "I"}}
   ],
-  "judgement": {"confidence": "high", "probability": "very_likely"}
+  "judgement": {
+    "confidence": "high",
+    "probability": "very_likely",
+    "probability_of": "compromise"
+  }
 }
 ```
 

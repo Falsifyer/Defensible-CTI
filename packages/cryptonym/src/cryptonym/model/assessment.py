@@ -49,7 +49,11 @@ class Assessment:
     id: str
     question: str
     subjects: list[Designation] = field(default_factory=list)
-    hypotheses: list[Hypothesis] = field(default_factory=lambda: list(Hypothesis))
+    #: Two hypotheses by default. ``brokered_shared_access`` is opt-in: a hypothesis no
+    #: evidence addresses would otherwise tie every judgement at zero inconsistency.
+    hypotheses: list[Hypothesis] = field(
+        default_factory=lambda: [Hypothesis.SAME, Hypothesis.OVERLAPPING]
+    )
     evidence: list[Evidence] = field(default_factory=list)
     sources: list[dict[str, Any]] = field(default_factory=list)
     judgement: Judgement = field(default_factory=lambda: Judgement(Confidence.LOW))
@@ -97,12 +101,18 @@ class Assessment:
         judgement = Judgement(
             confidence=parse_confidence(judgement_data.get("confidence", Confidence.LOW.value)),
             probability=parse_probability(judgement_data.get("probability")),
+            probability_of=judgement_data.get("probability_of") or None,
         )
         return cls(
             id=data.get("id") or "",
             question=data.get("question") or "",
             subjects=subjects,
-            hypotheses=[Hypothesis(value) for value in data.get("hypotheses", [h.value for h in Hypothesis])],
+            hypotheses=[
+                Hypothesis(value)
+                for value in data.get(
+                    "hypotheses", [Hypothesis.SAME.value, Hypothesis.OVERLAPPING.value]
+                )
+            ],
             evidence=evidence,
             sources=list(data.get("sources") or []),
             judgement=judgement,

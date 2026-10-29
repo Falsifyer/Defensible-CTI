@@ -12,6 +12,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **The report renders a tie** instead of choosing the first hypothesis as the winner.
 - **The chain anchors its ledger**: the append writes `ledger.head` and the verify step
   checks it, so a truncated tail fails the demo.
+- **The release workflow is split**: build has `contents: read`; only the download/sign/
+  publish job gets `contents: write` + `id-token: write`. All actions are pinned to commits.
+- **The publishing runbook names `Defensible-CTI`**, not the old `cti-suite` repository.
+- **The default environment is `pip check` clean**: the `opencti` extra is opt-in, because
+  pycti's pins conflict with the security overrides.
 
 ## 0.1.0 — 2026-10-22
 

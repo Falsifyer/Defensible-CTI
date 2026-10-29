@@ -36,6 +36,7 @@
       "type": ["string", "null"],
       "enum": ["nearly_certain", "very_likely", "likely", "roughly_even_chance", "unlikely", "very_unlikely", null]
     },
+    "probability_of": { "type": ["string", "null"] },
     "ceiling": { "enum": ["high", "moderate", "low"] },
     "grade_supported": { "type": "boolean" },
     "grade_findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },

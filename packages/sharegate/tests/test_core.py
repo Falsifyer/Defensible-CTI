@@ -58,9 +58,11 @@ def test_a_correct_marking_is_clean() -> None:
     assert result["findings"] == []
 
 
-def test_a_missing_marking_is_flagged() -> None:
+def test_a_missing_marking_is_flagged_and_blocks() -> None:
     result = check_tlp("no handling caveat here")
     assert _codes(result) == ["tlp-missing"]
+    assert result["findings"][0]["severity"] == "high"
+    assert pre_share("no handling caveat here")["shareable"] is False
 
 
 def test_a_corrupt_bundle_is_not_checked_and_not_shareable() -> None:

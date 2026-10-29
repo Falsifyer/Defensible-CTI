@@ -7,6 +7,9 @@
 - **Ties are surfaced** in `assess` and `render` (`tied`, `favoured: null`) instead of
   being resolved by the order of the hypothesis list.
 - **The ACH ranking counts voices**, so a source restated twice cannot flip it.
+- **`brokered_shared_access` is opt-in.** The default is `same_actor` vs
+  `distinct_but_overlapping`; a third hypothesis no evidence addresses would otherwise tie
+  every case at zero inconsistency. Declare it when the evidence suggests a broker.
 - **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
   a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
   baselines were regenerated.

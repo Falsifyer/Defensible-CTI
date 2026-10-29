@@ -31,7 +31,7 @@ the judgements.
 ## Install
 
 ```bash
-uv sync --all-packages --all-extras     # inside the suite
+uv sync --all-packages --all-extras --no-extra opencti     # inside the suite
 pip install -e ../cti-method -e .       # on its own
 ```
 

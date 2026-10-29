@@ -18,12 +18,12 @@ jobs:
       matrix:
         python: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
           python-version: ${{ matrix.python }}
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       # Packages reuse test module names; --import-mode=importlib (in the root
       # pyproject) resolves them by path. This is the invocation that used to fail.
       - run: uv run pytest -q
@@ -32,33 +32,33 @@ jobs:
     name: Style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       - run: uv run ruff check packages
 
   types:
     name: Types
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       - run: uv run mypy
 
   evaluation:
     name: Method evaluation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       # Without this the evaluation is decorative: it never runs and rots.
       - name: Corpus por split
         run: uv run python packages/cryptonym/evaluation/run_evaluation.py --corpus --check
@@ -71,11 +71,11 @@ jobs:
     name: The whole chain
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       - name: make demo
         run: make demo
       - name: The bundle the demo produces is valid and shareable
@@ -99,7 +99,7 @@ jobs:
           bundle = json.load(open("demo/out/bundle.json"))
           report = next(o for o in bundle["objects"] if o["type"] == "report")
           refs = {r["source_name"]: r["external_id"] for r in report["external_references"]}
-          # The reference carries the content hash: <id>@<sha256:12>.
+          # The reference carries the content hash: <id>@<sha256>.
           ids = {kind: value.split("@")[0] for kind, value in refs.items()}
           expected = {"cti-suite:pir": "PIR-001", "cti-suite:assessment": "nightjar-vs-saltwind", "cti-suite:hunt": "HUNT-001"}
           if ids != expected:
@@ -108,7 +108,7 @@ jobs:
               sys.exit(f"trace without content hash: {refs}")
           verdict = json.load(open("demo/out/verdict.json"))
           import hashlib
-          digest = hashlib.sha256(json.dumps(verdict, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()[:12]
+          digest = hashlib.sha256(json.dumps(verdict, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
           if refs["cti-suite:assessment"].split("@")[1] != digest:
               sys.exit(f"assessment hash mismatch: {refs['cti-suite:assessment']} != {digest}")
           print("trace ok:", refs)
@@ -122,11 +122,11 @@ jobs:
     name: Buildable packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
       - run: uv build --all-packages --out-dir dist
       - name: Los paquetes instalados funcionan (datos incluidos)
         run: |
@@ -139,7 +139,7 @@ jobs:
           /tmp/wheelcheck/bin/ctisuite --version
           /tmp/wheelcheck/bin/huntplan hmm > /dev/null
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: distributions
           path: dist/
@@ -148,23 +148,24 @@ jobs:
     name: Dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
-      - run: uv sync --all-packages --all-extras
-      # pycti (the `opencti` extra) pins setuptools to a band that excludes 83; 82.0.1
-      # is only used as a build backend and the suite never imports it. The advisory is
-      # documented in SECURITY.md; no other advisory is ignored.
+      - run: uv sync --all-packages --all-extras --no-extra opencti
+      # pycti (the `opencti` extra) is excluded from the default sync because its
+      # setuptools/opentelemetry pins conflict with the security overrides. The advisory
+      # that remains is documented in SECURITY.md; no other advisory is ignored.
       - run: uv run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
+      - run: uv run pip check
 
   infra:
     name: Infrastructure (workflows and shell)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: actionlint
-        uses: raven-actions/actionlint@v2
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
       - name: shellcheck
         run: shellcheck demo/run.sh
 
@@ -172,7 +173,7 @@ jobs:
     name: Credentials
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: No credentials in the tree
         run: |
           patron='(-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|://[^/:@ ]+:[^/ @]+@)'

@@ -64,7 +64,7 @@ exist as first-class labels and `TLP:WHITE` is recognised only to be flagged.
 
 `link()` verifies the id a document cites against the upstream file, and verifies
 `<kind>_hash` when the document records one. `external_references()` emits
-`<id>@<sha256:12>`, so a STIX report says which exact judgement it came from — an edited
+`<id>@<sha256>`, so a STIX report says which exact judgement it came from — an edited
 dossier no longer keeps the same identity without notice.
 
 ## Limits

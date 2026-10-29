@@ -17,17 +17,23 @@ on:
         default: true
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.pkg.outputs.tag }}
+      package: ${{ steps.pkg.outputs.package }}
+      version: ${{ steps.pkg.outputs.version }}
+      directory: ${{ steps.pkg.outputs.directory }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
 
@@ -38,7 +44,7 @@ jobs:
         # The tag -> package mapping is code with tests, not a `case` in YAML.
         run: uv run --package cti-suite python -m cti_suite.release --tag "$TAG" --check --github-output
 
-      - run: uv sync --all-packages --all-extras
+      - run: uv sync --all-packages --all-extras --no-extra opencti
 
       - name: The tag version is the package version
         run: uv run python -m cti_suite.release --tag "${{ steps.pkg.outputs.tag }}" --check
@@ -50,25 +56,42 @@ jobs:
         run: uv build --package "${{ steps.pkg.outputs.package }}" --out-dir dist
 
       - name: SBOM (CycloneDX)
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           path: .
           format: cyclonedx-json
           output-file: dist/${{ steps.pkg.outputs.package }}-${{ steps.pkg.outputs.version }}.cdx.json
 
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: distributions
+          path: dist/
+
+  publish:
+    needs: build
+    # A tag push always publishes; a manual run only when dry_run is false.
+    if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: distributions
+          path: dist
+
       - name: Sign the artifacts (sigstore, keyless)
-        # Not the action: `sigstore/gh-action-sigstore-python` has no floating `v3` tag, and
-        # pinning v3.5.0 moves the failure into its own environment, which pins pyjwt==2.13.0
-        # while its resolver asks for >=2.15.0 ("no solution found"). The CLI resolves cleanly
-        # and picks the runner's OIDC token up on its own, which the job authorises with
-        # `id-token: write`.
-        run: uvx --from sigstore sigstore sign dist/*.whl dist/*.tar.gz
+        # Signing is the only step that needs `id-token: write`; it runs on the downloaded
+        # artifacts, not on a checkout of the tree. The CLI is pinned so the signer itself
+        # is reproducible.
+        run: uvx --from 'sigstore==4.5.1' sigstore sign dist/*.whl dist/*.tar.gz
 
       - name: Publish the release
-        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.pkg.outputs.tag }}" dist/* \
-            --title "${{ steps.pkg.outputs.tag }}" \
-            --notes "Package \`${{ steps.pkg.outputs.package }}\` at \`${{ steps.pkg.outputs.version }}\`. Detail: \`packages/${{ steps.pkg.outputs.directory }}/CHANGELOG.md\`."
+          gh release create "${{ needs.build.outputs.tag }}" dist/* \
+            --repo "${{ github.repository }}" \
+            --title "${{ needs.build.outputs.tag }}" \
+            --notes "Package \`${{ needs.build.outputs.package }}\` at \`${{ needs.build.outputs.version }}\`. Detail: \`packages/${{ needs.build.outputs.directory }}/CHANGELOG.md\`."

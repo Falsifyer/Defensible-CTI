@@ -77,6 +77,14 @@ def test_shared_tradecraft_cannot_undo_the_contradiction_downgrade() -> None:
     assert derived_grade([*base, shared], sources, "H2")["ceiling"] == "moderate"
 
 
+def test_an_ungraded_item_does_not_outweigh_a_graded_one() -> None:
+    ungraded = Evidence(id="E1", statement="s", source="A", type=EvidenceType.CODE)
+    graded_b = Evidence(
+        id="E2", statement="s", source="B", type=EvidenceType.CODE, reliability="B"
+    )
+    assert ungraded.weight < graded_b.weight
+
+
 def test_a_hypothesis_no_item_addresses_does_not_win_by_silence() -> None:
     """ACH must test the alternatives; an unmentioned hypothesis is not the favourite."""
     evidence = [
@@ -334,12 +342,12 @@ def test_reliability_weights_the_contradiction_score() -> None:
     assert least_inconsistent(evidence, ["h", "g"]) == ["g", "h"]
 
 
-def test_without_a_reliability_band_every_item_weighs_the_same() -> None:
+def test_without_a_reliability_band_an_item_weighs_less_than_a_b() -> None:
     evidence = [
         Evidence("E1", "s", "x", EvidenceType.CODE, {"h": Consistency.INCONSISTENT}),
         Evidence("E2", "s", "y", EvidenceType.CODE, {"g": Consistency.INCONSISTENT}),
     ]
-    assert inconsistency_scores(evidence, ["h", "g"]) == {"h": 1.0, "g": 1.0}
+    assert inconsistency_scores(evidence, ["h", "g"]) == {"h": 0.5, "g": 0.5}
 
 
 # ------------------------------------------------------------------ probabilidad y limites
@@ -420,4 +428,6 @@ def test_a_changed_upstream_is_detected_by_its_hash() -> None:
 
 def test_external_references_pin_the_hash() -> None:
     references = external_references({"assessment": "a-1"}, {"assessment": "0123456789abcdef"})
-    assert references == [{"source_name": "cti-suite:assessment", "external_id": "a-1@0123456789ab"}]
+    assert references == [
+        {"source_name": "cti-suite:assessment", "external_id": "a-1@0123456789abcdef"}
+    ]

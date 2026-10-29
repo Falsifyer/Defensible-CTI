@@ -7,8 +7,9 @@
 Before a product or a STIX bundle leaves the building, ShareGate answers two objective
 questions and blocks on the ones that matter:
 
-- **TLP 2.0** (FIRST): missing marking, conflicting markings, deprecated `TLP:WHITE`, and a
-  permissive marking (`CLEAR`/`GREEN`) on content that looks sensitive.
+- **TLP 2.0** (FIRST): a missing marking blocks, conflicting markings block, deprecated
+  `TLP:WHITE` is flagged, and a permissive marking (`CLEAR`/`GREEN`) on content that looks
+  sensitive is surfaced.
 - **STIX 2.1**: the structural check, **imported from [`cti-method`](../cti-method/README.md)**
   — the same function `stixforge` calls. One validator, one severity table, no room for the
   factory and the gate to disagree.

@@ -58,15 +58,23 @@ def ceiling_for(evidence: list[dict[str, Any]], mode: str = "ach") -> dict[str, 
     return derived_grade(_evidence(evidence), mode=mode)
 
 
-def grade(confidence: str, probability: str | None = None) -> dict[str, Any]:
-    """Grade a claim on two independent axes: confidence (always) and probability (estimative)."""
+def grade(
+    confidence: str, probability: str | None = None, probability_of: str | None = None
+) -> dict[str, Any]:
+    """Grade a claim on two independent axes: confidence and probability.
+
+    ``probability_of`` names the proposition the probability is about; without it, "likely"
+    is a number with no subject.
+    """
     judgement = cti_method.Judgement(
         confidence=cti_method.parse_confidence(confidence),
         probability=cti_method.parse_probability(probability),
+        probability_of=(probability_of or "").strip() or None,
     )
     return {
         "confidence": judgement.confidence.value,
         "probability": judgement.probability.value if judgement.probability is not None else None,
+        "probability_of": judgement.probability_of,
         "two_axis": judgement.is_two_axis(),
         "label": judgement.label(),
     }
@@ -154,6 +162,7 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
     declared = cti_method.parse_confidence(declared_raw) if declared_raw else None
     probability = judgement.get("probability")
     parsed_probability = cti_method.parse_probability(probability) if probability else None
+    probability_of = str(judgement.get("probability_of") or "").strip() or None
 
     candidates = tied if len(tied) > 1 else ([favoured] if favoured else [])
     derived_candidates = [
@@ -170,6 +179,11 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
             "tied hypotheses",
             *derived["reasons"],
         ]
+
+    grade_label = f"confidence: {declared.value}" if declared is not None else "no grade declared"
+    if parsed_probability is not None:
+        target = f" that {probability_of} is true" if probability_of else ""
+        grade_label += f"; probability{target}: {parsed_probability.value}"
 
     grade_findings: list[dict[str, str]] = []
     for label in candidates or [favoured]:
@@ -203,11 +217,9 @@ def assess(document: dict[str, Any], register: dict[str, Any] | None = None) -> 
         "grade": {
             "confidence": declared.value if declared is not None else None,
             "probability": parsed_probability.value if parsed_probability is not None else None,
+            "probability_of": probability_of,
             "two_axis": parsed_probability is not None,
-            "label": (
-                f"confidence: {declared.value}" if declared is not None else "no grade declared"
-            )
-            + (f"; probability: {parsed_probability.value}" if parsed_probability is not None else ""),
+            "label": grade_label,
         },
         "ceiling": derived["ceiling"],
         "grade_supported": declared is not None and not has_high(grade_findings),

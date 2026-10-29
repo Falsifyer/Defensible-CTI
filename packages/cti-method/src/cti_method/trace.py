@@ -12,7 +12,7 @@ assessment the upstream file does not contain is a high finding, not a typo.
 
 An identifier alone is not enough: an edited dossier keeps its id. When the downstream
 document also records ``<kind>_hash``, the hash of the exact upstream content is verified
-and travels in the STIX reference as ``<id>@<sha256:12>``.
+and travels in the STIX reference as ``<id>@<sha256>``.
 """
 
 from __future__ import annotations
@@ -155,7 +155,7 @@ def external_references(
 ) -> list[dict[str, str]]:
     """STIX ``external_references`` entries for the trace, in cycle order.
 
-    With a hash, the reference is ``<id>@<sha256:12>``: a consumer can tell that the
+    With a hash, the reference is ``<id>@<sha256>``: a consumer can tell that the
     judgement it is reading is the one the bundle was built from.
     """
     references: list[dict[str, str]] = []
@@ -165,6 +165,6 @@ def external_references(
         external_id = str(value)
         digest = (hashes or {}).get(kind)
         if digest:
-            external_id = f"{external_id}@{digest[:12]}"
+            external_id = f"{external_id}@{digest}"
         references.append({"source_name": f"cti-suite:{kind}", "external_id": external_id})
     return references

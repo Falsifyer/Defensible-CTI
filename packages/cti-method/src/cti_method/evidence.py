@@ -52,7 +52,8 @@ RELIABILITY_WEIGHT: dict[str, float] = {
     "E": 0.2,
     "F": 0.5,
 }
-DEFAULT_WEIGHT = 1.0
+#: Missing band is neutral, not maximum: an ungraded item must not outweigh a B item.
+DEFAULT_WEIGHT = 0.5
 
 
 @dataclass(frozen=True)

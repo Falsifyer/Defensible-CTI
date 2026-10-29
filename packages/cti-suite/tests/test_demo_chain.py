@@ -38,7 +38,7 @@ def test_the_bundle_carries_the_trace_of_the_steps_before_it(demo_run: dict) -> 
         "cti-suite:hunt": "HUNT-001",
     }
     # The hash pins the exact content of the judgement, not just its id.
-    assert references["cti-suite:assessment"].split("@")[1] == content_hash(demo_run["verdict"])[:12]
+    assert references["cti-suite:assessment"].split("@")[1] == content_hash(demo_run["verdict"])
 
 
 def test_the_hunt_plan_cites_the_assessment_and_uses_attack_v18_plus(demo_run: dict) -> None:

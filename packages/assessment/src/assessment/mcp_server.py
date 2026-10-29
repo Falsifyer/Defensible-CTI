@@ -33,9 +33,11 @@ server = MCPServer(
 
 
 @server.tool()
-def grade_claim(confidence: str, probability: str | None = None) -> dict[str, Any]:
+def grade_claim(
+    confidence: str, probability: str | None = None, probability_of: str | None = None
+) -> dict[str, Any]:
     """Grade a claim on two independent axes: confidence, and probability where estimative."""
-    return grade(confidence, probability)
+    return grade(confidence, probability, probability_of)
 
 
 @server.tool()

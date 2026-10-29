@@ -35,6 +35,7 @@ eval:
 
 security:
 	$(UV) run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
+	$(UV) run pip check
 
 build:
 	$(UV) build --all-packages --out-dir dist

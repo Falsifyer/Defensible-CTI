@@ -1,6 +1,6 @@
 # cti-suite
 
-**Six commands, eight packages, one intelligence cycle — and the cycle is in the data, not in
+**Seven commands, eight packages, one intelligence cycle — and the cycle is in the data, not in
 the prose.** Each tool refuses something the cycle should not allow: a requirement with no
 decision behind it, a judgement without evidence for it, a grade the evidence cannot support,
 a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
@@ -69,10 +69,13 @@ Every package keeps its own name, its own command, its own version and its own `
 ## Install
 
 ```console
-$ uv sync --all-packages --all-extras   # or: make install
+$ uv sync --all-packages --all-extras --no-extra opencti   # or: make install
 ```
 
-That creates one virtual environment with the eight packages in editable mode.
+That creates one virtual environment with the eight packages in editable mode. The
+`opencti` extra is deliberately excluded: `pycti` pins `setuptools`/`opentelemetry` outside
+the bands this workspace overrides for security, so `pip check` reports it. Add
+`--extra opencti` when you need the adapter and accept that documented conflict.
 
 ## Use
 
@@ -109,7 +112,7 @@ Six conventions run through the suite, and each one is enforced somewhere you ca
    `cti_method.stix.validate_bundle`; a test asserts both report identical findings.
 5. **TLP 2.0, not an alias.** The markings are the OASIS TLP 2.0 objects, so `TLP:CLEAR` and
    `TLP:AMBER+STRICT` are first-class and `TLP:WHITE` is recognised only to be flagged.
-6. **The trace pins content, not just an id.** `<id>@<sha256:12>` travels in the STIX
+6. **The trace pins content, not just an id.** `<id>@<sha256>` travels in the STIX
    `external_references`, so an edited dossier no longer keeps the same identity silently.
 7. **Not checked is not clean, including size.** Input over 8 MiB, JSON nested beyond 64
    levels or a bundle over 20,000 objects is refused with exit code 2, not walked until it

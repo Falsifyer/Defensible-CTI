@@ -36,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
     grade_cmd = sub.add_parser("grade", help="Grade a claim on two axes.")
     grade_cmd.add_argument("--confidence", required=True, choices=["high", "moderate", "low"])
     grade_cmd.add_argument("--probability", default=None)
+    grade_cmd.add_argument(
+        "--probability-of", default=None, help="The proposition the probability is about."
+    )
 
     assess_cmd = sub.add_parser("assess", help="Grade a full claim from a JSON document.")
     assess_cmd.add_argument("path")
@@ -128,7 +131,7 @@ def _run_assess(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "grade":
-        emit(grade(args.confidence, args.probability))
+        emit(grade(args.confidence, args.probability, args.probability_of))
         return OK
 
     def body() -> int:

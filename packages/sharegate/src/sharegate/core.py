@@ -107,7 +107,13 @@ def check_tlp(document: str | dict[str, Any]) -> dict[str, Any]:
         effective = unique[0] if len(unique) == 1 else None
 
     if not labels:
-        findings.append(finding("tlp-missing", MEDIUM, "Product carries no TLP marking"))
+        findings.append(
+            finding(
+                "tlp-missing",
+                HIGH,
+                "Product carries no TLP marking: it does not say how far it may travel",
+            )
+        )
     else:
         unique = sorted(set(labels))
         if len(unique) > 1:

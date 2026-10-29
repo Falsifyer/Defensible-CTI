@@ -66,7 +66,7 @@ would change it, and whether it may leave.*
 >
 > The rest follows: a PIR must name the decision it informs; a hunt plan must be falsifiable
 > and have a closure criterion; a STIX bundle must say who says it, when, and how far it may
-> travel. The identifiers travel with the product as `<id>@<sha256:12>`, so a bundle can be
+> travel. The identifiers travel with the product as `<id>@<sha256>`, so a bundle can be
 > walked back to the judgement and the requirement it came from.
 >
 > What it is not: a platform, a feed ingester, or an attribution engine. The corpus is

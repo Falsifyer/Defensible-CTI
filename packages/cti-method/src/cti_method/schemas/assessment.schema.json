@@ -64,7 +64,8 @@
         "confidence": { "enum": ["high", "moderate", "low"] },
         "probability": {
           "enum": ["nearly_certain", "very_likely", "likely", "roughly_even_chance", "unlikely", "very_unlikely"]
-        }
+        },
+        "probability_of": { "type": "string", "minLength": 1, "description": "The proposition the probability is about." }
       }
     },
     "adjudication": {

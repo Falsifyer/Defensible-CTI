@@ -53,7 +53,7 @@ def test_the_judgement_hash_in_the_bundle_is_the_hash_of_the_judgement(tmp_path:
     data = json.loads(bundle.read_text(encoding="utf-8"))
     report = next(obj for obj in data["objects"] if obj["type"] == "report")
     references = {item["source_name"]: item["external_id"] for item in report["external_references"]}
-    expected = content_hash(_dossier())[:12]
+    expected = content_hash(_dossier())
     assert references["cti-suite:assessment"] == f"nightjar-vs-saltwind@{expected}"
     assert verdict["ceiling"] in {"low", "moderate", "high"}
 
