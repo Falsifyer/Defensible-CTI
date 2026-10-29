@@ -105,7 +105,7 @@ jobs:
           print("trace ok:", refs)
           PY
       - name: El ledger verifica
-        run: uv run assessment ledger demo/out/ledger.jsonl --verify
+        run: uv run assessment ledger demo/out/ledger.jsonl --verify --head-file demo/out/ledger.head
       - name: The readable product exists
         run: test -s demo/out/product.md
 
