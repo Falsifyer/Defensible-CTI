@@ -20,7 +20,8 @@ the judgements.
 - A comparison with **one hypothesis** (`no-hypotheses`): one option is not analysis.
 - A claim whose declared sources derive from one another: independence is structural, not
   typographic, so a derived source does not raise the ceiling.
-- A ledger entry that was edited after it was written: `ledger --verify` reports the line.
+- A ledger entry that was edited after it was written: `ledger --verify --head-file` reports
+  the line; a bare `--verify` is refused because it cannot see a truncated tail.
 
 ## What it is not
 

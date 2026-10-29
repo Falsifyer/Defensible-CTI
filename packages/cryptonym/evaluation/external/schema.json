@@ -34,6 +34,15 @@
         "source_id": { "type": "string" },
         "reliability": { "enum": ["A", "B", "C", "D", "E", "F", ""] },
         "direct": { "type": "boolean" },
+        "artifact": {
+          "type": "object",
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "enum": ["hash", "domain", "url", "ip", "certificate", "pattern", "handle", "other"] },
+            "value": { "type": "string", "minLength": 1 },
+            "source": { "type": "string", "minLength": 1 }
+          }
+        },
         "type": {
           "enum": ["infrastructure", "code", "operator", "tactics", "linguistic", "structural", "open_source"]
         },
@@ -41,11 +50,20 @@
           "type": "object",
           "additionalProperties": { "enum": ["C", "I", "0"] }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "enum": ["infrastructure", "code", "operator"] } }
+          },
+          "then": { "required": ["artifact"] }
+        }
+      ]
     },
     "source": {
       "type": "object",
-      "required": ["publisher", "url", "category", "kind"],
+      "required": ["publisher", "url", "category", "kind", "accessed_at", "snapshot_sha256"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "publisher": { "type": "string", "minLength": 1 },

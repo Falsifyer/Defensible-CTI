@@ -17,7 +17,8 @@
   `unsupported` beside the metrics.
 - **External corpus scaffold**: `evaluation/external/` ships the protocol, JSON Schema, case
   template and `validate_external.py` (schema, placeholders, two adjudicators, two sources,
-  adjudication filter). It deliberately contains **no real cases**.
+  adjudication filter, snapshots and diagnostic artifacts). It deliberately contains **no
+  real cases**.
 - **The unused `pycti` extra was removed.** The OpenCTI adapter consumes an already-parsed
   actor document and never imports `pycti`; the workspace no longer overrides
   `setuptools`/`opentelemetry` for it.

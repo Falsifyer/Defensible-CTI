@@ -114,9 +114,10 @@ exported by `cti_method.grading.policy()` so a consumer renders it instead of re
 
 Each line is an entry with `seq`, `created_at`, `tool`, `claim_id`, `claim_hash`, the
 `claim` itself, `prev_hash` and `hash`. The hash covers the entry without itself, and
-`prev_hash` chains to the line before. `ledger --verify` walks the chain and reports the
-first line where it breaks: editing a claim, dropping a line in the middle or reordering two
-lines is detected.
+`prev_hash` chains to the line before. `ledger --verify --head-file` walks the chain and
+reports the first line where it breaks: editing a claim, dropping a line in the middle or
+reordering two lines is detected. A bare `--verify` is refused (exit 2): it cannot see a
+truncated tail. `--no-anchor` is the explicit opt-out for an internal-chain-only check.
 
 A **tail truncation** leaves a valid prefix, so the chain alone cannot see it. `--head-out`
 writes a manifest with the head and length, and `ledger --verify --head-file` (or

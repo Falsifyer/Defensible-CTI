@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 from cti_method import schema as schema_module
 from cti_method.contract import (
+    CANNOT_CHECK,
     FINDING,
     OK,
     CannotCheck,
@@ -89,6 +91,11 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="Write the current head/length manifest here and print it.",
     )
+    ledger.add_argument(
+        "--no-anchor",
+        action="store_true",
+        help="Explicitly verify only the internal chain; a tail truncation is not detectable.",
+    )
     return parser
 
 
@@ -141,12 +148,25 @@ def main(argv: list[str] | None = None) -> int:
             emit(write_head(args.path, args.write_head))
             return OK
         if args.verify:
+            anchored = any(
+                value is not None
+                for value in (args.head_file, args.expect_head, args.expect_count)
+            )
+            if not anchored and not args.no_anchor:
+                print(
+                    "cannot check: a bare --verify cannot see a truncated tail; pass "
+                    "--head-file or --expect-head/--expect-count, or --no-anchor to "
+                    "verify only the internal chain",
+                    file=sys.stderr,
+                )
+                return CANNOT_CHECK
             result = verify_ledger(
                 args.path,
                 expected_head=args.expect_head,
                 expected_count=args.expect_count,
                 head_file=args.head_file,
             )
+            result["anchored"] = anchored
             emit(result)
             return OK if result["valid"] else FINDING
         emit(read_ledger(args.path))

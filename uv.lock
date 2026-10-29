@@ -2443,17 +2443,25 @@ source = { editable = "packages/stixforge" }
 
 [package.optional-dependencies]
 dev = [
+    { name = "jsonschema" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "stix2" },
 ]
 external = [
+    { name = "jsonschema" },
+    { name = "stix2" },
     { name = "stix2-validator" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "jsonschema", marker = "extra == 'dev'", specifier = ">=4.22" },
+    { name = "jsonschema", marker = "extra == 'external'", specifier = ">=4.22" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
+    { name = "stix2", marker = "extra == 'dev'", specifier = ">=3.0" },
+    { name = "stix2", marker = "extra == 'external'", specifier = ">=3.0" },
     { name = "stix2-validator", marker = "extra == 'external'", specifier = ">=3" },
 ]
 provides-extras = ["dev", "external"]

@@ -147,6 +147,16 @@ def _run_validate(args: argparse.Namespace) -> int:
             print("stixforge: neither stix2 nor stix2-validator is installed; the external "
                   "check was NOT run", file=sys.stderr)
         else:
+            schema = external_check.get("schema")
+            if schema and schema.get("checked"):
+                schema_checked = True
+                if not schema.get("ok"):
+                    result["valid"] = False
+                    detail = "; ".join(schema.get("errors") or ["unknown schema error"])
+                    result["findings"].append({
+                        "code": "external-schema", "severity": "high", "where": schema["tool"],
+                        "message": f"the OASIS JSON schemas rejected the bundle: {detail}",
+                    })
             library = external_check.get("library")
             if library and not library["ok"]:
                 result["valid"] = False
@@ -185,6 +195,10 @@ def _run_validate(args: argparse.Namespace) -> int:
             if not external_output.get("available"):
                 print("\nExternal: nothing installed")
             else:
+                schema = external_output.get("schema")
+                if schema:
+                    print(f"\nExternal (schema): {schema['tool']} -> "
+                          f"{'OK' if schema.get('ok') else 'REJECTED'}")
                 library = external_output.get("library")
                 if library:
                     print(f"\nExternal (library): {library['tool']} -> "

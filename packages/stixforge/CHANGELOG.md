@@ -8,8 +8,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **`tlp` is required.** A product with no marking is refused instead of being built as
   `TLP:CLEAR`; a missing marking is not a public product.
-- **`--external` requires the schema validator.** A `stix2` parse alone is not counted as
-  external schema validation; without `stix2-validator` (or its cache) the command exits 2.
+- **`--external` uses vendored OASIS STIX 2.1 schemas.** It is offline and deterministic;
+  `stix2-validator` is optional. Timestamps are normalised to milliseconds so the official
+  schemas accept the bundle, and the schemas ship inside the wheel (BSD-3, attributed).
 
 ## 0.2.0 — 2026-10-22
 

@@ -16,8 +16,11 @@ keywords = ["cti", "stix", "threat-intelligence", "sharing"]
 stixforge = "stixforge.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
-external = ["stix2-validator>=3"]
+dev = ["pytest>=8", "ruff>=0.6", "jsonschema>=4.22", "stix2>=3.0"]
+external = ["stix2>=3.0", "stix2-validator>=3", "jsonschema>=4.22"]
+
+[tool.setuptools.package-data]
+stixforge = ["schemas/stix2.1/LICENSE", "schemas/stix2.1/README.md", "schemas/stix2.1/*/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

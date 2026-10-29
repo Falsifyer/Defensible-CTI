@@ -18,6 +18,11 @@
       "source_id": "s1",
       "reliability": "C",
       "type": "infrastructure",
+      "artifact": {
+        "kind": "pattern",
+        "value": "REPLACE-WITH-THE-OBSERVABLE",
+        "source": "REPLACE-WHERE-IT-WAS-VERIFIED"
+      },
       "consistency": {
         "same_actor": "0",
         "distinct_but_overlapping": "0",

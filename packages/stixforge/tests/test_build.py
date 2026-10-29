@@ -130,7 +130,7 @@ def test_valid_until_is_emitted_and_checked():
     indicadores = [{**PRODUCTO["indicators"][0], "valid_until": "2027-01-01T00:00:00Z"}]
     b = build({**PRODUCTO, "indicators": indicadores})
     indicator = next(o for o in b["objects"] if o["type"] == "indicator")
-    assert indicator["valid_until"] == "2027-01-01T00:00:00Z"
+    assert indicator["valid_until"] == "2027-01-01T00:00:00.000Z"
 
     with pytest.raises(ValueError, match="valid_until"):
         build({**PRODUCTO, "indicators": [{**PRODUCTO["indicators"][0], "valid_until": "2020-01-01T00:00:00Z"}]})

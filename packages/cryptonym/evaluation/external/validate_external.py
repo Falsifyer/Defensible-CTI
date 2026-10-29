@@ -99,6 +99,46 @@ def check(document: dict[str, Any], schema_path: Path) -> list[dict[str, str]]:
             findings.append(finding("duplicate-id", "high", "duplicate case id", where=where))
         seen.add(str(case.get("id") or ""))
 
+        source_ids = {
+            str(source.get("id"))
+            for source in case.get("sources") or []
+            if isinstance(source, dict) and source.get("id")
+        }
+        for evidence in case.get("evidence") or []:
+            if not isinstance(evidence, dict):
+                continue
+            source_id = evidence.get("source_id")
+            if source_id and str(source_id) not in source_ids:
+                findings.append(
+                    finding(
+                        "evidence-source",
+                        "high",
+                        f"evidence {evidence.get('id')!r} cites unknown source {source_id!r}",
+                        where=where,
+                    )
+                )
+            if evidence.get("type") in {"infrastructure", "code", "operator"} and not evidence.get(
+                "artifact"
+            ):
+                findings.append(
+                    finding(
+                        "evidence-artifact",
+                        "high",
+                        f"diagnostic evidence {evidence.get('id')!r} has no structured artifact",
+                        where=where,
+                    )
+                )
+        for source in case.get("sources") or []:
+            if isinstance(source, dict) and source.get("snapshot_sha256") == "0" * 64:
+                findings.append(
+                    finding(
+                        "snapshot-placeholder",
+                        "high",
+                        f"source {source.get('id')!r} still has the zero snapshot hash",
+                        where=where,
+                    )
+                )
+
         for text in _strings(case):
             for placeholder in PLACEHOLDERS:
                 if placeholder in text:

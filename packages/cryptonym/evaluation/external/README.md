@@ -51,8 +51,10 @@ $ python evaluation/run_evaluation.py --adjudicated evaluation/external/corpus.j
 ```
 
 `validate_external.py` exits 2 if it cannot read the corpus or the schema, 1 on a high
-finding (placeholder, one adjudicator, one source, unearned truth), and 0 only when the
-checklist is clean.
+finding (placeholder, one adjudicator, one source, unearned truth, missing snapshot or
+artifact), and 0 only when the checklist is clean. The schema requires `accessed_at` and
+`snapshot_sha256` on every source and an `artifact` on every `infrastructure`/`code`/
+`operator` item.
 
 `--strict` fails if a binary truth was not earned from independent sources. `--check`
 compares the projection with `expected.json`; generate that file only after the held-out

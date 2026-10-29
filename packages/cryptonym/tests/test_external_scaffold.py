@@ -87,6 +87,7 @@ def _valid_corpus() -> dict:
                         "source": "A",
                         "source_id": "s1",
                         "type": "code",
+                        "artifact": {"kind": "hash", "value": "a" * 64, "source": "Vendor A"},
                         "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"},
                     }
                 ],
@@ -97,6 +98,8 @@ def _valid_corpus() -> dict:
                         "url": "https://a.example/source",
                         "category": "vendor",
                         "kind": "asserts-same",
+                        "accessed_at": "2026-01-01",
+                        "snapshot_sha256": "a" * 64,
                     }
                 ],
                 "adjudication": {
@@ -110,12 +113,16 @@ def _valid_corpus() -> dict:
                             "url": "https://a.example/source",
                             "category": "vendor",
                             "kind": "asserts-same",
+                            "accessed_at": "2026-01-01",
+                            "snapshot_sha256": "a" * 64,
                         },
                         {
                             "publisher": "B",
                             "url": "https://b.example/source",
                             "category": "vendor",
                             "kind": "asserts-same",
+                            "accessed_at": "2026-01-01",
+                            "snapshot_sha256": "a" * 64,
                         },
                     ],
                 },
@@ -136,6 +143,14 @@ def test_the_validator_rejects_one_adjudicator_for_a_binary_truth(tmp_path: Path
     code, payload = _run_validator(tmp_path, document)
     assert code == 1
     assert "binary-adjudicators" in {item["code"] for item in payload["findings"]}
+
+
+def test_the_validator_rejects_diagnostic_evidence_without_an_artifact(tmp_path: Path) -> None:
+    document = _valid_corpus()
+    document["cases"][0]["evidence"][0].pop("artifact")
+    code, payload = _run_validator(tmp_path, document)
+    assert code == 1
+    assert "evidence-artifact" in {item["code"] for item in payload["findings"]}
 
 
 def test_the_validator_rejects_a_derived_second_source(tmp_path: Path) -> None:

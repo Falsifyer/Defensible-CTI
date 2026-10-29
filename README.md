@@ -6,7 +6,7 @@ decision behind it, a judgement without evidence for it, a grade the evidence ca
 a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
 
 > **Status: 0.1, proof of concept / portfolio — not production.** The mechanism is tested
-> (300+ tests, CI, one STIX validator, published schemas); real-world accuracy is **not**
+> (test suite, CI, one STIX validator, published schemas); real-world accuracy is **not**
 > claimed, and the corpus is illustrative — it says so. It reports calls, abstentions and
 > unsupported cases separately (currently 23 / 1 / 1); none of those is an accuracy
 > claim. There is no support SLA: issues are read, not promised. See [`SCOPE.md`](SCOPE.md).
@@ -21,7 +21,7 @@ $ git clone https://github.com/Falsifyer/Defensible-CTI && cd Defensible-CTI
 $ uv sync --all-packages
 $ uv run stixforge build demo/product.json -o /tmp/bundle.json
 $ uv run sharegate check /tmp/bundle.json          # exit 1 if it may not travel
-$ uv run stixforge validate /tmp/bundle.json          # add --external for the schema validator
+$ uv run stixforge validate /tmp/bundle.json --external  # vendored OASIS schemas, offline
 ```
 
 The rest — requirements, the evidence ceiling, the hunt plan, the ledger — is what makes that

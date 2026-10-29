@@ -93,8 +93,16 @@ def test_ledger_verify_command(tmp_path: Path, capsys: pytest.CaptureFixture[str
 
     path = tmp_path / "ledger.jsonl"
     append_claim(str(path), {"id": "c1"})
-    assert main(["ledger", str(path), "--verify"]) == 0
+    assert main(["ledger", str(path), "--verify", "--no-anchor"]) == 0
     assert json.loads(capsys.readouterr().out)["valid"] is True
+
+
+def test_a_bare_verify_is_not_clean(tmp_path: Path) -> None:
+    from assessment.core import append_claim
+
+    path = tmp_path / "ledger.jsonl"
+    append_claim(str(path), {"id": "c1"})
+    assert main(["ledger", str(path), "--verify"]) == 2
 
 
 def test_ledger_head_file_detects_a_truncated_tail(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -128,7 +136,7 @@ def test_ledger_head_file_detects_a_truncated_tail(tmp_path: Path, capsys: pytes
 
 def test_cli_returns_two_when_the_file_cannot_be_read(tmp_path: Path) -> None:
     assert main(["assess", str(tmp_path / "missing.json")]) == 2
-    assert main(["ledger", str(tmp_path / "missing.jsonl"), "--verify"]) == 1
+    assert main(["ledger", str(tmp_path / "missing.jsonl"), "--verify", "--no-anchor"]) == 1
 
 
 def test_cli_returns_two_for_a_structurally_invalid_claim(tmp_path: Path) -> None:

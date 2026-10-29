@@ -12,8 +12,8 @@ code is tested and reproducible; the claims about the world are not made.
 - A reference implementation of an analytic method: PIR → graded judgement → ledger →
   hunt plan → STIX product → pre-share gate.
 - A set of local command-line tools and a local MCP facade.
-- A test bench: 375 tests, a synthetic/illustrative corpus, a published evaluation protocol
-  for a future external corpus.
+- A test bench: the test suite, a synthetic/illustrative corpus, and a published evaluation
+  protocol for a future external corpus.
 - A blog/portfolio project, run on personal equipment and public or synthetic data.
 
 ## What it is not

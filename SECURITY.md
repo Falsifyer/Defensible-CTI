@@ -23,7 +23,8 @@ executes anything from its input. What matters:
   not come from.
 - A ledger entry that can be edited, or a tail truncated, without `assessment ledger
   --verify` noticing. An anchored `--head-file`/`--expect-head` run is the check that closes
-  the tail; a bare `--verify` is documented as not seeing it.
+  the tail; a bare `--verify` is now refused (exit 2), and `--no-anchor` is the explicit
+  opt-out.
 - Input that exhausts memory, or a path the user passes by mistake.
 
 ## Dependency advisories

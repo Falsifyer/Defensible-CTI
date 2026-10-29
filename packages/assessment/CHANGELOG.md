@@ -11,9 +11,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **A malformed claim is exit 2**, not a traceback with exit 1.
 - **Ties are reported** as `tied` and `favoured: null`; the ceiling is the most restrictive
   across the tied hypotheses.
-- **The ledger can be anchored.** `--head-out` writes the head and length; `ledger --verify
-  --head-file` (or `--expect-head`/`--expect-count`) detects a truncated tail, which the
-  bare chain cannot see.
+- **The ledger must be anchored.** `--head-out` writes the head and length;
+  `ledger --verify --head-file` (or `--expect-head`/`--expect-count`) detects a truncated
+  tail. A bare `--verify` now exits 2; `--no-anchor` is the explicit internal-chain-only
+  check.
 - **Claim mode is explicit.** `mode="claim"` requires `claim_type` and
   `why_no_alternatives`; `direct` is documentary-only; an `identity` claim is refused with
   `identity-in-claim-mode`; a one-hypothesis claim without `mode` is refused.

@@ -56,11 +56,17 @@ Record this structurally, not in prose:
 - `url` — the document actually read;
 - `category` — `government`, `vendor`, `community` or `osint`;
 - `kind` — `asserts-same`, `asserts-distinct`, `overlap` or `silent`;
-- `derived_from` — the publisher(s) this document repeats.
+- `derived_from` — the publisher(s) this document repeats;
+- `accessed_at` and `snapshot_sha256` — when the document was read and the hash of the
+  bytes seen.
 
 A source that derives from another source present counts once. A second document from the
 same publisher counts once. `overlap` is **not** support for a binary truth; `silent` is
 not evidence of the opposite.
+
+For `infrastructure`, `code` and `operator` evidence, record a structured `artifact`
+(`kind` + `value`: hash, domain, URL, IP, certificate, pattern or handle) and where it was
+verified. Prose alone is not enough for an identity call.
 
 For each binary case, at least **two independent sources must actually assert the declared
 direction**, or the truth is `contested`/`unadjudicated`. See
