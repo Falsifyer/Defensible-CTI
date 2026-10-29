@@ -34,7 +34,7 @@ eval:
 	$(UV) run python packages/cryptonym/evaluation/run_evaluation.py --adjudicated --check --strict
 
 security:
-	$(UV) run pip-audit --skip-editable --ignore-vuln PYSEC-2026-3447
+	$(UV) run pip-audit --skip-editable
 	$(UV) run pip check
 
 build:

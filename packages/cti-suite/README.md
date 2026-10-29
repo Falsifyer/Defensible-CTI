@@ -53,7 +53,7 @@ Each tool calls the same function the CLI calls; nothing is reimplemented here.
 ## Install
 
 ```console
-$ uv sync --all-packages --all-extras --no-extra opencti
+$ uv sync --all-packages --all-extras
 $ ctisuite --version
 ```
 

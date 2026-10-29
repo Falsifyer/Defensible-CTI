@@ -28,13 +28,9 @@ executes anything from its input. What matters:
 
 ## Dependency advisories
 
-`pip-audit` and `pip check` run in CI. One advisory is accepted and documented:
-`PYSEC-2026-3447` (setuptools 82.0.1, fixed in 83). The `opencti` extra pins pycti, which
-pins setuptools to a band that excludes 83; setuptools is a build backend and is never
-imported by the suite. The default sync therefore excludes the `opencti` extra
-(`--no-extra opencti`), which keeps `pip check` clean; enabling it intentionally reintroduces
-the unsupported pycti pin combination. If pycti lifts its pin, the ignore is removed in the
-same commit.
+`pip-audit` and `pip check` run in CI. No advisory is ignored. The `pycti` extra was
+removed because the OpenCTI adapter consumes an already-parsed actor document and never
+imports `pycti`; the workspace no longer overrides `setuptools` or `opentelemetry`.
 
 ## Out of scope
 

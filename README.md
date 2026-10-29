@@ -5,11 +5,11 @@ the prose.** Each tool refuses something the cycle should not allow: a requireme
 decision behind it, a judgement without evidence for it, a grade the evidence cannot support,
 a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
 
-> **Status: 0.1, reference implementation of an analytic method.** The mechanism is tested
+> **Status: 0.1, proof of concept / portfolio — not production.** The mechanism is tested
 > (300+ tests, CI, one STIX validator, published schemas); real-world accuracy is **not**
 > claimed, and the corpus is illustrative — it says so. It reports calls, abstentions and
 > unsupported cases separately (currently 23 / 1 / 1); none of those is an accuracy
-> claim. There is no support SLA: issues are read, not promised.
+> claim. There is no support SLA: issues are read, not promised. See [`SCOPE.md`](SCOPE.md).
 
 ## Start with the door
 
@@ -70,13 +70,11 @@ Every package keeps its own name, its own command, its own version and its own `
 ## Install
 
 ```console
-$ uv sync --all-packages --all-extras --no-extra opencti   # or: make install
+$ uv sync --all-packages --all-extras   # or: make install
 ```
 
-That creates one virtual environment with the eight packages in editable mode. The
-`opencti` extra is deliberately excluded: `pycti` pins `setuptools`/`opentelemetry` outside
-the bands this workspace overrides for security, so `pip check` reports it. Add
-`--extra opencti` when you need the adapter and accept that documented conflict.
+That creates one virtual environment with the eight packages in editable mode. The OpenCTI
+adapter consumes an already-parsed actor document; it does not depend on `pycti`.
 
 ## Use
 

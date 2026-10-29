@@ -44,7 +44,7 @@ jobs:
         # The tag -> package mapping is code with tests, not a `case` in YAML.
         run: uv run --package cti-suite python -m cti_suite.release --tag "$TAG" --check --github-output
 
-      - run: uv sync --all-packages --all-extras --no-extra opencti
+      - run: uv sync --all-packages --all-extras
 
       - name: The tag version is the package version
         run: uv run python -m cti_suite.release --tag "${{ steps.pkg.outputs.tag }}" --check

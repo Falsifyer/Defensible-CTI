@@ -10,9 +10,11 @@ follows is the framing, the demo, and the announcement.
 
 ## The frame
 
-**Reference implementation of an analytic method**, not a platform. The competitor is not
-OpenCTI or MISP — those store and correlate; this one refuses. The competitor is the
-spreadsheet, the `TLP:WHITE` copied from a template, and the confidence field someone typed.
+**Proof of concept / portfolio: a reference implementation of an analytic method**, not a
+platform and not a production system. The competitor is not OpenCTI or MISP — those store
+and correlate; this one refuses. The competitor is the spreadsheet, the `TLP:WHITE` copied
+from a template, and the confidence field someone typed. See
+[`../SCOPE.md`](../SCOPE.md).
 
 Keep the scope in every sentence:
 

@@ -18,6 +18,9 @@
 - **External corpus scaffold**: `evaluation/external/` ships the protocol, JSON Schema, case
   template and `validate_external.py` (schema, placeholders, two adjudicators, two sources,
   adjudication filter). It deliberately contains **no real cases**.
+- **The unused `pycti` extra was removed.** The OpenCTI adapter consumes an already-parsed
+  actor document and never imports `pycti`; the workspace no longer overrides
+  `setuptools`/`opentelemetry` for it.
 - **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
   a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
   baselines were regenerated.
