@@ -86,6 +86,15 @@ def test_without_an_author_it_fails():
         build({**PRODUCTO, "author": ""})
 
 
+def test_without_a_tlp_it_fails_instead_of_defaulting_to_clear():
+    """C1: a forgotten marking is not a public product."""
+    sin_tlp = {k: v for k, v in PRODUCTO.items() if k != "tlp"}
+    with pytest.raises(ValueError, match="tlp"):
+        build(sin_tlp)
+    with pytest.raises(ValueError, match="tlp"):
+        build({**PRODUCTO, "tlp": "   "})
+
+
 def test_with_nothing_to_share_it_fails():
     vacio = {k: v for k, v in PRODUCTO.items() if k not in ("observables", "indicators", "malware")}
     with pytest.raises(ValueError, match="nothing to share"):
@@ -121,7 +130,7 @@ def test_valid_until_is_emitted_and_checked():
     indicadores = [{**PRODUCTO["indicators"][0], "valid_until": "2027-01-01T00:00:00Z"}]
     b = build({**PRODUCTO, "indicators": indicadores})
     indicator = next(o for o in b["objects"] if o["type"] == "indicator")
-    assert indicator["valid_until"] == "2027-01-01T00:00:00Z"
+    assert indicator["valid_until"] == "2027-01-01T00:00:00.000Z"
 
     with pytest.raises(ValueError, match="valid_until"):
         build({**PRODUCTO, "indicators": [{**PRODUCTO["indicators"][0], "valid_until": "2020-01-01T00:00:00Z"}]})

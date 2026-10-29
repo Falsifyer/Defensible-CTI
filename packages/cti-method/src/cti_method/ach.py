@@ -19,8 +19,10 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Sequence
+from typing import Any
 
 from cti_method.evidence import Consistency, Evidence
+from cti_method.sources import attribute, registry
 
 
 def _labels(hypotheses: Sequence[str] | None) -> list[str]:
@@ -46,48 +48,231 @@ def consistency_matrix(
 
 
 def inconsistency_counts(
-    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
 ) -> dict[str, int]:
-    """Count, per hypothesis, how many items of evidence contradict it."""
+    """Count, per hypothesis, how many independent voices contradict it.
+
+    The raw item count is not used: one source restated twice would otherwise look like
+    two contradictions. The weighted score is the ranking; this count is the visible
+    second key and the display.
+    """
     labels = _labels(hypotheses)
     matrix = consistency_matrix(evidence, labels)
+    known = registry(list(sources) if sources is not None else None)
+    voices = {item.id: _voice_key(item, known) for item in evidence}
     counts: Counter[str] = Counter()
-    for row in matrix.values():
-        for label in labels:
-            if row[label] is Consistency.INCONSISTENT:
-                counts[label] += 1
+    for label in labels:
+        contradicting = {
+            voices.get(evidence_id, evidence_id)
+            for evidence_id, row in matrix.items()
+            if row[label] is Consistency.INCONSISTENT
+        }
+        counts[label] = len(contradicting)
     return {label: counts[label] for label in labels}
 
 
+def _voice_key(item: Evidence, known: dict[str, Any]) -> str:
+    """The voice one item represents, for ranking: a publisher, not a repeat.
+
+    The registry is the same one the ceiling uses. Without it, the normalised source
+    string is the voice. Two items from one voice contribute at most their strongest
+    inconsistency, so restating a claim does not move the ranking.
+    """
+    key = attribute(item.source, item.source_id, known)
+    if key.registered:
+        entry = known.get(key.key)
+        publisher = (entry.publisher if entry else "").strip().lower()
+        return publisher or key.key
+    return key.key
+
+
 def inconsistency_scores(
-    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
+    *,
+    scope: str = "all",
 ) -> dict[str, float]:
-    """Weighted contradiction score per hypothesis: the sum of the weights of the items
-    that contradict it. This is what ranks hypotheses; the raw count is for display."""
+    """Weighted contradiction score per hypothesis, counting independent voices.
+
+    The sum is over voices, not items: if one source restates a contradiction, it counts
+    once (at its strongest weight). ``scope`` selects the evidence that can move an
+    identity ranking: ``identity`` is infrastructure/code/operator, ``context`` is the
+    rest. The default keeps the historical total for display.
+    """
+    if scope not in {"all", "identity", "context"}:
+        raise ValueError(f"unknown scope {scope!r}; expected all, identity or context")
     labels = _labels(hypotheses)
-    matrix = consistency_matrix(evidence, labels)
-    weights = {item.id: item.weight for item in evidence}
+    selected = [
+        item
+        for item in evidence
+        if scope == "all"
+        or (scope == "identity" and item.diagnostic)
+        or (scope == "context" and not item.diagnostic)
+    ]
+    matrix = consistency_matrix(selected, labels)
+    known = registry(list(sources) if sources is not None else None)
+    voices = {item.id: _voice_key(item, known) for item in selected}
+    weights = {item.id: item.weight for item in selected}
     scores: dict[str, float] = {label: 0.0 for label in labels}
-    for evidence_id, row in matrix.items():
-        for label in labels:
+    for label in labels:
+        per_voice: dict[str, float] = {}
+        for evidence_id, row in matrix.items():
             if row[label] is Consistency.INCONSISTENT:
-                scores[label] += weights.get(evidence_id, 1.0)
+                voice = voices.get(evidence_id, evidence_id)
+                per_voice[voice] = max(per_voice.get(voice, 0.0), weights.get(evidence_id, 1.0))
+        scores[label] = sum(per_voice.values())
     return {label: round(score, 4) for label, score in scores.items()}
 
 
-def least_inconsistent(
+def addressed_hypotheses(
     evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+) -> set[str]:
+    """Hypotheses at least one item addresses with a non-neutral consistency.
+
+    A hypothesis no item addresses has no inconsistencies by construction. Without this
+    guard it wins every tie by silence, which is the opposite of ACH: the alternatives must
+    be tested, not merely left unmentioned.
+    """
+    labels = set(_labels(hypotheses))
+    return {
+        label
+        for item in evidence
+        for label, value in item.consistency.items()
+        if label in labels and value is not Consistency.NEUTRAL
+    }
+
+
+def supported_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[str] | None = None
+) -> set[str]:
+    """Hypotheses with at least one **diagnostic** item consistent with them.
+
+    ``addressed`` says the evidence mentions the hypothesis; ``supported`` says something
+    that can bear on identity actually points at it. A hypothesis with only linguistic or
+    structural consistency is addressed but unsupported, and cannot be the favourite of an
+    identity question.
+    """
+    labels = set(_labels(hypotheses))
+    return {
+        label
+        for item in evidence
+        if item.diagnostic
+        for label, value in item.consistency.items()
+        if label in labels and value is Consistency.CONSISTENT
+    }
+
+
+def least_inconsistent(
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
 ) -> list[str]:
     """Rank hypotheses by least weighted inconsistency, most favoured first.
 
-    Ties are broken by the raw count and then by hypothesis order, for determinism and
-    not by strength of support.
+    Addressed hypotheses come before unaddressed ones; the order is deterministic, but
+    the first item is not a tie-breaker: use :func:`tied_at_top` before presenting one
+    hypothesis as *the* favoured one.
     """
     labels = _labels(hypotheses)
-    scores = inconsistency_scores(evidence, labels)
-    counts = inconsistency_counts(evidence, labels)
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
+    counts = inconsistency_counts(evidence, labels, sources)
+    addressed = addressed_hypotheses(evidence, labels)
+    supported = supported_hypotheses(evidence, labels)
     order = list(labels)
-    return sorted(order, key=lambda label: (scores[label], counts[label], order.index(label)))
+    # Addressed first, then actually supported. Identity contradictions outrank context:
+    # a linguistic disagreement cannot outweigh a piece of infrastructure evidence.
+    return sorted(
+        order,
+        key=lambda label: (
+            label not in addressed,
+            label not in supported,
+            identity[label],
+            context[label],
+            counts[label],
+            order.index(label),
+        ),
+    )
+
+
+def tied_at_top(
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
+) -> list[str]:
+    """The hypotheses that share the best (voice-weighted score, voice count).
+
+    A single-element list means there is a unique favourite; an empty list means there are
+    no hypotheses. Never resolve a tie by the order in which the analyst wrote the labels.
+    """
+    labels = _labels(hypotheses)
+    ranking = least_inconsistent(evidence, labels, sources)
+    if not ranking:
+        return []
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
+    counts = inconsistency_counts(evidence, labels, sources)
+    addressed = addressed_hypotheses(evidence, labels)
+    supported = supported_hypotheses(evidence, labels)
+    best = (
+        ranking[0] in addressed,
+        ranking[0] in supported,
+        identity[ranking[0]],
+        context[ranking[0]],
+        counts[ranking[0]],
+    )
+    return [
+        label
+        for label in ranking
+        if (
+            label in addressed,
+            label in supported,
+            identity[label],
+            context[label],
+            counts[label],
+        )
+        == best
+    ]
+
+
+def ranking_basis(
+    evidence: list[Evidence],
+    hypotheses: Sequence[str] | None = None,
+    sources: Sequence[Any] | None = None,
+) -> dict[str, Any]:
+    """Explain the ranking: what each hypothesis has, and in which order it is judged.
+
+    The order is ``addressed`` → ``supported`` → identity inconsistency → context
+    inconsistency → independent voices. The output is deliberately data, not prose, so a
+    renderer can show the basis without reimplementing the rule.
+    """
+    labels = _labels(hypotheses)
+    identity = inconsistency_scores(evidence, labels, sources, scope="identity")
+    context = inconsistency_scores(evidence, labels, sources, scope="context")
+    counts = inconsistency_counts(evidence, labels, sources)
+    addressed = addressed_hypotheses(evidence, labels)
+    supported = supported_hypotheses(evidence, labels)
+    ranking = least_inconsistent(evidence, labels, sources)
+    return {
+        "rule": (
+            "addressed > supported > identity inconsistency > context inconsistency "
+            "> independent voices"
+        ),
+        "ranking": ranking,
+        "hypotheses": {
+            label: {
+                "addressed": label in addressed,
+                "supported": label in supported,
+                "identity_inconsistency": identity[label],
+                "context_inconsistency": context[label],
+                "voices": counts[label],
+            }
+            for label in labels
+        },
+    }
 
 
 def discriminating_evidence(evidence: list[Evidence]) -> list[str]:

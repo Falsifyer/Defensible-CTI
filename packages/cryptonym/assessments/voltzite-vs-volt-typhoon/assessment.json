@@ -85,7 +85,11 @@
       "consistency": {"same_actor": "C", "distinct_but_overlapping": "0", "brokered_shared_access": "0"}
     }
   ],
-  "judgement": {"confidence": "moderate", "probability": "unlikely"},
+  "judgement": {
+    "confidence": "moderate",
+    "probability": "unlikely",
+    "probability_of": "same_actor"
+  },
   "review_trigger": "A vendor or government statement that asserts or denies identity; a new joint advisory",
   "gaps": [
     "Vendor taxonomy is internal and seldom explained; 'overlap' is not a standardised term.",

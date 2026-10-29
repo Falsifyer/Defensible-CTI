@@ -42,15 +42,8 @@ constraint-dependencies = [
   "pyjwt>=2.15.0",
   "starlette>=1.3.1",
 ]
-# pycti (an optional extra of cryptonym) pins setuptools~=82.0.0 and opentelemetry-*~=1.35.0;
-# those pins carry GHSA-xmj3-9gf7-h52w and CVE-2026-114603. Constraints cannot lift a `~=` pin,
-# so they are overridden here for the whole workspace. Checked against pycti 7.261026.0 on
-# 2026-10-26: the latest release still carries both pins.
-override-dependencies = [
-  "setuptools>=84.1.0",
-  "opentelemetry-api>=1.45.1",
-  "opentelemetry-sdk>=1.45.1",
-]
+# The pycti extra was removed: the OpenCTI adapter consumes an already-parsed actor
+# document and never imports pycti. There is no global override of setuptools/opentelemetry.
 
 [tool.pytest.ini_options]
 testpaths = ["packages"]

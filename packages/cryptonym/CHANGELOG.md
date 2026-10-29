@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Ties are surfaced** in `assess` and `render` (`tied`, `favoured: null`) instead of
+  being resolved by the order of the hypothesis list.
+- **The ACH ranking counts voices**, so a source restated twice cannot flip it.
+- **`brokered_shared_access` is opt-in.** The default is `same_actor` vs
+  `distinct_but_overlapping`; a third hypothesis no evidence addresses would otherwise tie
+  every case at zero inconsistency. Declare it when the evidence suggests a broker.
+- **A hypothesis needs diagnostic support.** Linguistic/structural consistency is reported
+  as `consistent_but_unsupported` and cannot make a hypothesis the favourite.
+- **The ranking separates identity from context** and reports `ranking_basis`; the corpus
+  has two brokered cases (supported and discarded) and reports `calls`, `abstentions` and
+  `unsupported` beside the metrics.
+- **External corpus scaffold**: `evaluation/external/` ships the protocol, JSON Schema, case
+  template and `validate_external.py` (schema, placeholders, two adjudicators, two sources,
+  adjudication filter, snapshots and diagnostic artifacts). It deliberately contains **no
+  real cases**.
+- **The unused `pycti` extra was removed.** The OpenCTI adapter consumes an already-parsed
+  actor document and never imports `pycti`; the workspace no longer overrides
+  `setuptools`/`opentelemetry` for it.
+- **The evaluation does not score a tie by list order.** `tied`/`abstained` are reported;
+  a tie that includes `same_actor` is an abstention, not a call. The golden and adjudicated
+  baselines were regenerated.
+- **The MCP `snapshot_source` tool cannot be told to reach a private address**: the
+  `allow_private` opt-out is CLI-only, not an agent argument.
+
 ## 0.7.0 — 2026-10-22
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/assessment.schema.json",
+  "$id": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/assessment.schema.json",
   "title": "Graded assessment (dossier or claim)",
   "description": "One body of evidence, at least two competing hypotheses and a declared grade. `judgement.confidence` is required on purpose: there is no silent default, and `assessment assess` refuses a claim that declares no grade.",
   "type": "object",
@@ -11,6 +11,9 @@
     "version": { "type": "string" },
     "requirement_id": { "type": "string", "minLength": 1, "description": "The PIR this answers." },
     "question": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["ach", "claim"] },
+    "claim_type": { "enum": ["documentary", "estimative", "identity"] },
+    "why_no_alternatives": { "type": "string", "minLength": 1 },
     "tlp": { "type": "string", "pattern": "^TLP:(CLEAR|GREEN|AMBER|AMBER\\+STRICT|RED)$" },
     "review_by": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
     "review_trigger": { "type": "string" },
@@ -64,7 +67,8 @@
         "confidence": { "enum": ["high", "moderate", "low"] },
         "probability": {
           "enum": ["nearly_certain", "very_likely", "likely", "roughly_even_chance", "unlikely", "very_unlikely"]
-        }
+        },
+        "probability_of": { "type": "string", "minLength": 1, "description": "The proposition the probability is about." }
       }
     },
     "adjudication": {

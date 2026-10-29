@@ -2,6 +2,17 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **A corrupt `.json` bundle is `checked: false` and exit 2**, not a text product with
+  `shareable: true`. The text rule still applies to files that are not JSON.
+- **Unmarked content SDOs are refused**: `infrastructure`, `note`, `attack-pattern` and
+  `relationship` no longer slip through the old whitelist.
+- **Unmarked text is refused too**: `tlp-missing` is now a high finding, not a medium warning;
+  silence is not `TLP:CLEAR`.
+
 ## 0.2.0 — 2026-10-22
 
 ### Changed

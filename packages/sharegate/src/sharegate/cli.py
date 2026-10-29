@@ -36,7 +36,10 @@ def main(argv: list[str] | None = None) -> int:
             result = check_tlp(text)
             emit(result)
             return OK if result["clean"] else FINDING
-        result = pre_share(text, today=getattr(args, "today", None))
+        looks_like_json = args.path.lower().endswith(".json") or text.lstrip().startswith(("{", "["))
+        result = pre_share(
+            text, today=getattr(args, "today", None), require_json=looks_like_json
+        )
         emit(result)
         if result.get("checked") is False:
             return CANNOT_CHECK

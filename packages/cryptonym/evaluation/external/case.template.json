@@ -1,0 +1,51 @@
+{
+  "_note": "TEMPLATE, NOT A CASE. Copy this file, replace every placeholder, and delete this field. Do not add it to a corpus until the protocol and the two adjudicators are in place.",
+  "id": "REPLACE-ME",
+  "split": "development",
+  "question": "Are <designation A> and <designation B> the same actor?",
+  "subjects": [
+    { "vendor": "REPLACE-VENDOR-A", "name": "REPLACE-NAME-A" },
+    { "vendor": "REPLACE-VENDOR-B", "name": "REPLACE-NAME-B" }
+  ],
+  "judgement": {
+    "confidence": "low"
+  },
+  "evidence": [
+    {
+      "id": "E1",
+      "statement": "REPLACE: what the item shows, not what it is called",
+      "source": "REPLACE: short source label",
+      "source_id": "s1",
+      "reliability": "C",
+      "type": "infrastructure",
+      "artifact": {
+        "kind": "pattern",
+        "value": "REPLACE-WITH-THE-OBSERVABLE",
+        "source": "REPLACE-WHERE-IT-WAS-VERIFIED"
+      },
+      "consistency": {
+        "same_actor": "0",
+        "distinct_but_overlapping": "0",
+        "brokered_shared_access": "0"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "publisher": "REPLACE-PUBLISHER",
+      "url": "https://example.invalid/replace-with-the-document-you-read",
+      "category": "osint",
+      "kind": "silent",
+      "derived_from": [],
+      "accessed_at": "2026-01-01",
+      "snapshot_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "adjudication": {
+    "truth": "unadjudicated",
+    "adjudicators": [],
+    "decided_at": "2026-01-01",
+    "note": "REPLACE: why this truth, what would change it, and who decided. A binary truth requires two adjudicators and two independent sources."
+  }
+}

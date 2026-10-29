@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cti_method.ach import inconsistency_scores, least_inconsistent
+from cti_method.ach import inconsistency_scores, least_inconsistent, tied_at_top
 from cti_method.contract import CannotCheck, exit_code, finding, read_json, severity_counts
 from cti_method.evidence import Consistency, Evidence, EvidenceType
 from cti_method.grading import ceiling, check_declared, derived_grade, profile
@@ -53,6 +53,59 @@ def test_a_diagnostic_item_that_does_not_discriminate_does_not_raise_the_ceiling
         _item("E1", "vendor A", EvidenceType.INFRASTRUCTURE, a=Consistency.CONSISTENT, b=Consistency.CONSISTENT)
     ]
     assert ceiling(evidence) == "low"
+
+
+def test_shared_tradecraft_cannot_undo_the_contradiction_downgrade() -> None:
+    """A4: an item consistent with every hypothesis is not support for the favoured one.
+
+    Without this guard a shared-tradecraft item raises the ceiling by blocking the
+    contradiction step instead of leaving the grade where the evidence put it.
+    """
+    sources = [{"id": "a", "publisher": "A"}, {"id": "b", "publisher": "B"}, {"id": "c", "publisher": "C"}]
+    base = [
+        Evidence(id="E1", statement="s", source="A", type=EvidenceType.INFRASTRUCTURE,
+                 consistency={"H1": Consistency.INCONSISTENT, "H2": Consistency.INCONSISTENT},
+                 source_id="a", reliability="A"),
+        Evidence(id="E2", statement="s", source="B", type=EvidenceType.INFRASTRUCTURE,
+                 consistency={"H1": Consistency.INCONSISTENT, "H2": Consistency.CONSISTENT},
+                 source_id="b", reliability="D"),
+    ]
+    shared = Evidence(id="E3", statement="s", source="C", type=EvidenceType.INFRASTRUCTURE,
+                      consistency={"H1": Consistency.CONSISTENT, "H2": Consistency.CONSISTENT},
+                      source_id="c", reliability="C")
+    assert derived_grade(base, sources, "H2")["ceiling"] == "moderate"
+    assert derived_grade([*base, shared], sources, "H2")["ceiling"] == "moderate"
+
+
+def test_an_ungraded_item_does_not_outweigh_a_graded_one() -> None:
+    ungraded = Evidence(id="E1", statement="s", source="A", type=EvidenceType.CODE)
+    graded_b = Evidence(
+        id="E2", statement="s", source="B", type=EvidenceType.CODE, reliability="B"
+    )
+    assert ungraded.weight < graded_b.weight
+
+
+def test_a_hypothesis_no_item_addresses_does_not_win_by_silence() -> None:
+    """ACH must test the alternatives; an unmentioned hypothesis is not the favourite."""
+    evidence = [
+        Evidence(
+            id="E1",
+            statement="s",
+            source="A",
+            type=EvidenceType.CODE,
+            consistency={"X": Consistency.CONSISTENT, "Y": Consistency.INCONSISTENT},
+        )
+    ]
+    ranking = least_inconsistent(evidence, ["X", "Y", "Z"])
+    assert ranking[0] == "X"
+    assert tied_at_top(evidence, ["X", "Y", "Z"]) == ["X"]
+
+
+def test_a_document_too_deep_for_the_parser_is_cannot_check(tmp_path) -> None:
+    path = tmp_path / "deep.json"
+    path.write_text("[" * 100_000 + "]" * 100_000, encoding="utf-8")
+    with pytest.raises(CannotCheck):
+        read_json(path)
 
 
 def test_the_same_source_twice_is_not_independence() -> None:
@@ -289,12 +342,12 @@ def test_reliability_weights_the_contradiction_score() -> None:
     assert least_inconsistent(evidence, ["h", "g"]) == ["g", "h"]
 
 
-def test_without_a_reliability_band_every_item_weighs_the_same() -> None:
+def test_without_a_reliability_band_an_item_weighs_less_than_a_b() -> None:
     evidence = [
         Evidence("E1", "s", "x", EvidenceType.CODE, {"h": Consistency.INCONSISTENT}),
         Evidence("E2", "s", "y", EvidenceType.CODE, {"g": Consistency.INCONSISTENT}),
     ]
-    assert inconsistency_scores(evidence, ["h", "g"]) == {"h": 1.0, "g": 1.0}
+    assert inconsistency_scores(evidence, ["h", "g"]) == {"h": 0.5, "g": 0.5}
 
 
 # ------------------------------------------------------------------ probabilidad y limites
@@ -375,4 +428,6 @@ def test_a_changed_upstream_is_detected_by_its_hash() -> None:
 
 def test_external_references_pin_the_hash() -> None:
     references = external_references({"assessment": "a-1"}, {"assessment": "0123456789abcdef"})
-    assert references == [{"source_name": "cti-suite:assessment", "external_id": "a-1@0123456789ab"}]
+    assert references == [
+        {"source_name": "cti-suite:assessment", "external_id": "a-1@0123456789abcdef"}
+    ]

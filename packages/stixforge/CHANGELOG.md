@@ -2,6 +2,16 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **`tlp` is required.** A product with no marking is refused instead of being built as
+  `TLP:CLEAR`; a missing marking is not a public product.
+- **`--external` uses vendored OASIS STIX 2.1 schemas.** It is offline and deterministic;
+  `stix2-validator` is optional. Timestamps are normalised to milliseconds so the official
+  schemas accept the bundle, and the schemas ship inside the wheel (BSD-3, attributed).
+
 ## 0.2.0 — 2026-10-22
 
 ### Changed
@@ -21,7 +31,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `valid_until` from the product now defaults onto indicators (where STIX allows it) instead
   of the report (where it does not, and `stix2` rejected it).
 - A product may pin `assessment_hash` / `hunt_hash` / `requirement_hash`; a mismatch is
-  `trace-hash-mismatch` and the build is refused. References travel as `<id>@<sha256:12>`.
+  `trace-hash-mismatch` and the build is refused. References travel as `<id>@<sha256>`.
 
 
 ## 0.1.0 — 2026-10-22

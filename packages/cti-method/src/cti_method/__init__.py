@@ -18,6 +18,7 @@ from __future__ import annotations
 __version__ = "0.2.0"
 
 from cti_method.ach import (
+    addressed_hypotheses,
     consistency_matrix,
     consistent_with_everything,
     discriminating_evidence,
@@ -25,6 +26,9 @@ from cti_method.ach import (
     inconsistency_counts,
     inconsistency_scores,
     least_inconsistent,
+    ranking_basis,
+    supported_hypotheses,
+    tied_at_top,
 )
 from cti_method.adjudication import (
     Adjudication,
@@ -128,9 +132,13 @@ __all__ = [
     "policy",
     # ACH
     "consistency_matrix",
+    "addressed_hypotheses",
     "inconsistency_counts",
     "inconsistency_scores",
     "least_inconsistent",
+    "ranking_basis",
+    "supported_hypotheses",
+    "tied_at_top",
     "discriminating_evidence",
     "identity_supporting_evidence",
     "consistent_with_everything",

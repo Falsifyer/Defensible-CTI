@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, cite it as below."
-title: "cti-suite: six tools for one intelligence cycle"
+title: "cti-suite: eight packages for one intelligence cycle"
 abstract: >-
   A workspace of eight packages that run one CTI cycle: requirements, alias
   reconciliation, a graded ledger, a hunt plan, a STIX product and a pre-share gate.
@@ -21,5 +21,8 @@ keywords:
   - TLP 2.0
   - analysis of competing hypotheses
   - threat hunting
-version: "0.1.0"
+version: "0.1.0"  # the cti-suite facade; the workspace has no single version
 date-released: "2026-10-22"
+notes: >-
+  Current package versions: cti-method 0.2.0, cryptonym 0.7.0, assessment-mcp 0.3.0,
+  sharegate 0.2.0, stix-forge 0.2.0, pir-ledger 0.2.0, huntplan 0.2.0, cti-suite 0.1.0.

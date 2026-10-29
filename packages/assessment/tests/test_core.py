@@ -12,10 +12,12 @@ from assessment.core import (
     check_against,
     filter_truth,
     grade,
+    ledger_head,
     method_documentation,
     read_ledger,
     verify_ledger,
     weigh,
+    write_head,
 )
 
 
@@ -36,6 +38,12 @@ def test_grade_carries_two_independent_axes() -> None:
     assert result["probability"] == "very_likely"
 
 
+def test_a_probability_can_name_its_proposition() -> None:
+    result = grade("low", "very_likely", "the actor is the same")
+    assert result["probability_of"] == "the actor is the same"
+    assert "that the actor is the same is true" in result["label"]
+
+
 def test_weigh_accepts_arbitrary_hypothesis_labels() -> None:
     evidence = [
         {
@@ -50,6 +58,118 @@ def test_weigh_accepts_arbitrary_hypothesis_labels() -> None:
     assert result["ranking"] == ["compromise", "false-alarm"]
     assert result["inconsistencies"] == {"false-alarm": 1, "compromise": 0}
     assert result["matrix"]["E1"]["compromise"] == "C"
+
+
+def test_a_tie_is_not_resolved_by_hypothesis_order() -> None:
+    """A2: the same evidence must not change its bottom line when the labels are reordered."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "I", "C"),
+            _evidence("E2", "source B", "infrastructure", "C", "I"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    first = assess(document)
+    second = assess({**document, "hypotheses": ["b", "a"]})
+    assert first["favoured"] is None
+    assert set(first["tied"]) == {"a", "b"}
+    assert second["favoured"] is None
+    assert set(second["tied"]) == {"a", "b"}
+    assert first["ceiling"] == second["ceiling"]
+
+
+def test_context_contradiction_cannot_outweigh_identity_evidence() -> None:
+    """Phase 2: identity inconsistency ranks before context inconsistency."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] == "a"
+    basis = verdict["ranking_basis"]
+    assert basis["hypotheses"]["a"]["identity_inconsistency"] == 0.0
+    assert basis["hypotheses"]["b"]["identity_inconsistency"] == 0.5
+    assert basis["hypotheses"]["a"]["context_inconsistency"] == 0.5
+
+
+def test_ranking_basis_explains_the_order() -> None:
+    evidence = [
+        _evidence("E1", "source A", "infrastructure", "C", "I"),
+        _evidence("E2", "source B", "linguistic", "I", "C"),
+    ]
+    result = weigh(evidence, ["a", "b"])
+    assert result["ranking_basis"]["rule"].startswith("addressed > supported")
+    assert result["ranking_basis"]["ranking"] == ["a", "b"]
+    assert set(result["ranking_basis"]["hypotheses"]) == {"a", "b"}
+
+
+def test_a_linguistic_only_hypothesis_cannot_be_favoured() -> None:
+    """Phase 1: diagnostic support beats linguistic consistency."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] == "a"
+    assert "b" in verdict["consistent_but_unsupported"]
+
+
+def test_pure_shared_tradecraft_abstains() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [_evidence("E1", "source A", "tactics", "C", "C")],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert verdict["favoured"] is None
+    assert set(verdict["consistent_but_unsupported"]) == {"a", "b"}
+
+
+def test_reordering_does_not_change_a_supported_favourite() -> None:
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "C", "I"),
+            _evidence("E2", "source B", "linguistic", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    first = assess(document)
+    second = assess({**document, "hypotheses": ["b", "a"]})
+    assert first["favoured"] == second["favoured"] == "a"
+    assert first["tied"] == second["tied"] == []
+    assert first["ceiling"] == second["ceiling"]
+
+
+def test_restating_one_source_does_not_flip_the_ranking() -> None:
+    """A3: the ACH ranking counts voices, not items."""
+    document = {
+        "question": "same actor?",
+        "hypotheses": ["a", "b"],
+        "evidence": [
+            _evidence("E1", "source A", "infrastructure", "I", "C"),
+            _evidence("E2", "source B", "infrastructure", "C", "I"),
+            _evidence("E1b", "source A", "infrastructure", "I", "C"),
+        ],
+        "judgement": {"confidence": "low"},
+    }
+    verdict = assess(document)
+    assert set(verdict["tied"]) == {"a", "b"}
+    assert verdict["inconsistency_scores"] == {"a": 0.5, "b": 0.5}
 
 
 def test_weigh_needs_at_least_two_hypotheses() -> None:
@@ -152,6 +272,9 @@ def test_a_claim_with_one_hypothesis_is_graded_as_a_claim() -> None:
     verdict = assess(
         {
             "question": "does the actor target utilities?",
+            "mode": "claim",
+            "claim_type": "documentary",
+            "why_no_alternatives": "a single documentary claim",
             "hypotheses": ["it does"],
             "evidence": [
                 {
@@ -222,6 +345,38 @@ def test_a_tampered_ledger_line_is_detected(tmp_path: Path) -> None:
     result = verify_ledger(str(path))
     assert result["valid"] is False
     assert result["broken_at"] == 1
+
+
+def test_tail_truncation_needs_an_anchor(tmp_path: Path) -> None:
+    """A5: the prefix is a valid chain; only a head/length anchor sees the missing tail."""
+    path = tmp_path / "claims.jsonl"
+    manifest = tmp_path / "claims.head"
+    append_claim(str(path), {"id": "c1"}, head_out=str(manifest))
+    append_claim(str(path), {"id": "c2"}, head_out=str(manifest))
+    anchor = ledger_head(str(path))
+    assert anchor["entries"] == 2
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    path.write_text(lines[0] + "\n", encoding="utf-8")
+
+    # Without an anchor the remaining prefix is indistinguishable from a complete ledger.
+    assert verify_ledger(str(path))["valid"] is True
+    anchored = verify_ledger(
+        str(path), expected_head=anchor["head"], expected_count=anchor["entries"]
+    )
+    assert anchored["valid"] is False
+    assert "anchor" in anchored["reason"] or "entries" in anchored["reason"]
+    from_manifest = verify_ledger(str(path), head_file=str(manifest))
+    assert from_manifest["valid"] is False
+
+
+def test_write_head_records_the_current_head(tmp_path: Path) -> None:
+    path = tmp_path / "claims.jsonl"
+    append_claim(str(path), {"id": "c1"})
+    manifest = tmp_path / "claims.head"
+    head = write_head(str(path), str(manifest))
+    assert json.loads(manifest.read_text(encoding="utf-8"))["head"] == head["head"]
+    assert head["entries"] == 1
 
 
 def test_reading_a_missing_ledger_is_empty(tmp_path: Path) -> None:

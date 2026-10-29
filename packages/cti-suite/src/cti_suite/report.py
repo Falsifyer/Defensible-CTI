@@ -47,7 +47,9 @@ def _bottom_line(assessment: dict[str, Any] | None, marking: str | None) -> list
         return []
     question = assessment.get("question") or "Judgement"
     ranking = assessment.get("hypotheses_favoured") or assessment.get("ranking") or []
-    favoured = ranking[0] if ranking else None
+    tied = assessment.get("tied") or []
+    supported = set(assessment.get("supported") or [])
+    favoured = None if len(tied) > 1 else (ranking[0] if ranking else None)
     grade = assessment.get("grade") or {}
     confidence = grade.get("confidence", assessment.get("confidence"))
     ceiling = assessment.get("ceiling")
@@ -56,10 +58,15 @@ def _bottom_line(assessment: dict[str, Any] | None, marking: str | None) -> list
     refused = any(item.get("code") == "grade-exceeds-evidence" for item in findings)
 
     lines = ["## Bottom line", "", f"**{question}**", ""]
-    if favoured:
+    if len(tied) > 1:
+        lines.append(f"The evidence does not separate **{'**, **'.join(tied)}**.")
+        lines.append("**Abstained:** the evidence does not make a binary call.")
+    elif favoured and (not supported or favoured in supported):
         lines.append(f"The evidence favours **{favoured}**.")
-    else:
+    elif supported:
         lines.append("The evidence favours none of the stated hypotheses.")
+    else:
+        lines.append("No hypothesis has diagnostic support: the evidence is consistent but unsupported.")
     if confidence and ceiling:
         sentence = f"The judgement declares **{confidence}** confidence; the evidence supports at most **{ceiling}**."
         if refused:
@@ -109,13 +116,20 @@ def _judgement(assessment: dict[str, Any] | None) -> list[str]:
     if not assessment:
         return []
     ranking = assessment.get("hypotheses_favoured") or assessment.get("ranking") or []
+    tied = assessment.get("tied") or []
+    supported = set(assessment.get("supported") or [])
     grade = assessment.get("grade") or {}
     confidence = grade.get("confidence", assessment.get("confidence"))
     ceiling = assessment.get("ceiling")
+    favourite_label = (
+        f"{' / '.join(tied)} (tied)"
+        if len(tied) > 1
+        else ((ranking[0] if ranking[0] in supported else "— (no diagnostic support)") if ranking else "—")
+    )
     lines = [
         "## Judgement",
         "",
-        f"**Favoured: {ranking[0] if ranking else '—'}** — declared confidence: "
+        f"**Favoured: {favourite_label}** — declared confidence: "
         f"{_LABEL.get(str(confidence), confidence) if confidence else 'none'}; "
         f"the evidence supports at most **{ceiling or '—'}**.",
         "",

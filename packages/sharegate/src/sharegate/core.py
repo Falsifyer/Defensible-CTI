@@ -107,7 +107,13 @@ def check_tlp(document: str | dict[str, Any]) -> dict[str, Any]:
         effective = unique[0] if len(unique) == 1 else None
 
     if not labels:
-        findings.append(finding("tlp-missing", MEDIUM, "Product carries no TLP marking"))
+        findings.append(
+            finding(
+                "tlp-missing",
+                HIGH,
+                "Product carries no TLP marking: it does not say how far it may travel",
+            )
+        )
     else:
         unique = sorted(set(labels))
         if len(unique) > 1:
@@ -149,11 +155,15 @@ def check_stix(bundle: Any, today: str | None = None) -> dict[str, Any]:
     }
 
 
-def pre_share(document: Any, today: str | None = None) -> dict[str, Any]:
+def pre_share(
+    document: Any, today: str | None = None, *, require_json: bool = False
+) -> dict[str, Any]:
     """Run the full gate on a product (a STIX bundle, or any text/JSON).
 
     ``shareable`` is False only when a **high**-severity finding is present; lower
-    findings are surfaced but do not block.
+    findings are surfaced but do not block. With ``require_json`` an input that looks
+    like JSON but does not parse is *not checked*: a corrupted bundle must not fall back
+    to the text rule and leave as shareable.
     """
     if isinstance(document, (dict, list)):
         data: Any = document
@@ -164,6 +174,21 @@ def pre_share(document: Any, today: str | None = None) -> dict[str, Any]:
             data = json.loads(text)
         except ValueError:
             data = None
+            if require_json:
+                failure = finding(
+                    "input-unparseable",
+                    HIGH,
+                    "the input looks like JSON but could not be parsed: not checked",
+                )
+                return {
+                    "shareable": False,
+                    "checked": False,
+                    "effective_tlp": None,
+                    "tlp": None,
+                    "stix": None,
+                    "findings": [failure],
+                    "by_severity": severity_counts([failure]),
+                }
 
     tlp = check_tlp(data) if isinstance(data, dict) else check_tlp(text)
     stix = None

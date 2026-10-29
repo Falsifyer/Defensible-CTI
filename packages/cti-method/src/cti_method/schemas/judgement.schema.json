@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Falsifyer/Defensible-CTI/schemas/judgement.schema.json",
+  "$id": "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/packages/cti-method/src/cti_method/schemas/judgement.schema.json",
   "title": "Machine-readable judgement",
   "description": "What `assessment assess` and `cryptonym assess` print: the ranking, the consistency, the derived ceiling and the declared grade with its findings. `ranking` and `hypotheses_favoured` are the same list under the two tools' names.",
   "type": "object",
@@ -16,7 +16,15 @@
     "assessment_id": { "type": ["string", "null"] },
     "requirement_id": { "type": ["string", "null"] },
     "question": { "type": ["string", "null"] },
+    "mode": { "enum": ["ach", "claim"] },
+    "claim_type": { "type": ["string", "null"] },
+    "why_no_alternatives": { "type": ["string", "null"] },
     "favoured": { "type": ["string", "null"] },
+    "tied": { "type": "array", "items": { "type": "string" } },
+    "addressed": { "type": "array", "items": { "type": "string" } },
+    "supported": { "type": "array", "items": { "type": "string" } },
+    "unsupported": { "type": "array", "items": { "type": "string" } },
+    "consistent_but_unsupported": { "type": "array", "items": { "type": "string" } },
     "ranking": { "type": "array", "items": { "type": "string" } },
     "hypotheses_favoured": { "type": "array", "items": { "type": "string" } },
     "inconsistencies": {
@@ -27,6 +35,15 @@
       "type": "object",
       "additionalProperties": { "type": "number", "minimum": 0 }
     },
+    "identity_inconsistency_scores": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "context_inconsistency_scores": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "ranking_basis": { "type": "object" },
     "discriminating": { "type": "array", "items": { "type": "string" } },
     "discriminating_evidence": { "type": "array", "items": { "type": "string" } },
     "consistent_with_everything": { "type": "array", "items": { "type": "string" } },
@@ -35,6 +52,7 @@
       "type": ["string", "null"],
       "enum": ["nearly_certain", "very_likely", "likely", "roughly_even_chance", "unlikely", "very_unlikely", null]
     },
+    "probability_of": { "type": ["string", "null"] },
     "ceiling": { "enum": ["high", "moderate", "low"] },
     "grade_supported": { "type": "boolean" },
     "grade_findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },

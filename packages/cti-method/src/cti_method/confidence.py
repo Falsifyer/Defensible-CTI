@@ -44,6 +44,7 @@ class Judgement:
 
     confidence: Confidence
     probability: Probability | None = None
+    probability_of: str | None = None
 
     def is_two_axis(self) -> bool:
         """True when both axes are stated (i.e. the claim is estimative)."""
@@ -52,7 +53,8 @@ class Judgement:
     def label(self) -> str:
         text = f"confidence: {self.confidence.value}"
         if self.probability is not None:
-            text += f"; probability: {self.probability.value}"
+            target = f" that {self.probability_of} is true" if self.probability_of else ""
+            text += f"; probability{target}: {self.probability.value}"
         return text
 
 

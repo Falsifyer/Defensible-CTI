@@ -39,6 +39,11 @@ def build_parser() -> argparse.ArgumentParser:
     chain = sub.add_parser("chain", help="Run the seven steps over a directory of artifacts.")
     chain.add_argument("--dir", default="demo", metavar="PATH", help="Directory with the four inputs.")
     chain.add_argument("--out", metavar="PATH", help="Output directory (default: <dir>/out).")
+    chain.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow --out to replace a non-empty directory.",
+    )
     chain.add_argument("--json", action="store_true", dest="as_json", help="Machine-readable summary.")
     return parser
 
@@ -98,7 +103,7 @@ def _run_report(args: argparse.Namespace) -> int:
 def _run_chain(args: argparse.Namespace) -> int:
     from cti_suite.chain import run_chain
 
-    summary = run_chain(args.dir, out=args.out)
+    summary = run_chain(args.dir, out=args.out, force=args.force)
     if args.as_json:
         emit(summary)
     else:
@@ -126,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "chain":
         try:
             return body()
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, CannotCheck) as exc:
             print(f"cannot check: {exc}", file=sys.stderr)
             return CANNOT_CHECK
     return run(body)

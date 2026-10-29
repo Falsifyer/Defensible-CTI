@@ -61,15 +61,77 @@ def test_cli_exits_two_when_it_cannot_read(tmp_path):
     assert main(["validate", str(tmp_path / "no-existe.json")]) == 2
 
 
-def test_cli_without_an_external_validator_exits_two(tmp_path, capsys):
+def test_cli_external_uses_vendored_schemas_without_a_cache(tmp_path, capsys):
     output = tmp_path / "bundle.json"
     main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
     capsys.readouterr()
-    # In this environment stix2-validator is not installed: not checked is not clean.
-    codigo = main(["validate", str(output), "--external"])
-    assert codigo in (0, 1, 2)
-    if codigo == 2:
-        assert "NOT run" in capsys.readouterr().err or "not installed" in capsys.readouterr().out
+    assert main(["validate", str(output), "--external"]) == 0
+    captured = capsys.readouterr()
+    assert "External (schema)" in captured.out
+    assert "OK" in captured.out
+
+
+def test_the_vendored_schemas_ship_with_the_package():
+    from stixforge.validate import _schema_dir
+
+    assert (_schema_dir() / "common" / "bundle.json").is_file()
+    assert (_schema_dir() / "sdos" / "indicator.json").is_file()
+
+
+def test_the_vendored_schemas_validate_the_bundle(tmp_path):
+    from stixforge.validate import schema_validate
+
+    bundle = build(PRODUCTO)
+    result = schema_validate(bundle)
+    assert result["checked"] is True
+    assert result["ok"] is True, result["errors"]
+
+
+def test_the_vendored_schemas_reject_a_non_millisecond_timestamp(tmp_path):
+    from stixforge.validate import schema_validate
+
+    bundle = build(PRODUCTO)
+    bundle["objects"][1]["created"] = "2026-01-01T00:00:00Z"
+    result = schema_validate(bundle)
+    assert result["checked"] is True
+    assert result["ok"] is False
+
+
+def test_external_requires_the_schema_check_not_just_the_library(tmp_path, capsys, monkeypatch):
+    """M7: a library parse is not the external schema validation the flag promises."""
+    from stixforge import cli
+
+    output = tmp_path / "bundle.json"
+    main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
+    capsys.readouterr()
+    monkeypatch.setattr(
+        cli,
+        "external",
+        lambda bundle, path: {
+            "available": True,
+            "library": {"tool": "stix2", "ok": True},
+            "validator": None,
+        },
+    )
+    assert cli.main(["validate", str(output), "--external"]) == 2
+    assert "NOT checked" in capsys.readouterr().err
+
+
+def test_external_passes_when_the_schema_validator_ran(tmp_path, monkeypatch):
+    from stixforge import cli
+
+    output = tmp_path / "bundle.json"
+    main(["build", str(EXAMPLES / "product.json"), "-o", str(output)])
+    monkeypatch.setattr(
+        cli,
+        "external",
+        lambda bundle, path: {
+            "available": True,
+            "library": {"tool": "stix2", "ok": True},
+            "validator": {"tool": "stix2-validator", "code": 0, "output": ""},
+        },
+    )
+    assert cli.main(["validate", str(output), "--external"]) == 0
 
 
 def test_the_oasis_library_accepts_the_bundle(tmp_path):

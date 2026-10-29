@@ -10,9 +10,11 @@ follows is the framing, the demo, and the announcement.
 
 ## The frame
 
-**Reference implementation of an analytic method**, not a platform. The competitor is not
-OpenCTI or MISP — those store and correlate; this one refuses. The competitor is the
-spreadsheet, the `TLP:WHITE` copied from a template, and the confidence field someone typed.
+**Proof of concept / portfolio: a reference implementation of an analytic method**, not a
+platform and not a production system. The competitor is not OpenCTI or MISP — those store
+and correlate; this one refuses. The competitor is the spreadsheet, the `TLP:WHITE` copied
+from a template, and the confidence field someone typed. See
+[`../SCOPE.md`](../SCOPE.md).
 
 Keep the scope in every sentence:
 
@@ -66,7 +68,7 @@ would change it, and whether it may leave.*
 >
 > The rest follows: a PIR must name the decision it informs; a hunt plan must be falsifiable
 > and have a closure criterion; a STIX bundle must say who says it, when, and how far it may
-> travel. The identifiers travel with the product as `<id>@<sha256:12>`, so a bundle can be
+> travel. The identifiers travel with the product as `<id>@<sha256>`, so a bundle can be
 > walked back to the judgement and the requirement it came from.
 >
 > What it is not: a platform, a feed ingester, or an attribution engine. The corpus is
@@ -80,7 +82,9 @@ would change it, and whether it may leave.*
 ## Do not claim
 
 - that it attributes, or that it improves attribution accuracy;
-- that the corpus proves the method;
+- that the corpus proves the method, or that “23 calls, 1 abstention, 1 unsupported” is an
+  accuracy claim: it is a mechanism check with a published denominator;
+- that a tie is a failure: an abstention is a result, and the harness reports it separately;
 - that it replaces OpenCTI, MISP or a SIEM;
 - that it is production-supported.
 
@@ -88,7 +92,7 @@ would change it, and whether it may leave.*
 
 - [x] No credentials, no absolute paths, no internal references (`git grep` audit).
 - [x] MIT, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CITATION.cff`.
-- [x] CI on 3.11/3.12/3.13, demo, evaluation, external STIX validation, build + wheel smoke.
+- [x] CI on 3.11/3.12/3.13, demo, evaluation, OASIS library parse, build + wheel smoke.
 - [x] README scoped: mechanism tested, accuracy not claimed.
 - [ ] Repository public, description and topics set.
 - [x] First green CI run on `main` (`9cbc380`).

@@ -21,6 +21,20 @@ NAMES = (
     "ledger-entry",
 )
 
+#: Where the published schema files resolve. The package copy is the source of truth;
+#: this URL is the same file, not a second copy under ``/schemas``.
+BASE_URL = (
+    "https://raw.githubusercontent.com/Falsifyer/Defensible-CTI/main/"
+    "packages/cti-method/src/cti_method/schemas"
+)
+
+
+def url(name: str) -> str:
+    """The dereferenceable URL of one schema, congruent with its ``$id``."""
+    if name not in NAMES:
+        raise KeyError(f"unknown schema {name!r}; expected one of: {', '.join(NAMES)}")
+    return f"{BASE_URL}/{name}.schema.json"
+
 
 def directory() -> Path:
     """Filesystem path of the schema directory (works for editable and wheel installs)."""

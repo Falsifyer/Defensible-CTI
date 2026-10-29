@@ -109,7 +109,7 @@ def profile(
     consistent = 0.0
     if favoured:
         for item in evidence:
-            if item.type not in DIAGNOSTIC_TYPES:
+            if item.type not in DIAGNOSTIC_TYPES or not item.is_discriminating():
                 continue
             verdict = item.consistency.get(favoured, Consistency.NEUTRAL)
             if verdict is Consistency.INCONSISTENT:

@@ -18,7 +18,8 @@ produces a known finding code. See `tests/test_core.py`.
 
 ## Rules applied
 
-- **TLP missing** → medium. A product without a handling caveat cannot be shared safely.
+- **TLP missing** → **high**. A product without a handling caveat does not say how far it may
+  travel, so the gate refuses it instead of treating silence as `TLP:CLEAR`.
 - **TLP conflicting** (two different levels) → high. The gate refuses to guess.
 - **TLP:WHITE** → low. Deprecated; recommend `TLP:CLEAR`.
 - **Permissive marking on sensitive content** (CLEAR/GREEN with IPs, emails or sensitive

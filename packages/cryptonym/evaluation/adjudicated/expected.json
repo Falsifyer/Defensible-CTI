@@ -1,4 +1,6 @@
 {
+  "abstained": 1,
+  "abstentions": 1,
   "by_standard": {
     "government-statement": 1,
     "independent-corroboration": 1
@@ -9,6 +11,7 @@
       "n": 2
     }
   },
+  "calls": 2,
   "coverage": {
     "admissible": 2,
     "contested": 2,
@@ -46,5 +49,7 @@
       "very_likely": 0.8,
       "very_unlikely": 0.2
     }
-  }
+  },
+  "tied": 1,
+  "unsupported": 2
 }

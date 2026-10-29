@@ -8,7 +8,11 @@ else is the shared implementation.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
+from cti_method.ach import (
+    addressed_hypotheses as _addressed_hypotheses,
+)
 from cti_method.ach import (
     consistency_matrix as _consistency_matrix,
 )
@@ -22,6 +26,15 @@ from cti_method.ach import (
 )
 from cti_method.ach import (
     least_inconsistent as _least_inconsistent,
+)
+from cti_method.ach import (
+    ranking_basis as _ranking_basis,
+)
+from cti_method.ach import (
+    supported_hypotheses as _supported_hypotheses,
+)
+from cti_method.ach import (
+    tied_at_top as _tied_at_top,
 )
 from cti_method.evidence import Consistency, Evidence
 
@@ -40,22 +53,58 @@ def consistency_matrix(
 
 
 def inconsistency_counts(
-    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
 ) -> dict[str, int]:
-    return _inconsistency_counts(evidence, _labels(hypotheses))
+    return _inconsistency_counts(evidence, _labels(hypotheses), sources)
 
 
 def least_inconsistent(
-    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
 ) -> list[str]:
-    return _least_inconsistent(evidence, _labels(hypotheses))
+    return _least_inconsistent(evidence, _labels(hypotheses), sources)
+
+
+def tied_at_top(
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
+) -> list[str]:
+    return _tied_at_top(evidence, _labels(hypotheses), sources)
+
+
+def ranking_basis(
+    evidence: list[Evidence],
+    hypotheses: Sequence[Hypothesis | str] | None = None,
+    sources: Sequence[object] | None = None,
+) -> dict[str, Any]:
+    return _ranking_basis(evidence, _labels(hypotheses), sources)
+
+
+def addressed_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+) -> set[str]:
+    return _addressed_hypotheses(evidence, _labels(hypotheses))
+
+
+def supported_hypotheses(
+    evidence: list[Evidence], hypotheses: Sequence[Hypothesis | str] | None = None
+) -> set[str]:
+    return _supported_hypotheses(evidence, _labels(hypotheses))
 
 
 __all__ = [
+    "addressed_hypotheses",
     "consistency_matrix",
     "consistent_with_everything",
     "discriminating_evidence",
     "identity_supporting_evidence",
     "inconsistency_counts",
     "least_inconsistent",
+    "ranking_basis",
+    "supported_hypotheses",
+    "tied_at_top",
 ]

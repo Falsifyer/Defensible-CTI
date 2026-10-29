@@ -56,14 +56,20 @@ five of ten cases, and the harness prints that count instead of hiding it.
 
 ## Analysis of Competing Hypotheses
 
-Evidence is tested against the competing hypotheses at once — *same actor*, *distinct
-but overlapping*, *brokered / shared access*. The favoured hypothesis is the one with
-the **least inconsistent** evidence, not the one with the most supporters. Ties are
-broken deterministically, not by strength of feeling.
+Evidence is tested against the competing hypotheses at once — *same actor* and *distinct
+but overlapping* by default; *brokered / shared access* is opt-in, because a hypothesis no
+evidence addresses would otherwise win every tie by silence. The favoured hypothesis is the
+one with the **least inconsistent** evidence, not the one with the most supporters. It also
+needs **diagnostic support** (`infrastructure`, `code`, `operator`); linguistic/structural
+consistency is reported as `consistent_but_unsupported` and cannot make a hypothesis the
+favourite. A tie is reported (`tied`, `favoured: null`), never broken by the order of the
+list.
 
 ## Two-axis grading
 
-Every judgement carries two independent axes, per claim, not per section:
+Every judgement carries two independent axes, per claim, not per section. When `probability`
+is set, `probability_of` names the proposition it is about, so "unlikely" cannot be read as
+the opposite of the bottom line.
 
 - **Confidence** — how good the sourcing and reasoning are: **high** (two or more
   independent authoritative sources), **moderate** (one credible source, or

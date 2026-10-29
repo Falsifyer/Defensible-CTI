@@ -17,14 +17,14 @@ the web UI, and a pending publisher does **not** reserve the name until the firs
 
 | PyPI project | Owner | Repository | Workflow | Environment |
 |---|---|---|---|---|
-| `cti-method` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `cryptonym` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `assessment-mcp` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `sharegate` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `stix-forge` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `pir-ledger` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `huntplan` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
-| `cti-suite` | `Falsifyer` | `cti-suite` | `publish.yml` | `pypi` |
+| `cti-method` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `cryptonym` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `assessment-mcp` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `sharegate` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `stix-forge` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `pir-ledger` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `huntplan` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
+| `cti-suite` | `Falsifyer` | `Defensible-CTI` | `publish.yml` | `pypi` |
 
 The workflow field is the **file name**, not the path. All eight names were free on PyPI when
 this was written (checked against `https://pypi.org/pypi/<name>/json`); a pending publisher

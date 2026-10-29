@@ -13,7 +13,7 @@ from typing import Any
 from assessment import core as assessment_core
 from cryptonym.assess.grading import assess_actor_pair
 from cryptonym.model.assessment import load_assessment
-from cti_method.contract import read_json
+from cti_method.contract import CannotCheck, read_json
 from cti_method.stix import effective_marking
 from huntplan.core import detections_for, validate_plan
 from mcp.server.mcpserver import MCPServer
@@ -53,8 +53,11 @@ def cryptonym_assess(path: str) -> dict[str, Any]:
 @server.tool()
 def assessment_assess(path: str) -> dict[str, Any]:
     """Grade any claim: ranking, ceiling, declared grade and findings."""
-    document = read_json(path)
-    return assessment_core.assess(document) if isinstance(document, dict) else {"findings": []}
+    try:
+        document = read_json(path)
+        return assessment_core.assess(document) if isinstance(document, dict) else {"findings": []}
+    except (OSError, ValueError, KeyError, CannotCheck) as exc:
+        return {"error": f"assess failed: {type(exc).__name__}: {exc}"}
 
 
 @server.tool()
@@ -73,8 +76,11 @@ def huntplan_detections(technique_id: str) -> dict[str, Any]:
 @server.tool()
 def stixforge_build(product_path: str, trace: dict[str, str | None] | None = None) -> dict[str, Any]:
     """Build a STIX 2.1 bundle from a product JSON file."""
-    document = read_json(product_path)
-    return build(document, trace=trace) if isinstance(document, dict) else {"objects": []}
+    try:
+        document = read_json(product_path)
+        return build(document, trace=trace) if isinstance(document, dict) else {"objects": []}
+    except (OSError, ValueError, KeyError, CannotCheck) as exc:
+        return {"error": f"build failed: {type(exc).__name__}: {exc}"}
 
 
 @server.tool()

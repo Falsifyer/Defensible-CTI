@@ -14,6 +14,7 @@ def _assessment() -> Assessment:
         id="demo",
         question="Is A the same actor as B?",
         subjects=[Designation("VendorA", "A"), Designation("VendorB", "B")],
+        hypotheses=list(Hypothesis),
         evidence=[
             Evidence(
                 id="E1",

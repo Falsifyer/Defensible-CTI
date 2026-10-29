@@ -47,6 +47,13 @@ def test_assess_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> N
     assert json.loads(capsys.readouterr().out)["ranking"] == ["a", "b"]
 
 
+def test_strict_accepts_the_verdict_it_just_emitted(tmp_path: Path) -> None:
+    """A1: --strict must not fail on the tool's own valid output."""
+    path = tmp_path / "claim.json"
+    path.write_text(json.dumps(_claim()), encoding="utf-8")
+    assert main(["assess", str(path), "--strict"]) == 0
+
+
 def test_assess_refuses_a_grade_the_evidence_cannot_support(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     path = tmp_path / "claim.json"
     path.write_text(json.dumps(_claim(judgement={"confidence": "high"})), encoding="utf-8")
@@ -86,13 +93,62 @@ def test_ledger_verify_command(tmp_path: Path, capsys: pytest.CaptureFixture[str
 
     path = tmp_path / "ledger.jsonl"
     append_claim(str(path), {"id": "c1"})
-    assert main(["ledger", str(path), "--verify"]) == 0
+    assert main(["ledger", str(path), "--verify", "--no-anchor"]) == 0
     assert json.loads(capsys.readouterr().out)["valid"] is True
+
+
+def test_a_bare_verify_is_not_clean(tmp_path: Path) -> None:
+    from assessment.core import append_claim
+
+    path = tmp_path / "ledger.jsonl"
+    append_claim(str(path), {"id": "c1"})
+    assert main(["ledger", str(path), "--verify"]) == 2
+
+
+def test_ledger_head_file_detects_a_truncated_tail(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = tmp_path / "claim.json"
+    path.write_text(json.dumps(_claim()), encoding="utf-8")
+    ledger = tmp_path / "ledger.jsonl"
+    head = tmp_path / "ledger.head"
+    for _ in range(2):
+        assert (
+            main(
+                [
+                    "assess",
+                    str(path),
+                    "--append",
+                    str(ledger),
+                    "--head-out",
+                    str(head),
+                    "--now",
+                    "2026-10-22T00:00:00Z",
+                ]
+            )
+            == 0
+        )
+    capsys.readouterr()
+    assert main(["ledger", str(ledger), "--verify", "--head-file", str(head)]) == 0
+
+    lines = ledger.read_text(encoding="utf-8").splitlines()
+    ledger.write_text(lines[0] + "\n", encoding="utf-8")
+    assert main(["ledger", str(ledger), "--verify", "--head-file", str(head)]) == 1
 
 
 def test_cli_returns_two_when_the_file_cannot_be_read(tmp_path: Path) -> None:
     assert main(["assess", str(tmp_path / "missing.json")]) == 2
-    assert main(["ledger", str(tmp_path / "missing.jsonl"), "--verify"]) == 1
+    assert main(["ledger", str(tmp_path / "missing.jsonl"), "--verify", "--no-anchor"]) == 1
+
+
+def test_cli_returns_two_for_a_structurally_invalid_claim(tmp_path: Path) -> None:
+    """A6: malformed content is 'could not check' (2), never a refusal (1)."""
+    bad_type = {**_claim(), "evidence": [{**_claim()["evidence"][0], "type": "not-a-type"}]}
+    path = tmp_path / "bad.json"
+    path.write_text(json.dumps(bad_type), encoding="utf-8")
+    assert main(["assess", str(path)]) == 2
+
+    bad_grade = {**_claim(), "judgement": {"confidence": "certain"}}
+    path.write_text(json.dumps(bad_grade), encoding="utf-8")
+    assert main(["assess", str(path)]) == 2
 
 
 def test_mcp_tools() -> None:

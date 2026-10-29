@@ -79,6 +79,80 @@ def test_evaluate_cases_derives_the_favourite_from_evidence() -> None:
     assert "high" not in summary["calibration"]
 
 
+def test_a_tie_is_not_scored_as_a_call() -> None:
+    """A2: the harness must not score hypotheses_favoured[0] when the engine reports a tie."""
+    case = {
+        "id": "tied",
+        "question": "same?",
+        "truth": "same_actor",
+        "hypotheses": ["same_actor", "distinct_but_overlapping"],
+        "judgement": {"confidence": "low"},
+        "evidence": [
+            {
+                "id": "E1",
+                "statement": "one source points one way",
+                "source": "A",
+                "type": "infrastructure",
+                "consistency": {"same_actor": "I", "distinct_but_overlapping": "C"},
+            },
+            {
+                "id": "E2",
+                "statement": "another source points the other way",
+                "source": "B",
+                "type": "infrastructure",
+                "consistency": {"same_actor": "C", "distinct_but_overlapping": "I"},
+            },
+        ],
+    }
+    summary = evaluate_cases([case])
+    assert summary["tied"] == 1
+    assert summary["calls"] == 0
+    assert summary["abstentions"] == 1
+    assert summary["unsupported"] == 0
+    assert summary["metrics"]["total"] == 0
+    row = summary["results"][0]
+    assert row["favourite"] is None
+    assert row["correct"] is None
+    assert row["tied"] is True
+
+
+def _brokered_case(*, brokered_supported: bool) -> dict:
+    consistency = (
+        {"same_actor": "I", "distinct_but_overlapping": "I", "brokered_shared_access": "C"}
+        if brokered_supported
+        else {"same_actor": "C", "distinct_but_overlapping": "I", "brokered_shared_access": "I"}
+    )
+    return {
+        "id": "brokered",
+        "question": "broker?",
+        "truth": "distinct_but_overlapping" if brokered_supported else "same_actor",
+        "hypotheses": ["same_actor", "distinct_but_overlapping", "brokered_shared_access"],
+        "judgement": {"confidence": "low"},
+        "evidence": [
+            {
+                "id": "E1",
+                "statement": "one codebase",
+                "source": "A",
+                "type": "code",
+                "consistency": consistency,
+            }
+        ],
+    }
+
+
+def test_a_supported_broker_is_scored_as_not_same() -> None:
+    summary = evaluate_cases([_brokered_case(brokered_supported=True)])
+    assert summary["calls"] == 1
+    assert summary["results"][0]["favourite"] == "brokered_shared_access"
+    assert summary["results"][0]["called_same"] is False
+
+
+def test_a_discarded_broker_does_not_win() -> None:
+    summary = evaluate_cases([_brokered_case(brokered_supported=False)])
+    assert summary["calls"] == 1
+    assert summary["results"][0]["favourite"] == "same_actor"
+
+
 def test_evaluate_corpus_reports_each_split_separately() -> None:
     case = {
         "id": "x",

@@ -7,3 +7,4 @@ build/
 .pytest_cache/
 .ruff_cache/
 bundle.json
+!src/stixforge/schemas/stix2.1/common/bundle.json

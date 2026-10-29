@@ -11,9 +11,10 @@ Cryptonym's model deliberately keeps four things apart that platforms tend to co
 
 ## Hypotheses
 
-`same_actor` (H1), `distinct_but_overlapping` (H2), `brokered_shared_access` (H3). H3
-is tested separately because it makes a different prediction about *where* an overlap
-comes from.
+`same_actor` (H1) and `distinct_but_overlapping` (H2) are the default. H3,
+`brokered_shared_access`, is opt-in: declare it in the dossier when the evidence suggests a
+broker. If it is always present, it ties every case where nothing contradicts it — silence
+is not support.
 
 ## Evidence types and two senses of "diagnostic"
 

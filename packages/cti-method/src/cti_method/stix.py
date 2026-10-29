@@ -78,8 +78,10 @@ SCO = {
 }
 REQUIRED = ("type", "spec_version", "id", "created", "modified")
 REQUIRED_SIN_MODIFIED = {"marking-definition"}
-#: Objects that state how far something may travel. An unmarked one is not shareable.
-MARKED = {"indicator", "malware", "report", "identity", "threat-actor", "campaign", "tool", "observed-data"}
+#: Structural objects that are not content claims. Everything else outside ``SCO`` must
+#: carry its own marking: a whitelist silently exempted ``infrastructure``, ``note``,
+#: ``attack-pattern`` and ``relationship``, which is where sensitive context lives.
+UNMARKED_OK = {"marking-definition", "extension-definition"}
 
 
 def label(value: str) -> str:
@@ -338,7 +340,7 @@ def validate_bundle(bundle: Any, today: str | None = None, max_objects: int = MA
         )
     for ident, obj in by_id.items():
         object_type = obj.get("type")
-        if object_type not in MARKED:
+        if object_type in SCO or object_type in UNMARKED_OK:
             continue
         refs = obj.get("object_marking_refs") or []
         where = f"{object_type} {ident}"[:80]

@@ -117,6 +117,8 @@ def read_json(path: str | Path, *, limit: int = MAX_BYTES, max_depth: int = MAX_
         document = json.loads(text)
     except json.JSONDecodeError as exc:
         raise CannotCheck(f"{path} is not valid JSON: {exc.msg} (line {exc.lineno})") from exc
+    except RecursionError as exc:
+        raise CannotCheck(f"{path} nests too deeply to parse") from exc
     if nesting_depth(document, max_depth) > max_depth:
         raise CannotCheck(f"{path} nests deeper than the {max_depth}-level limit")
     return document

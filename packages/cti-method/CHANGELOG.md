@@ -2,6 +2,30 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- **ACH counts voices, not items.** `inconsistency_scores` groups by publisher (or
+  normalised source string), so restating one source cannot flip the ranking.
+- **Ties are surfaced, not broken by input order.** `tied_at_top` names the hypotheses the
+  evidence does not separate; the count also counts voices, not restated items.
+- **An unaddressed hypothesis does not win by silence.** A hypothesis no item addresses is
+  ranked after the tested ones instead of tying them at zero inconsistency.
+- **Positive diagnostic support is required.** `supported_hypotheses` names the hypotheses
+  with at least one `infrastructure`/`code`/`operator` item consistent with them; a
+  hypothesis with only linguistic/structural consistency is `consistent_but_unsupported`.
+- **Identity contradictions outrank context.** The ranking is
+  `addressed > supported > identity inconsistency > context inconsistency > voices`;
+  `ranking_basis` exposes the data behind that order.
+- **Shared tradecraft cannot undo a contradiction downgrade.** Only discriminating items
+  count as support in the ceiling's contradiction step.
+- **A document too deep for the JSON parser is `CannotCheck`**, not a `RecursionError`.
+- **Every content SDO needs a marking.** The whitelist exempted `infrastructure`, `note`,
+  `attack-pattern` and `relationship`; only SCOs and structural definitions are exempt now.
+- **Schema `$id`/`$schema` resolve** to the raw URL of the shipped file (the old `/schemas/`
+  path returned 404).
+
 ## 0.2.0 — 2026-10-28
 
 ### Added

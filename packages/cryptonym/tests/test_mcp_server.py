@@ -46,6 +46,11 @@ def test_errors_are_returned_not_raised() -> None:
     assert "error" in mcp_server.assess_dossier("/nonexistent.json")
 
 
+def test_snapshot_tool_cannot_be_told_to_reach_a_private_address() -> None:
+    """M6: the SSRF boundary is not an opt-out tool argument."""
+    assert "error" in mcp_server.snapshot_source("http://127.0.0.1:9/source")
+
+
 def test_documentation_tool_serves_the_method() -> None:
     result = mcp_server.documentation("adjudication")
     assert "external truth" in result["content"].lower()

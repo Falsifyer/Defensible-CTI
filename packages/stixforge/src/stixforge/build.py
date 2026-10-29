@@ -36,6 +36,14 @@ def _id(object_type: str, key: str) -> str:
     return f"{object_type}--{uuid.uuid5(NAMESPACE, f'{object_type}|{key}')}"
 
 
+def _timestamp(value: str) -> str:
+    """STIX 2.1 timestamps carry milliseconds; accept the shorter ISO form and normalise."""
+    text = value.strip()
+    if text.endswith("Z") and "." not in text:
+        return text[:-1] + ".000Z"
+    return text
+
+
 def _sco(observable: dict[str, Any]) -> dict[str, Any]:
     """A STIX 2.1 cyber-observable: immutable, with no `created`, `modified` or marking.
 
@@ -90,8 +98,14 @@ def build(
         )
     if not stamp.endswith("Z"):
         raise ValueError("created must be an ISO 8601 UTC timestamp (ending in Z)")
+    stamp = _timestamp(stamp)
 
-    marking = marking_object(product.get("tlp") or "clear")
+    raw_marking = product.get("tlp")
+    if not isinstance(raw_marking, str) or not raw_marking.strip():
+        raise ValueError(
+            "the product needs tlp: a product with no marking must not default to TLP:CLEAR"
+        )
+    marking = marking_object(raw_marking)
     author_id = _id("identity", author_name)
     objects: list[dict[str, Any]] = [
         marking,
@@ -119,7 +133,9 @@ def build(
             raise ValueError("every indicator needs a STIX pattern")
         identifier = _id("indicator", f"{indicator.get('name', '')}|{pattern}")
         valid_until = indicator.get("valid_until") or product.get("valid_until")
-        valid_from = indicator.get("valid_from") or stamp
+        valid_from = _timestamp(str(indicator.get("valid_from") or stamp))
+        if valid_until:
+            valid_until = _timestamp(str(valid_until))
         if valid_until and str(valid_until) < str(valid_from):
             raise ValueError(f"indicator {indicator.get('name')!r}: valid_until is before valid_from")
         item = {
@@ -176,7 +192,7 @@ def build(
         "created_by_ref": author_id,
         "object_marking_refs": [marking["id"]],
         "name": title,
-        "published": product.get("published") or stamp,
+        "published": _timestamp(str(product.get("published") or stamp)),
         "report_types": product.get("report_types", ["threat-report"]),
         "object_refs": references,
     }

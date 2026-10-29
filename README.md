@@ -1,14 +1,15 @@
 # cti-suite
 
-**Six commands, eight packages, one intelligence cycle — and the cycle is in the data, not in
+**Seven commands, eight packages, one intelligence cycle — and the cycle is in the data, not in
 the prose.** Each tool refuses something the cycle should not allow: a requirement with no
 decision behind it, a judgement without evidence for it, a grade the evidence cannot support,
 a hypothesis that cannot be refuted, a product with no marking, a bundle that may not travel.
 
-> **Status: 0.1, reference implementation of an analytic method.** The mechanism is tested
-> (300+ tests, CI, one STIX validator, published schemas); real-world accuracy is **not**
-> claimed, and the corpus is illustrative — it says so. There is no support SLA: issues are
-> read, not promised.
+> **Status: 0.1, proof of concept / portfolio — not production.** The mechanism is tested
+> (test suite, CI, one STIX validator, published schemas); real-world accuracy is **not**
+> claimed, and the corpus is illustrative — it says so. It reports calls, abstentions and
+> unsupported cases separately (currently 23 / 1 / 1); none of those is an accuracy
+> claim. There is no support SLA: issues are read, not promised. See [`SCOPE.md`](SCOPE.md).
 
 ## Start with the door
 
@@ -16,11 +17,11 @@ The cycle is the argument; the gate is the door. Two commands answer the questio
 team gets wrong at least once:
 
 ```console
-$ git clone https://github.com/Falsifyer/Defensible-CTI && cd cti-suite
+$ git clone https://github.com/Falsifyer/Defensible-CTI && cd Defensible-CTI
 $ uv sync --all-packages
 $ uv run stixforge build demo/product.json -o /tmp/bundle.json
 $ uv run sharegate check /tmp/bundle.json          # exit 1 if it may not travel
-$ uv run stixforge validate /tmp/bundle.json --external
+$ uv run stixforge validate /tmp/bundle.json --external  # vendored OASIS schemas, offline
 ```
 
 The rest — requirements, the evidence ceiling, the hunt plan, the ledger — is what makes that
@@ -72,7 +73,8 @@ Every package keeps its own name, its own command, its own version and its own `
 $ uv sync --all-packages --all-extras   # or: make install
 ```
 
-That creates one virtual environment with the eight packages in editable mode.
+That creates one virtual environment with the eight packages in editable mode. The OpenCTI
+adapter consumes an already-parsed actor document; it does not depend on `pycti`.
 
 ## Use
 
@@ -109,7 +111,7 @@ Six conventions run through the suite, and each one is enforced somewhere you ca
    `cti_method.stix.validate_bundle`; a test asserts both report identical findings.
 5. **TLP 2.0, not an alias.** The markings are the OASIS TLP 2.0 objects, so `TLP:CLEAR` and
    `TLP:AMBER+STRICT` are first-class and `TLP:WHITE` is recognised only to be flagged.
-6. **The trace pins content, not just an id.** `<id>@<sha256:12>` travels in the STIX
+6. **The trace pins content, not just an id.** `<id>@<sha256>` travels in the STIX
    `external_references`, so an edited dossier no longer keeps the same identity silently.
 7. **Not checked is not clean, including size.** Input over 8 MiB, JSON nested beyond 64
    levels or a bundle over 20,000 objects is refused with exit code 2, not walked until it

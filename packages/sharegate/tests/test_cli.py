@@ -41,3 +41,9 @@ def test_check_command_passes_a_clean_product(tmp_path: Path) -> None:
     path = tmp_path / "product.md"
     path.write_text("TLP:RED\nfor your eyes only", encoding="utf-8")
     assert main(["check", str(path)]) == 0
+
+
+def test_check_command_returns_two_for_a_corrupt_json_bundle(tmp_path: Path) -> None:
+    path = tmp_path / "bundle.json"
+    path.write_text('{"type": "bundle", "objects": [ {', encoding="utf-8")
+    assert main(["check", str(path)]) == 2

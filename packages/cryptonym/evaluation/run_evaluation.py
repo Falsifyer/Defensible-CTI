@@ -27,9 +27,10 @@ from cryptonym.evaluate.adjudication import validate_corpus  # noqa: E402
 from cryptonym.evaluate.metrics import evaluate_adjudicated, evaluate_corpus  # noqa: E402
 from cryptonym.model.assessment import load_assessment  # noqa: E402
 
-#: The judgement published in the worked example. If the engine stops reproducing it,
-#: either the method changed (publish a new version) or it broke (fix it).
-EXPECTED_FIRST_HYPOTHESIS = "distinct_but_overlapping"
+#: The judgement published in the worked example: two hypotheses the evidence does not
+#: separate, and no single favourite. If the engine stops reproducing this set, either the
+#: method changed (publish a new version) or it broke (fix it).
+EXPECTED_TOP = {"distinct_but_overlapping", "brokered_shared_access"}
 
 EVAL_DIR = Path(__file__).resolve().parent
 DEFAULT_CORPUS = EVAL_DIR / "golden_pairs" / "pairs.json"
@@ -40,12 +41,18 @@ DEFAULT_ADJUDICATED_EXPECTED = EVAL_DIR / "adjudicated" / "expected.json"
 
 def _reproduce_dossier(path: str) -> int:
     result = assess_actor_pair(load_assessment(path))
-    favoured = result["hypotheses_favoured"][0]
-    if favoured != EXPECTED_FIRST_HYPOTHESIS:
-        print(f"regression: expected {EXPECTED_FIRST_HYPOTHESIS!r}, got {favoured!r}", file=sys.stderr)
+    ranked = result["hypotheses_favoured"]
+    tied = result.get("tied") or []
+    reproduced = set(tied) if len(tied) > 1 else ({ranked[0]} if ranked else set())
+    if reproduced != EXPECTED_TOP:
+        print(
+            f"regression: expected the top to be {sorted(EXPECTED_TOP)!r}, got {sorted(reproduced)!r}",
+            file=sys.stderr,
+        )
         return 1
     print(json.dumps(result, indent=2, ensure_ascii=False))
-    print(f"# reproduced: {favoured}", file=sys.stderr)
+    label = f"tied: {', '.join(tied)}" if len(tied) > 1 else f"favoured: {ranked[0]}"
+    print(f"# reproduced: {label}", file=sys.stderr)
     return 0
 
 
@@ -60,12 +67,22 @@ def _projection(summary: dict) -> dict:
     return {
         "overall": {
             "metrics": summary["overall"]["metrics"],
+            "calls": summary["overall"]["calls"],
+            "abstentions": summary["overall"]["abstentions"],
+            "tied": summary["overall"]["tied"],
+            "abstained": summary["overall"]["abstained"],
+            "unsupported": summary["overall"]["unsupported"],
             "calibration": summary["overall"]["calibration"],
             "probability_calibration": summary["overall"]["probability_calibration"],
         },
         "splits": {
             name: {
                 "metrics": data["metrics"],
+                "calls": data["calls"],
+                "abstentions": data["abstentions"],
+                "tied": data["tied"],
+                "abstained": data["abstained"],
+                "unsupported": data["unsupported"],
                 "calibration": data["calibration"],
                 "probability_calibration": data["probability_calibration"],
             }
@@ -78,6 +95,11 @@ def _adjudicated_projection(summary: dict) -> dict:
     """The parts of an adjudicated summary that are committed as a baseline."""
     return {
         "metrics": summary["metrics"],
+        "calls": summary["calls"],
+        "abstentions": summary["abstentions"],
+        "tied": summary["tied"],
+        "abstained": summary["abstained"],
+        "unsupported": summary["unsupported"],
         "calibration": summary["calibration"],
         "probability_calibration": summary["probability_calibration"],
         "coverage": summary["coverage"],
@@ -107,6 +129,13 @@ def _summarise(corpus: str, expected: str | None, check: bool, output: str | Non
     rows = evaluate_corpus(document)["results"]
     refused = sum(1 for row in rows if _above_ceiling(row))
     print(f"# declared above the evidence ceiling: {refused} of {len(rows)}", file=sys.stderr)
+    print(
+        f"# calls={projection['overall']['calls']} "
+        f"abstentions={projection['overall']['abstentions']} "
+        f"unsupported={projection['overall']['unsupported']} "
+        f"tied={projection['overall']['tied']}",
+        file=sys.stderr,
+    )
     bands: dict[str, int] = {}
     for row in rows:
         bands[str(row.get("ceiling"))] = bands.get(str(row.get("ceiling")), 0) + 1
@@ -148,6 +177,11 @@ def _adjudicated(path: str, expected: str | None, check: bool, strict: bool, out
 
     refused = sum(1 for row in summary["results"] if _above_ceiling(row))
     print(f"# declared above the evidence ceiling: {refused} of {len(summary['results'])}", file=sys.stderr)
+    print(
+        f"# calls={summary['calls']} abstentions={summary['abstentions']} "
+        f"unsupported={summary['unsupported']} tied={summary['tied']}",
+        file=sys.stderr,
+    )
 
     coverage = summary["coverage"]
     metrics = summary["metrics"]

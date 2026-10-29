@@ -21,15 +21,17 @@ executes anything from its input. What matters:
 - A bundle from `stixforge` that claims a marking it does not carry, identifiers that
   collide and silently merge two objects, or a trace that points at an assessment it did
   not come from.
-- A ledger entry that can be edited without `assessment ledger --verify` noticing.
+- A ledger entry that can be edited, or a tail truncated, without `assessment ledger
+  --verify` noticing. An anchored `--head-file`/`--expect-head` run is the check that closes
+  the tail; a bare `--verify` is now refused (exit 2), and `--no-anchor` is the explicit
+  opt-out.
 - Input that exhausts memory, or a path the user passes by mistake.
 
 ## Dependency advisories
 
-`pip-audit` runs in CI. One advisory is accepted and documented: `PYSEC-2026-3447`
-(setuptools 82.0.1, fixed in 83). The `opencti` extra pins pycti, which pins setuptools to a
-band that excludes 83; setuptools is a build backend and is never imported by the suite. If
-pycti lifts its pin, the ignore is removed in the same commit.
+`pip-audit` and `pip check` run in CI. No advisory is ignored. The `pycti` extra was
+removed because the OpenCTI adapter consumes an already-parsed actor document and never
+imports `pycti`; the workspace no longer overrides `setuptools` or `opentelemetry`.
 
 ## Out of scope
 

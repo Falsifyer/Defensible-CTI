@@ -38,12 +38,23 @@ A claim is a **question**, a body of **evidence**, competing **hypotheses** and 
     {"id": "E2", "statement": "the C2 certificate matches a known cluster", "source": "telemetry B",
      "type": "infrastructure", "consistency": {"compromise": "C", "benign": "I"}}
   ],
-  "judgement": {"confidence": "high", "probability": "very_likely"}
+  "judgement": {
+    "confidence": "high",
+    "probability": "very_likely",
+    "probability_of": "compromise"
+  }
 }
 ```
 
 - The **favoured hypothesis** is the one with the least inconsistent evidence, not the
   loudest. Hypotheses may be any labels, but there must be **at least two**.
+- A hypothesis also needs **diagnostic support**: at least one `infrastructure`, `code` or
+  `operator` item consistent with it. Linguistic or structural consistency is reported as
+  `consistent_but_unsupported`, and cannot make a hypothesis `favoured` for an identity
+  question.
+- The ranking counts **independent voices**, not items: restating one source does not move
+  it. When the best score is shared, `tied` names the hypotheses and `favoured` is `null`;
+  the ceiling is the most restrictive across them.
 - **Confidence** and **probability** are separate; a claim can be *very likely* at *low*
   confidence or *roughly even* at *high* confidence.
 - Add an **`adjudication`** and the external-truth filter decides whether the declared
@@ -81,8 +92,13 @@ two modes:
 
 In both modes independence is structural and contradiction lowers the ceiling — in `claim`
 mode there is no alternative to weigh, so only the first applies. A claim with **no**
-hypothesis is refused (`no-claim`). The policy is exported by
-`cti_method.grading.policy()` so a consumer renders it instead of restating it.
+hypothesis is refused (`no-claim`).
+
+Claim mode is **explicit**: the document says `"mode": "claim"`, a `claim_type`
+(`documentary`, `estimative` or `identity`) and `why_no_alternatives`. `direct` evidence is
+only admissible for `documentary`; an `identity` claim is refused with
+`identity-in-claim-mode`, because attribution is not a documentary fact. The policy is
+exported by `cti_method.grading.policy()` so a consumer renders it instead of restating it.
 
 ## The chain
 
@@ -98,11 +114,15 @@ hypothesis is refused (`no-claim`). The policy is exported by
 
 Each line is an entry with `seq`, `created_at`, `tool`, `claim_id`, `claim_hash`, the
 `claim` itself, `prev_hash` and `hash`. The hash covers the entry without itself, and
-`prev_hash` chains to the line before. `ledger --verify` walks the chain and reports the
-first line where it breaks: editing a claim, dropping a line or reordering two lines is
-detected.
+`prev_hash` chains to the line before. `ledger --verify --head-file` walks the chain and
+reports the first line where it breaks: editing a claim, dropping a line in the middle or
+reordering two lines is detected. A bare `--verify` is refused (exit 2): it cannot see a
+truncated tail. `--no-anchor` is the explicit opt-out for an internal-chain-only check.
 
-It is tamper-evident, not tamper-proof: whoever can rewrite the whole file can recompute the
+A **tail truncation** leaves a valid prefix, so the chain alone cannot see it. `--head-out`
+writes a manifest with the head and length, and `ledger --verify --head-file` (or
+`--expect-head`/`--expect-count`) fails when the file is shorter or ends somewhere else. It
+is tamper-evident, not tamper-proof: whoever can rewrite the whole file can recompute the
 chain. To prove *when*, publish the head hash somewhere you do not control.
 
 ## What it does not do

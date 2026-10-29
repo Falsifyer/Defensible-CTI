@@ -193,16 +193,18 @@ def snapshot_verify(path: str) -> dict[str, Any]:
 
 
 @server.tool()
-def snapshot_source(url: str, allow_private: bool = False) -> dict[str, Any]:
+def snapshot_source(url: str) -> dict[str, Any]:
     """Fetch an HTTP(S) source and capture its bytes and SHA-256 (SSRF-validated).
 
-    Uses the network. Returns the snapshot; write it to disk with the CLI if you want to
-    keep it.
+    Uses the network. The private/loopback allowance is deliberately not a tool argument:
+    an agent must not be able to opt out of the SSRF boundary. The CLI keeps the explicit
+    operator flag. Returns the snapshot; write it to disk with the CLI if you want to keep
+    it.
     """
     from cryptonym import snapshot
 
     try:
-        captured = snapshot.fetch(url, allow_private=allow_private)
+        captured = snapshot.fetch(url)
         return captured.to_dict()
     except (OSError, ValueError) as exc:
         return _error("snapshot fetch failed", exc)
